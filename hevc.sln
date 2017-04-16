@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hevc_decoder", "source\hevc_decoder\hevc_decoder.vcxproj", "{A5DD0702-21D4-4B63-91AB-FCA02F8478BB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hevc_decoder_test", "source\hevc_decoder_test\hevc_decoder_test.vcxproj", "{550B0A3C-7086-4F05-A851-ECF38C53D63F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|ARM = Release|ARM
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A5DD0702-21D4-4B63-91AB-FCA02F8478BB}.Debug|ARM.ActiveCfg = Debug|Win32
+		{A5DD0702-21D4-4B63-91AB-FCA02F8478BB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A5DD0702-21D4-4B63-91AB-FCA02F8478BB}.Debug|Win32.Build.0 = Debug|Win32
+		{A5DD0702-21D4-4B63-91AB-FCA02F8478BB}.Debug|x64.ActiveCfg = Debug|Win32
+		{A5DD0702-21D4-4B63-91AB-FCA02F8478BB}.Release|ARM.ActiveCfg = Release|Win32
+		{A5DD0702-21D4-4B63-91AB-FCA02F8478BB}.Release|Win32.ActiveCfg = Release|Win32
+		{A5DD0702-21D4-4B63-91AB-FCA02F8478BB}.Release|Win32.Build.0 = Release|Win32
+		{A5DD0702-21D4-4B63-91AB-FCA02F8478BB}.Release|x64.ActiveCfg = Release|Win32
+		{550B0A3C-7086-4F05-A851-ECF38C53D63F}.Debug|ARM.ActiveCfg = Debug|Win32
+		{550B0A3C-7086-4F05-A851-ECF38C53D63F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{550B0A3C-7086-4F05-A851-ECF38C53D63F}.Debug|Win32.Build.0 = Debug|Win32
+		{550B0A3C-7086-4F05-A851-ECF38C53D63F}.Debug|x64.ActiveCfg = Debug|Win32
+		{550B0A3C-7086-4F05-A851-ECF38C53D63F}.Release|ARM.ActiveCfg = Release|Win32
+		{550B0A3C-7086-4F05-A851-ECF38C53D63F}.Release|Win32.ActiveCfg = Release|Win32
+		{550B0A3C-7086-4F05-A851-ECF38C53D63F}.Release|Win32.Build.0 = Release|Win32
+		{550B0A3C-7086-4F05-A851-ECF38C53D63F}.Release|x64.ActiveCfg = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="base">
+      <UniqueIdentifier>{ddf97bb3-f760-462e-9869-4fe11dfaba33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="syntax">
+      <UniqueIdentifier>{ea84014f-8db6-4390-9aef-f4f00bd06c34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="variant_length_data_decoder">
+      <UniqueIdentifier>{07718cab-e0c4-4ec3-a7e5-9cce08a765f8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="hevc_decoder.h" />
+    <ClInclude Include="frame.h" />
+    <ClInclude Include="hevc_decoder_def.h" />
+    <ClInclude Include="base\basic_types.h">
+      <Filter>base</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="hevc_decoder.cpp" />
+    <ClCompile Include="frame.cpp" />
+  </ItemGroup>
+</Project>
