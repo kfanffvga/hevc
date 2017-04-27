@@ -40,6 +40,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)source\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
@@ -74,13 +75,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="base\basic_types.h" />
+    <ClInclude Include="base\stream\bit_stream.h" />
     <ClInclude Include="frame.h" />
     <ClInclude Include="hevc_decoder.h" />
     <ClInclude Include="hevc_decoder_def.h" />
+    <ClInclude Include="syntax\memory\memory_pool.h" />
+    <ClInclude Include="syntax\nal_unit.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="base\stream\bit_stream.cpp" />
     <ClCompile Include="frame.cpp" />
     <ClCompile Include="hevc_decoder.cpp" />
+    <ClCompile Include="syntax\memory\memory_pool.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
