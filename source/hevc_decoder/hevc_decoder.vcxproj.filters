@@ -10,9 +10,6 @@
     <Filter Include="variant_length_data_decoder">
       <UniqueIdentifier>{07718cab-e0c4-4ec3-a7e5-9cce08a765f8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="syntax\memory">
-      <UniqueIdentifier>{bdfd745b-04b1-40b0-a955-8ea342b49035}</UniqueIdentifier>
-    </Filter>
     <Filter Include="base\stream">
       <UniqueIdentifier>{5e4f232a-83e6-4722-969e-083b4a148ba1}</UniqueIdentifier>
     </Filter>
@@ -24,24 +21,21 @@
     <ClInclude Include="base\basic_types.h">
       <Filter>base</Filter>
     </ClInclude>
-    <ClInclude Include="syntax\memory\memory_pool.h">
-      <Filter>syntax\memory</Filter>
-    </ClInclude>
-    <ClInclude Include="syntax\nal_unit.h">
-      <Filter>syntax</Filter>
-    </ClInclude>
     <ClInclude Include="base\stream\bit_stream.h">
       <Filter>base\stream</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\nal_organizer.h">
+      <Filter>syntax</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
     <ClCompile Include="frame.cpp" />
-    <ClCompile Include="syntax\memory\memory_pool.cpp">
-      <Filter>syntax\memory</Filter>
-    </ClCompile>
     <ClCompile Include="base\stream\bit_stream.cpp">
       <Filter>base\stream</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\nal_organizer.cpp">
+      <Filter>syntax</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
