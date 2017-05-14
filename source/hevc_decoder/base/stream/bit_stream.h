@@ -7,12 +7,14 @@
 class BitStream
 {
 public:
-    BitStream(std::unique_ptr<int8[]>& data, int length);
+    BitStream(std::unique_ptr<int8[]> data, int length);
     ~BitStream();
 
     uint32 Read(int length);
-    bool Seek(int position,  int byte_inner);
+    bool Seek(int byte_position, int bit_position);
     int GetSize();
+    int GetBytePosition();
+    int GetBitPosition();
 
 private:
     inline int ReadBitInByte(int length, uint8* read_result);
