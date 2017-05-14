@@ -81,6 +81,7 @@
     <ClInclude Include="hevc_decoder.h" />
     <ClInclude Include="hevc_decoder_def.h" />
     <ClInclude Include="syntax\nal_organizer.h" />
+    <ClInclude Include="syntax\nal_unit.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\stream\bit_stream.cpp" />

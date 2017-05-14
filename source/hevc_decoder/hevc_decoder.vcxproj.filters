@@ -27,6 +27,9 @@
     <ClInclude Include="syntax\nal_organizer.h">
       <Filter>syntax</Filter>
     </ClInclude>
+    <ClInclude Include="syntax\nal_unit.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />

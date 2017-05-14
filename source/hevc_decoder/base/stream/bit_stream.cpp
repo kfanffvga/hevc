@@ -3,13 +3,13 @@
 #include <assert.h>
 #include <algorithm>
 
-BitStream::BitStream(std::unique_ptr<int8[]> data, int length)
-    : data_(std::move(data))
+BitStream::BitStream(const int8* data, int length)
+    : data_(data)
     , byte_inner_sequence_(0)
     , current_pos_ptr_(nullptr)
     , end_ptr_(nullptr)
 {
-    current_pos_ptr_ = data_.get();
+    current_pos_ptr_ = data_;
     end_ptr_ = current_pos_ptr_ + (length - 1) * sizeof(int8);
 }
 
@@ -37,7 +37,7 @@ uint32 BitStream::Read(int length)
 
 int BitStream::GetSize()
 {
-    return (end_ptr_ - data_.get());
+    return (end_ptr_ - data_);
 }
 
 int BitStream::ReadBitInByte(int length, uint8* read_result)
@@ -67,14 +67,14 @@ bool BitStream::Seek(int byte_position, int bit_position)
         (bit_position < 0) && (bit_position > 7))
         return false;
 
-    current_pos_ptr_ = data_.get() + byte_position;
+    current_pos_ptr_ = data_ + byte_position;
     byte_inner_sequence_ = bit_position;
     return true;
 }
 
 int BitStream::GetBytePosition()
 {
-    return (current_pos_ptr_ - data_.get());
+    return (current_pos_ptr_ - data_);
 }
 
 int BitStream::GetBitPosition()
