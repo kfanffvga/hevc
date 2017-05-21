@@ -1,0 +1,236 @@
+﻿#include "hevc_decoder/base/frame_partition.h"
+
+#include "hevc_decoder/base/math.h"
+#include "hevc_decoder/base/frame_syntax_context.h"
+
+using std::vector;
+
+FramePartition::FramePartition(uint32 frame_width, uint32 frame_height)
+    : frame_height_(frame_height)
+    , frame_width_(frame_width)
+    , ctb_log2_size_y_(0)
+    , min_tb_log2_size_y_(0)
+    , initialzed_(false)
+    , tile_and_raster_partition_info_()
+    , transform_block_partition_info_()
+{
+
+}
+
+FramePartition::~FramePartition()
+{
+
+}
+
+bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols, 
+                                          uint32 num_tile_rows, 
+                                          uint32 ctb_log2_size_y, 
+                                          uint32 min_tb_log2_size_y)
+{
+    if ((0 == num_tile_rows) || (0 == num_tile_cols))
+        return false;
+
+    uint32 tile_width = frame_width_ / num_tile_cols;
+    vector<uint32> tile_cols_width;
+    tile_cols_width.resize(num_tile_cols);
+    for (auto& width : tile_cols_width)
+        width = tile_width;
+
+    uint32 tile_height = frame_height_ / num_tile_rows;
+    vector<uint32> tile_rows_height;
+    tile_rows_height.resize(num_tile_rows);
+    for (auto& height : tile_rows_height)
+        height = tile_height;
+
+    return Init(tile_cols_width, tile_rows_height, ctb_log2_size_y, 
+                min_tb_log2_size_y);
+}
+
+ bool FramePartition::Init(const vector<uint32>& tile_cols_width, 
+                           const vector<uint32>& tile_rows_height, 
+                           uint32 ctb_log2_size_y, uint32 min_tb_log2_size_y)
+{
+    if (tile_cols_width.empty() || tile_rows_height.empty())
+        return false;
+
+    if (!ctb_log2_size_y || !min_tb_log2_size_y) 
+        return false;
+
+    vector<uint32> absolute_tile_width;
+    uint32 base = 0;
+    for (const auto& i : tile_cols_width)
+    {
+        base += i;
+        absolute_tile_width.push_back(base);
+    }
+    
+    base = 0;
+    vector<uint32> absolute_tile_height;
+    for (const auto& i : tile_rows_height)
+    {
+        base += i;
+        absolute_tile_height.push_back(base);
+    }
+
+    uint32 tile_index = 0, tile_begin_x = 0, tile_begin_y = 0;
+    uint32 ctbs_per_row = 
+        UpAlign(frame_width_, ctb_log2_size_y) >> ctb_log2_size_y;
+    uint32 tile_scan_index = 0;
+    for (const auto& tile_end_y : absolute_tile_height)
+    {
+        for (const auto& tile_end_x : absolute_tile_width)
+        {
+            uint32 end_x = tile_end_x == frame_width_ ? 
+                UpAlign(tile_end_x, ctb_log2_size_y) : tile_end_x;
+
+            uint32 end_y = tile_end_y == frame_height_ ?
+                UpAlign(tile_end_y, ctb_log2_size_y) : tile_end_y;
+
+            InitSingleTilePartition(tile_begin_x, tile_begin_y, end_x, end_y, 
+                                    tile_index, ctb_log2_size_y, ctbs_per_row,
+                                    &tile_scan_index);
+
+            tile_begin_x = tile_end_x;
+            tile_begin_y = tile_end_y;
+            ++tile_index;
+        }
+    }
+
+    InitTransformBlockPartition(min_tb_log2_size_y, ctb_log2_size_y);
+    min_tb_log2_size_y_ = min_tb_log2_size_y;
+    ctb_log2_size_y_ = ctb_log2_size_y;
+    initialzed_ = true;
+    return true;
+}
+
+ void FramePartition::InitSingleTilePartition(uint32 tile_begin_x, 
+                                              uint32 tile_begin_y, 
+                                              uint32 tile_end_x, 
+                                              uint32 tile_end_y, 
+                                              uint32 tile_index, 
+                                              uint32 ctb_log2_size_y,
+                                              uint32 ctbs_per_row,
+                                              uint32* tile_scan_index)
+ {
+     uint32 block_tile_scan_index = 0;
+     uint32 ctb_size_y = 1 << ctb_log2_size_y;
+     for (uint32 y = tile_begin_y; y < tile_end_y; y += ctb_size_y)
+     {
+         uint32 row_begin_index = (y >> ctb_log2_size_y) * ctbs_per_row;
+         for (uint32 x = tile_begin_x; x < tile_end_x; x += ctb_size_y)
+         {
+             uint32 raster_scan_index = (x >> ctb_log2_size_y) + row_begin_index;
+             
+             CodedTreeBlockPositionInfo info = 
+             {
+                 {x, y}, raster_scan_index, *tile_scan_index, tile_index
+             };
+             tile_and_raster_partition_info_.insert(info);
+             ++*tile_scan_index;
+         }
+     }
+ }
+
+ void FramePartition::InitTransformBlockPartition(uint32 ctb_log2_size_y, 
+                                                  uint32 min_tb_log2_size_y)
+ {
+     // Fix Me 对齐问题,此处没考虑
+     if (ctb_log2_size_y < min_tb_log2_size_y)
+         return;
+
+     auto& tile_scan_values = 
+         tile_and_raster_partition_info_.get<FramePartition::TileScanIndex>();
+     uint32 log2_min_tbs_per_ctb = ctb_log2_size_y - min_tb_log2_size_y;
+     uint32 ctb_width_in_min_tbs = 1 << log2_min_tbs_per_ctb;
+     for (const auto& i : tile_scan_values)
+     {
+         uint32 tb_index = i.block_tile_scan_index << log2_min_tbs_per_ctb;
+         for (uint32 x = 0; x < ctb_width_in_min_tbs; ++x)
+         {
+             for (uint32 y = 0; y < ctb_width_in_min_tbs; ++y)
+             {
+                 uint32 tb_index_of_current_ctb = 0;
+                 for (uint32 j = 0; j < log2_min_tbs_per_ctb; ++j)
+                 {
+                     uint32 v = 1 << j;
+                     if ((v > x) && (v > y))
+                         break;
+
+                     tb_index_of_current_ctb |= 
+                         ((((y & v) << 1) | (x & v)) << j);
+                 }
+                 tb_index += tb_index_of_current_ctb;
+
+                 TransformBlockPositionInfo info = 
+                 {
+                     {x << min_tb_log2_size_y, y << min_tb_log2_size_y},
+                     tb_index, i.block_raster_scan_index, 
+                     i.block_tile_scan_index, i.tile_index
+                 };
+                 transform_block_partition_info_.insert(info);
+             }
+         }
+     }
+ }
+
+ uint32 FramePartition::RasterScanToTileScan(uint32 index)
+ {
+    auto& raster_scan_values = 
+        tile_and_raster_partition_info_.get<FramePartition::RasterScanIndex>();
+     
+    auto begin = raster_scan_values.find(index);
+    if (begin != raster_scan_values.end())
+        return begin->block_tile_scan_index;
+
+    assert(false && "不应该出现raster scan 与 tile scan 不对应的情况");
+    return 0;
+ }
+
+ bool FramePartition::IsZScanOrderNeighbouringBlockAvailable(
+     const Coordinate& current_block, const Coordinate& neighbouring_block,
+     const IFrameSyntaxContext* frame_context)
+ {
+    if (!initialzed_ || !frame_context)
+        return false;
+
+    if ((current_block.x > frame_width_) || (current_block.y > frame_height_) ||
+        (neighbouring_block.x > frame_width_) || 
+        (neighbouring_block.y > frame_height_))
+        return false;
+
+    Coordinate c = { current_block.x >> min_tb_log2_size_y_, 
+                    current_block.y >> min_tb_log2_size_y_ };
+
+    auto& coordinate_values = 
+        transform_block_partition_info_.get<FramePartition::CoordinateKey>();
+    auto tb_of_current_block = coordinate_values.find(c);
+    if (coordinate_values.end() == tb_of_current_block)
+        return false;
+
+    c.x = neighbouring_block.x >> min_tb_log2_size_y_;
+    c.y = neighbouring_block.y >> min_tb_log2_size_y_;
+
+    auto tb_of_neighbouring_block = coordinate_values.find(c);
+    if (coordinate_values.end() == tb_of_neighbouring_block)
+        return false;
+
+    if (tb_of_neighbouring_block->index > tb_of_current_block->index)
+        return false;
+
+    // 两个块必须在同一个tile里
+    if (tb_of_current_block->belong_to_tile_index != 
+        tb_of_neighbouring_block->belong_to_tile_index)
+        return false;
+
+    uint32 slice_address_of_current_block = 
+        frame_context->GetSliceAddressByRasterScanBlockIndex(
+            tb_of_current_block->belong_to_raster_scan_index);
+
+    uint32 slice_address_of_neighbouring_block =
+        frame_context->GetSliceAddressByRasterScanBlockIndex(
+            tb_of_neighbouring_block->belong_to_raster_scan_index);
+    
+    // 两个块必须在同一个slice segment里
+    return slice_address_of_current_block == slice_address_of_neighbouring_block;
+ }
+

@@ -13,5 +13,5 @@ NalOrganizer::~NalOrganizer()
 
 bool NalOrganizer::Decode(const int8* data, int length)
 {
-
+    return false;
 }

@@ -40,7 +40,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IntDir>$(SolutionDir)$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)source;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)source;$(BOOST_DIR);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IntDir>$(SolutionDir)$(Configuration)\obj\$(ProjectName)\</IntDir>
@@ -76,6 +76,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="base\basic_types.h" />
+    <ClInclude Include="base\frame_partition.h" />
+    <ClInclude Include="base\frame_syntax_context.h" />
+    <ClInclude Include="base\math.h" />
     <ClInclude Include="base\stream\bit_stream.h" />
     <ClInclude Include="frame.h" />
     <ClInclude Include="hevc_decoder.h" />
@@ -84,6 +87,7 @@
     <ClInclude Include="syntax\nal_unit.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="base\frame_partition.cpp" />
     <ClCompile Include="base\stream\bit_stream.cpp" />
     <ClCompile Include="frame.cpp" />
     <ClCompile Include="hevc_decoder.cpp" />

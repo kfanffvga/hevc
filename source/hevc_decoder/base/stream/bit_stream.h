@@ -7,7 +7,7 @@
 class BitStream
 {
 public:
-    BitStream(int8* data, int length);
+    BitStream(const int8* data, int length);
     ~BitStream();
 
     uint32 Read(int length);
@@ -19,10 +19,10 @@ public:
 private:
     inline int ReadBitInByte(int length, uint8* read_result);
     
-    int8* data_;
+    const int8* data_;
     int byte_inner_sequence_;
-    int8* current_pos_ptr_;
-    int8* end_ptr_;
+    const int8* current_pos_ptr_;
+    const int8* end_ptr_;
 };
 
 #endif

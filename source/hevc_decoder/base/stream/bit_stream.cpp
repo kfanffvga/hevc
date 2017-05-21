@@ -6,11 +6,10 @@
 BitStream::BitStream(const int8* data, int length)
     : data_(data)
     , byte_inner_sequence_(0)
-    , current_pos_ptr_(nullptr)
-    , end_ptr_(nullptr)
+    , current_pos_ptr_(data_)
+    , end_ptr_(data_ + length)
 {
-    current_pos_ptr_ = data_;
-    end_ptr_ = current_pos_ptr_ + (length - 1) * sizeof(int8);
+    //end_ptr_ = current_pos_ptr_ + (length - 1) * sizeof(int8);
 }
 
 BitStream::~BitStream()

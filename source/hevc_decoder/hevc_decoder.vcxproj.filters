@@ -27,8 +27,17 @@
     <ClInclude Include="syntax\nal_organizer.h">
       <Filter>syntax</Filter>
     </ClInclude>
+    <ClInclude Include="base\frame_partition.h">
+      <Filter>base</Filter>
+    </ClInclude>
     <ClInclude Include="syntax\nal_unit.h">
       <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="base\math.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\frame_syntax_context.h">
+      <Filter>base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -39,6 +48,9 @@
     </ClCompile>
     <ClCompile Include="syntax\nal_organizer.cpp">
       <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="base\frame_partition.cpp">
+      <Filter>base</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

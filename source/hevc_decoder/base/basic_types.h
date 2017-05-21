@@ -10,6 +10,12 @@ typedef unsigned int uint32;
 typedef __int64 int64;
 typedef unsigned __int64 uint64;
 
+struct Coordinate
+{
+    uint32 x;
+    uint32 y;
+};
+
 #pragma pack(push, 1)
 struct int24
 {
