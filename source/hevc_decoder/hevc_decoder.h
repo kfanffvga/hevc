@@ -8,6 +8,7 @@
 #include "hevc_decoder/hevc_decoder.h"
 
 class Frame;
+class NalOrganizer;
 enum HEVC_ERROR;
 
 class HEVCDecoder
@@ -26,6 +27,6 @@ public:
     void Close();
 
 private:
-
+    std::unique_ptr<NalOrganizer> organizer_;
 };
 #endif

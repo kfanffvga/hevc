@@ -1,11 +1,13 @@
 ﻿#include "hevc_decoder/hevc_decoder.h"
 
 #include "hevc_decoder/hevc_decoder_def.h"
+#include "hevc_decoder/syntax/nal_organizer.h"
 
 using std::unique_ptr;
 using std::list;
 
 HEVCDecoder::HEVCDecoder()
+    : organizer_(new NalOrganizer())
 {
 
 }
@@ -22,7 +24,8 @@ bool HEVCDecoder::Init(uint32 thread_count)
 
 HEVC_ERROR HEVCDecoder::Decode(const int8* buffer, uint32 len, 
                                list<unique_ptr<Frame>>* frames)
-{
+{    
+    organizer_->Decode(buffer, len);
     return DECODE_SUCCESS;
 }
 
