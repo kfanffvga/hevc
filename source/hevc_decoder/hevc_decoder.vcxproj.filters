@@ -39,6 +39,15 @@
     <ClInclude Include="base\frame_syntax_context.h">
       <Filter>base</Filter>
     </ClInclude>
+    <ClInclude Include="syntax\frame_syntax.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\slice_syntax.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\slice_segment_syntax.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -51,6 +60,15 @@
     </ClCompile>
     <ClCompile Include="base\frame_partition.cpp">
       <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\frame_syntax.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\slice_syntax.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\slice_segment_syntax.cpp">
+      <Filter>syntax</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
