@@ -76,9 +76,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="base\basic_types.h" />
+    <ClInclude Include="base\coding_tree_block_context.h" />
     <ClInclude Include="base\frame_partition.h" />
     <ClInclude Include="base\frame_syntax_context.h" />
     <ClInclude Include="base\math.h" />
+    <ClInclude Include="base\slice_segment_context.h" />
     <ClInclude Include="base\stream\bit_stream.h" />
     <ClInclude Include="frame.h" />
     <ClInclude Include="hevc_decoder.h" />
@@ -88,6 +90,9 @@
     <ClInclude Include="syntax\nal_unit.h" />
     <ClInclude Include="syntax\slice_segment_syntax.h" />
     <ClInclude Include="syntax\slice_syntax.h" />
+    <ClInclude Include="variant_length_data_decoder\cabac_context_storage.h" />
+    <ClInclude Include="variant_length_data_decoder\cabac_context_types.h" />
+    <ClInclude Include="variant_length_data_decoder\cabac_reader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\frame_partition.cpp" />
@@ -98,6 +103,8 @@
     <ClCompile Include="syntax\nal_organizer.cpp" />
     <ClCompile Include="syntax\slice_segment_syntax.cpp" />
     <ClCompile Include="syntax\slice_syntax.cpp" />
+    <ClCompile Include="variant_length_data_decoder\cabac_context_storage.cpp" />
+    <ClCompile Include="variant_length_data_decoder\cabac_reader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

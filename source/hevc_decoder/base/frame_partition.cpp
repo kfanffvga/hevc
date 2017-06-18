@@ -30,27 +30,28 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
     if ((0 == num_tile_rows) || (0 == num_tile_cols))
         return false;
 
-    uint32 tile_width = frame_width_ / num_tile_cols;
-    vector<uint32> tile_cols_width;
-    tile_cols_width.resize(num_tile_cols);
-    for (auto& width : tile_cols_width)
-        width = tile_width;
+    uint32 tile_width_in_ctb = (frame_width_ >> ctb_log2_size_y) / num_tile_cols;
+    vector<uint32> tile_cols_width_in_ctb;
+    tile_cols_width_in_ctb.resize(num_tile_cols);
+    for (auto& width : tile_cols_width_in_ctb)
+        width = tile_width_in_ctb;
 
-    uint32 tile_height = frame_height_ / num_tile_rows;
-    vector<uint32> tile_rows_height;
-    tile_rows_height.resize(num_tile_rows);
-    for (auto& height : tile_rows_height)
-        height = tile_height;
+    uint32 tile_height_in_ctb = 
+        (frame_height_ >> ctb_log2_size_y) / num_tile_rows;
+    vector<uint32> tile_rows_height_in_ctb;
+    tile_rows_height_in_ctb.resize(num_tile_rows);
+    for (auto& height : tile_rows_height_in_ctb)
+        height = tile_height_in_ctb;
 
-    return Init(tile_cols_width, tile_rows_height, ctb_log2_size_y, 
-                min_tb_log2_size_y);
+    return Init(tile_cols_width_in_ctb, tile_rows_height_in_ctb, 
+                ctb_log2_size_y, min_tb_log2_size_y);
 }
 
- bool FramePartition::Init(const vector<uint32>& tile_cols_width, 
-                           const vector<uint32>& tile_rows_height, 
+ bool FramePartition::Init(const vector<uint32>& tile_cols_width_in_ctb, 
+                           const vector<uint32>& tile_rows_height_in_ctb, 
                            uint32 ctb_log2_size_y, uint32 min_tb_log2_size_y)
 {
-    if (tile_cols_width.empty() || tile_rows_height.empty())
+    if (tile_cols_width_in_ctb.empty() || tile_rows_height_in_ctb.empty())
         return false;
 
     if (!ctb_log2_size_y || !min_tb_log2_size_y) 
@@ -58,17 +59,17 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
 
     vector<uint32> absolute_tile_width;
     uint32 base = 0;
-    for (const auto& i : tile_cols_width)
+    for (const auto& i : tile_cols_width_in_ctb)
     {
-        base += i;
+        base += i << ctb_log2_size_y;
         absolute_tile_width.push_back(base);
     }
     
     base = 0;
     vector<uint32> absolute_tile_height;
-    for (const auto& i : tile_rows_height)
+    for (const auto& i : tile_rows_height_in_ctb)
     {
-        base += i;
+        base += i << ctb_log2_size_y;
         absolute_tile_height.push_back(base);
     }
 
@@ -112,6 +113,7 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
                                               uint32 ctbs_per_row,
                                               uint32* tile_scan_index)
  {
+     bool is_first_block_in_tile = true;
      uint32 block_tile_scan_index = 0;
      uint32 ctb_size_y = 1 << ctb_log2_size_y;
      for (uint32 y = tile_begin_y; y < tile_end_y; y += ctb_size_y)
@@ -123,8 +125,10 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
              
              CodedTreeBlockPositionInfo info = 
              {
-                 {x, y}, raster_scan_index, *tile_scan_index, tile_index
+                 {x, y}, raster_scan_index, *tile_scan_index, tile_index,
+                 is_first_block_in_tile
              };
+             is_first_block_in_tile = false;
              tile_and_raster_partition_info_.insert(info);
              ++*tile_scan_index;
          }
@@ -202,7 +206,8 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
                     current_block.y >> min_tb_log2_size_y_ };
 
     auto& coordinate_values = 
-        transform_block_partition_info_.get<FramePartition::CoordinateKey>();
+        transform_block_partition_info_.get<CoordinateKey>();
+
     auto tb_of_current_block = coordinate_values.find(c);
     if (coordinate_values.end() == tb_of_current_block)
         return false;
@@ -232,5 +237,28 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
     
     // 两个块必须在同一个slice segment里
     return slice_address_of_current_block == slice_address_of_neighbouring_block;
+ }
+
+ uint32 FramePartition::GetTileIndex(const Coordinate& block)
+ {
+     auto& coordinate_values = 
+         tile_and_raster_partition_info_.get<CoordinateKey>();
+
+     auto block_info = coordinate_values.find(block);
+     if (coordinate_values.end() == block_info)
+         return static_cast<uint32>(-1);
+
+     return block_info->tile_index;
+ }
+
+ bool FramePartition::IsTheFirstCTBInTile(const Coordinate& block)
+ {
+     auto& coordinate_values = 
+         tile_and_raster_partition_info_.get<CoordinateKey>();
+     auto block_info = coordinate_values.find(block);
+     if (coordinate_values.end() == block_info)
+         return false;
+
+     return block_info->is_first_block_in_tile;
  }
 

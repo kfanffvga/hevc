@@ -19,13 +19,16 @@ public:
     bool InitOnUniformSpacing(uint32 num_tile_cols, uint32 num_tile_rows,
                               uint32 ctb_log2_size_y, uint32 min_tb_log2_size_y);
 
-    bool Init(const std::vector<uint32>& tile_cols_width, 
-              const std::vector<uint32>& tile_rows_height, 
+    bool Init(const std::vector<uint32>& tile_cols_width_in_ctb, 
+              const std::vector<uint32>& tile_rows_height_in_ctb, 
               uint32 ctb_log2_size_y, uint32 min_tb_log2_size_y);
 
     uint32 RasterScanToTileScan(uint32 index);
+    uint32 GetTileIndex(const Coordinate& block);
+    bool IsTheFirstCTBInTile(const Coordinate& block);
 
-    // 6.4.1 判断邻居块对于当前块来说是否可用
+    // 6.4.1 判断邻居块对于当前块来说是否可用, 判断两个是否为同一个tile,同一个slice,
+    // 并且当前块为邻居块的后面的可可用块
     bool IsZScanOrderNeighbouringBlockAvailable(
         const Coordinate& current_block, const Coordinate& neighbouring_block,
         const IFrameSyntaxContext* frame_context);
@@ -37,6 +40,7 @@ private:
         uint32 block_raster_scan_index;
         uint32 block_tile_scan_index;
         uint32 tile_index;
+        bool is_first_block_in_tile;
     };
 
     struct TransformBlockPositionInfo

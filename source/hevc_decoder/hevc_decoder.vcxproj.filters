@@ -48,6 +48,21 @@
     <ClInclude Include="syntax\slice_segment_syntax.h">
       <Filter>syntax</Filter>
     </ClInclude>
+    <ClInclude Include="variant_length_data_decoder\cabac_context_storage.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="variant_length_data_decoder\cabac_context_types.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="variant_length_data_decoder\cabac_reader.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="base\slice_segment_context.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\coding_tree_block_context.h">
+      <Filter>base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -69,6 +84,12 @@
     </ClCompile>
     <ClCompile Include="syntax\slice_segment_syntax.cpp">
       <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="variant_length_data_decoder\cabac_context_storage.cpp">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="variant_length_data_decoder\cabac_reader.cpp">
+      <Filter>variant_length_data_decoder</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
