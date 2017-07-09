@@ -109,7 +109,7 @@ void CABACReader::InitReader(const Coordinate& current_ctb)
 {
     InitContext(current_ctb);
     current_range_ = 510;
-    offset_ = static_cast<uint16>(stream_->Read(9));
+    offset_ = stream_->Read<uint16>(9);
 }
 
 bool CABACReader::FinishToReadSliceSegment(uint32* index_of_slice_segment_pool)
@@ -175,22 +175,9 @@ void CABACReader::InitContext(const Coordinate& current_ctb)
     context_ = cabac_context_storage_->GetDefaultContext(qp);
 }
 
-uint8 CABACReader::ReadBit(bool is_bypass, SyntaxElementName syntax_name, 
-                           uint32 ctxidx)
-{
-    if (is_bypass)
-        return ReadBypassBit();
-
-    // fix me : 0 == ctxidx不需要用?
-    if ((TERMINATER_FLAG == syntax_name) && (0 == ctxidx))
-        return ReadTerminateBit();
-
-   return ReadNormalDecisionBit(syntax_name, ctxidx);
-}
-
 uint8 CABACReader::ReadBypassBit()
 {
-   offset_ = (offset_ << 1) | stream_->Read(1);
+   offset_ = (offset_ << 1) | stream_->Read<uint16>(1);
    if (offset_ > current_range_)
    {
        offset_ -= current_range_;
@@ -209,8 +196,7 @@ uint8 CABACReader::ReadTerminateBit()
     return 0;
 }
 
-uint8 CABACReader::ReadNormalDecisionBit(SyntaxElementName syntax_name, 
-                                         uint32 ctxidx)
+uint8 CABACReader::ReadNormalBit(SyntaxElementName syntax_name, uint32 ctxidx)
 {
     uint32 q = (current_range_ >> 6) & 3;
     ContextItem& context_item = context_.syntax_context[syntax_name][ctxidx];
@@ -233,10 +219,9 @@ uint8 CABACReader::ReadNormalDecisionBit(SyntaxElementName syntax_name,
         context_item.state_idx = trans_idx_mps[context_item.state_idx];
         current_range_ = mps_range;
     }
-    if (current_range_ > 256)
-        return val;
+    if (current_range_ <= 256)
+        Renormalize();
 
-    Renormalize();
     return val;
 
 }
@@ -244,5 +229,5 @@ uint8 CABACReader::ReadNormalDecisionBit(SyntaxElementName syntax_name,
 void CABACReader::Renormalize()
 {
     current_range_ <<= 1;
-    offset_ = (offset_ << 1) | stream_->Read(1);
+    offset_ = (offset_ << 1) | stream_->Read<uint16>(1);
 }

@@ -19,14 +19,12 @@ enum SliceType
 class CABACContextStorage
 {
 public:
-    typedef std::array<uint32, SYNTAX_ELEMENT_NAME_COUNT> LowestContextIDs;
-
     CABACContextStorage();
     ~CABACContextStorage();
 
     void Init();
     int GetInitType(SliceType slice_type, bool is_cabac_init);
-    LowestContextIDs GetLowestContextIDs(int init_type);
+    inline int GetLowestContextID(SyntaxElementName name, int init_type) const;
 
     CABACContext GetDefaultContext(uint32 qp);
     CABACContext GetCTBStorageContext(uint32 ctb_storage_id);
@@ -44,7 +42,6 @@ private:
 
     // index is qp
     std::vector<CABACContext> default_contexts_;
-    std::map<int, LowestContextIDs> lowest_context_ids_;
 
     // index is value that returned from SaveXXXStorageContext
     std::vector<CABACContext> tile_contexts_;

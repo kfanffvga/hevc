@@ -10,6 +10,9 @@
     <Filter Include="base\stream">
       <UniqueIdentifier>{5e4f232a-83e6-4722-969e-083b4a148ba1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="variant_length_data_decoder">
+      <UniqueIdentifier>{9d6cdb04-b389-4805-8471-6a38afe7349c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hevc_decoder.h" />
@@ -33,8 +36,42 @@
     <ClInclude Include="base\stream\golomb_reader.h">
       <Filter>base\stream</Filter>
     </ClInclude>
-    <ClInclude Include="syntax\base_syntax.h" />
-    <ClInclude Include="syntax\profile_tier_level.h" />
+    <ClInclude Include="variant_length_data_decoder\cabac_context_storage.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="variant_length_data_decoder\cabac_context_types.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="variant_length_data_decoder\cabac_reader.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="variant_length_data_decoder\common_cabac_syntax_reader.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\base_syntax.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\frame_syntax.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\profile_tier_level.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\slice_segment_syntax.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\slice_syntax.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\syntax_manager.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\video_parameter_set.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="variant_length_data_decoder\end_of_slice_segment_flag_reader.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
     <ClInclude Include="syntax\profile_tier_level.h" />
     <ClInclude Include="syntax\syntax_manager.h" />
     <ClInclude Include="syntax\video_parameter_set.h" />
@@ -56,7 +93,36 @@
     <ClCompile Include="base\stream\golomb_reader.cpp">
       <Filter>base\stream</Filter>
     </ClCompile>
-    <ClCompile Include="syntax\profile_tier_level.cpp" />
+    <ClCompile Include="variant_length_data_decoder\cabac_context_storage.cpp">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="variant_length_data_decoder\cabac_reader.cpp">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\frame_syntax.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\profile_tier_level.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\slice_segment_syntax.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\slice_syntax.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\syntax_manager.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\video_parameter_set.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="variant_length_data_decoder\common_cabac_syntax_reader.cpp">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="variant_length_data_decoder\end_of_slice_segment_flag_reader.cpp">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClCompile>
     <ClCompile Include="syntax\profile_tier_level.cpp" />
     <ClCompile Include="syntax\syntax_manager.cpp" />
     <ClCompile Include="syntax\video_parameter_set.cpp" />

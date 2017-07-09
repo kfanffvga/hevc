@@ -1,11 +1,12 @@
 #include "hevc_decoder/base/stream/bit_stream.h"
 
+using std::min;
+
 BitStream::BitStream(const int8* data, int length)
     : data_(data)
     , byte_inner_sequence_(0)
     , current_pos_ptr_(data)
     , end_ptr_(data + length)
-    , length_(length)
 {
 }
 
@@ -17,7 +18,7 @@ BitStream::~BitStream()
 
 int BitStream::GetSize()
 {
-    return length_;
+    return end_ptr_ - data_;
 }
 
 bool BitStream::Seek(int byte_position, int bit_position)
@@ -43,8 +44,8 @@ int BitStream::GetBitPosition()
 
 int BitStream::ReadBitInByte(int length, int64* read_result)
 {
-    if (!read_result)
-        return 0;
+    if (!read_result || (current_pos_ptr_ == end_ptr_))
+        return -1;
 
     assert(byte_inner_sequence_ >= 0 && byte_inner_sequence_ < 8);
     int raw_bits = 8 - byte_inner_sequence_;
@@ -53,11 +54,11 @@ int BitStream::ReadBitInByte(int length, int64* read_result)
     uint8 mask = ((1 << read_reality_length) - 1) << offset;
     *read_result = (*current_pos_ptr_ & mask) >> offset;
     byte_inner_sequence_ += read_reality_length;
-    if (byte_inner_sequence_ >= 8)
+    if (8 == byte_inner_sequence_)
     {
         byte_inner_sequence_ = 0;
         if (current_pos_ptr_ < end_ptr_)
-            current_pos_ptr_++;
+            ++current_pos_ptr_;
     }
 
     return read_reality_length;

@@ -5,7 +5,7 @@
 using std::vector;
 using std::make_pair;
 
-const static vector<int> init_type_to_ctxidx[SYNTAX_ELEMENT_NAME_COUNT][3] = 
+const static vector<int> init_type_to_ctxidx[SYNTAX_ELEMENT_NAME_COUNT - 1][3] = 
 {
     {vector<int>{0}, vector<int>{1}, vector<int>{2}},
     {vector<int>{0}, vector<int>{1}, vector<int>{2}},
@@ -67,7 +67,7 @@ const static vector<int> init_type_to_ctxidx[SYNTAX_ELEMENT_NAME_COUNT][3] =
                  69,70,71}},
 
     {vector<int>{0,1,2,3,4,5}, vector<int>{6,7,8,9,10,11}, 
-     vector<int>{12,13,14,15,16,17}},
+     vector<int>{12,13,14,15,16,17}}
 };
 
 // 第一个索引是SyntaxElementName 第二个索引是ctx_idx
@@ -132,11 +132,11 @@ const static vector<vector<int>> init_values =
                 154,154,154,154,154,154,154,154},
 
     vector<int>{154,154,154,154,154,154}
+
 };
 
 CABACContextStorage::CABACContextStorage()
     : default_contexts_()
-    , lowest_context_ids_()
     , tile_contexts_()
     , slice_segment_contexts_()
 {
@@ -163,27 +163,6 @@ int CABACContextStorage::GetInitType(SliceType slice_type, bool is_cabac_init)
         return is_cabac_init ? 2 : 1;
 
     return is_cabac_init ? 1 : 2;
-}
-
-CABACContextStorage::LowestContextIDs 
-    CABACContextStorage::GetLowestContextIDs(int init_type)
-{
-    assert(init_type < 3);
-
-    auto context_ids = lowest_context_ids_.find(init_type);
-    if (context_ids != lowest_context_ids_.end())
-        return context_ids->second;
-
-    CABACContextStorage::LowestContextIDs lowest_context_ids;
-    for (uint32 e = 0; e < SYNTAX_ELEMENT_NAME_COUNT; ++e)
-    {
-        if (init_type_to_ctxidx[e][init_type].empty())
-            lowest_context_ids[e] = static_cast<uint32>(-1);
-
-        lowest_context_ids[e] = init_type_to_ctxidx[e][init_type][0];
-    }
-    lowest_context_ids_.insert(make_pair(init_type, lowest_context_ids));
-    return lowest_context_ids;
 }
 
 CABACContext CABACContextStorage::GetDefaultContext(uint32 qp)
@@ -246,7 +225,17 @@ void CABACContextStorage::InitByQuantizationParameter(uint32 qp)
                 prepare_context_state - 64 : 63 - prepare_context_state;
             context_of_syntax_element.push_back(item);
         }
+        
         context_of_qp.syntax_context.push_back(context_of_syntax_element);
     }
+    // end_of_slice_segment_flag 这个句法元素的概率不受量化参数影响
+    context_of_qp.syntax_context.push_back({{63, 0}});
     default_contexts_.push_back(context_of_qp);
+}
+
+int CABACContextStorage::GetLowestContextID(SyntaxElementName name, 
+                                            int init_type) const
+{
+    assert(!init_type_to_ctxidx[name][init_type].empty());
+    return init_type_to_ctxidx[name][init_type][0];
 }

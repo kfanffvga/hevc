@@ -58,6 +58,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>($solutionDir)\source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

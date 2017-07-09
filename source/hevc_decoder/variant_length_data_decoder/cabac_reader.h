@@ -22,15 +22,14 @@ public:
     bool FinishToReadInCTB(uint32* index_of_ctb_pool);
     bool FinishToReadSliceSegment(uint32* index_of_slice_segment_pool);
 
-    uint8 ReadBit(bool is_bypass, SyntaxElementName syntax_name, uint32 ctxidx);
+    uint8 ReadBypassBit();
+    uint8 ReadTerminateBit();
+    uint8 ReadNormalBit(SyntaxElementName syntax_name, uint32 ctxidx);
 
 private:
     void InitReader(const Coordinate& current_ctb);
     void InitContext(const Coordinate& current_ctb);
 
-    uint8 ReadBypassBit();
-    uint8 ReadTerminateBit();
-    uint8 ReadNormalDecisionBit(SyntaxElementName syntax_name, uint32 ctxidx);
     inline void Renormalize();
 
     CABACContextStorage* cabac_context_storage_;

@@ -7,8 +7,6 @@
 
 #include "hevc_decoder/base/basic_types.h"
 
-using std::min;
-
 class BitStream
 {
 public:
@@ -25,6 +23,9 @@ public:
         do
         {
             int read_bits = ReadBitInByte(remain_length, &read_result);
+            if (read_bits <= 0)
+                break;
+
             result = (result << read_bits) | read_result;
             remain_length -= read_bits;
         } while (remain_length > 0);
@@ -45,7 +46,6 @@ private:
     int byte_inner_sequence_;
     const int8* current_pos_ptr_;
     const int8* end_ptr_;
-    int length_;
 };
 
 #endif
