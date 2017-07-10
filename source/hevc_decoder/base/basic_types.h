@@ -23,6 +23,10 @@ struct int24
     unsigned char b;
     char c;
 
+    bool operator==(const int24& r) const
+    {
+        return (a == r.a) && (b == r.b) && (c == r.c);
+    }
 };
 #pragma pack(pop)
 

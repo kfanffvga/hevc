@@ -1,5 +1,6 @@
 #include "hevc_decoder/syntax/video_parameter_set.h"
 
+#include <boost/multi_array.hpp>
 #include <vector>
 
 #include "hevc_decoder/syntax/nal_unit.h"
@@ -8,6 +9,7 @@
 #include "hevc_decoder/syntax/profile_tier_level.h"
 
 using std::vector;
+using boost::multi_array;
 
 VideoParameterSet::VideoParameterSet(std::unique_ptr<NalUnit> nal_unit)
     : nal_unit_(std::move(nal_unit))
@@ -57,6 +59,41 @@ bool VideoParameterSet::Parser()
     }
 
     uint8 vps_max_layer_id = bit_stream->Read<uint8>(6);
+    uint64 vps_num_layer_sets = 0;
+    golom_reader.Read(&vps_num_layer_sets);
+    ++vps_num_layer_sets;
+    multi_array<bool, 2> layer_id_included(
+        boost::extents[vps_num_layer_sets][vps_max_layer_id]);
+    for (int i = 1; i <= vps_num_layer_sets; ++i)
+        for (int j = 0; j <= vps_max_layer_id; ++j)
+            layer_id_included[i][j] = bit_stream->ReadBool();
+
+    bool vps_timing_info_present = bit_stream->ReadBool();
+    if (vps_timing_info_present)
+    {
+        uint32 vps_num_units_in_tick = bit_stream->Read<uint32>(32);
+        uint32 vps_time_scale = bit_stream->Read<uint32>(32);
+        bool vps_poc_proportional_to_timing = bit_stream->ReadBool();
+        if (vps_poc_proportional_to_timing)
+        {
+            uint64 vps_num_ticks_poc_diff_one = 0;
+            golom_reader.Read(&vps_num_ticks_poc_diff_one);
+            ++vps_num_ticks_poc_diff_one;
+        }
+
+        uint64 vps_num_hrd_parameters = 0;
+        golom_reader.Read(&vps_num_hrd_parameters);
+        std::vector<uint64> hrd_layer_set_idx;
+        multi_array<bool, 1> cprms_present(boost::extents[vps_num_hrd_parameters]);
+        for (int i = 0; i < vps_num_hrd_parameters; ++i)
+        {
+            uint64 hrd_layer = 0;
+            golom_reader.Read(&hrd_layer);
+            hrd_layer_set_idx.push_back(hrd_layer);
+            if (i > 0)
+                cprms_present[i] = bit_stream->ReadBool();
+        }
+    }
 
     return true;
 }

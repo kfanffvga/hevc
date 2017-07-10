@@ -5,9 +5,9 @@
 #include <functional>
 
 #include "hevc_decoder/base/basic_types.h"
+#include "hevc_decoder/base/growing_buffer.h"
 
 class NalUnit;
-using std::unique_ptr;
 
 class NalOrganizer
 {
@@ -18,11 +18,9 @@ public:
     bool Decode(const int8* data, int length);
 
 private:
-    const int buffer_size_;
     int zero_count_;
-    int nal_unit_size_;
-    int nal_unit_length_;
-    unique_ptr<int8[]> nal_unit_data_;
+    int nal_unit_unused_length_;
+    GrowingBuffer<int8> raw_nal_unit_data_;
 };
 
 #endif

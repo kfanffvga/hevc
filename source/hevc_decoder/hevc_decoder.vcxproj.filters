@@ -35,6 +35,11 @@
     </ClInclude>
     <ClInclude Include="syntax\base_syntax.h" />
     <ClInclude Include="syntax\profile_tier_level.h" />
+    <ClInclude Include="syntax\profile_tier_level.h" />
+    <ClInclude Include="syntax\syntax_manager.h" />
+    <ClInclude Include="syntax\video_parameter_set.h" />
+    <ClInclude Include="syntax\hrd_parameters.h" />
+    <ClInclude Include="base\growing_buffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -52,5 +57,9 @@
       <Filter>base\stream</Filter>
     </ClCompile>
     <ClCompile Include="syntax\profile_tier_level.cpp" />
+    <ClCompile Include="syntax\profile_tier_level.cpp" />
+    <ClCompile Include="syntax\syntax_manager.cpp" />
+    <ClCompile Include="syntax\video_parameter_set.cpp" />
+    <ClCompile Include="syntax\hrd_parameters.cpp" />
   </ItemGroup>
 </Project>
