@@ -3,8 +3,7 @@
 #include <assert.h>
 
 #include "hevc_decoder/syntax/nal_unit.h"
-#include "hevc_decoder/syntax/syntax_manager.h"
-
+#include "hevc_decoder/syntax/syntax_dispatcher.h"
 
 using std::move;
 

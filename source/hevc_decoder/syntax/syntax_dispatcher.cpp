@@ -3,6 +3,7 @@
 #include "hevc_decoder/syntax/video_parameter_set.h"
 
 using std::unique_ptr;
+using std::move;
 
 SyntaxDispatcher::SyntaxDispatcher()
 {
@@ -23,8 +24,8 @@ bool SyntaxDispatcher::CreateSyntaxAndDispatch(unique_ptr<NalUnit> nal_unit)
     {
         case NalUnitType::VPS_NUT:
         {
-            unique_ptr<VideoParameterSet> vps(new VideoParameterSet(
-                std::move(nal_unit)));
+            unique_ptr<VideoParameterSet> vps(
+                new VideoParameterSet(move(nal_unit)));
             return vps->Parser();
             break;
         }

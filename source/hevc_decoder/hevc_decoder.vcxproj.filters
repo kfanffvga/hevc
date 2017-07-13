@@ -63,9 +63,6 @@
     <ClInclude Include="syntax\slice_syntax.h">
       <Filter>syntax</Filter>
     </ClInclude>
-    <ClInclude Include="syntax\syntax_manager.h">
-      <Filter>syntax</Filter>
-    </ClInclude>
     <ClInclude Include="syntax\video_parameter_set.h">
       <Filter>syntax</Filter>
     </ClInclude>
@@ -79,6 +76,12 @@
       <Filter>base</Filter>
     </ClInclude>
     <ClInclude Include="syntax\hrd_parameters.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\syntax_dispatcher.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\parameters_manager.h">
       <Filter>syntax</Filter>
     </ClInclude>
   </ItemGroup>
@@ -115,9 +118,6 @@
     <ClCompile Include="syntax\slice_syntax.cpp">
       <Filter>syntax</Filter>
     </ClCompile>
-    <ClCompile Include="syntax\syntax_manager.cpp">
-      <Filter>syntax</Filter>
-    </ClCompile>
     <ClCompile Include="variant_length_data_decoder\common_cabac_syntax_reader.cpp">
       <Filter>variant_length_data_decoder</Filter>
     </ClCompile>
@@ -131,6 +131,12 @@
       <Filter>syntax</Filter>
     </ClCompile>
     <ClCompile Include="syntax\hrd_parameters.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\syntax_dispatcher.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\parameters_manager.cpp">
       <Filter>syntax</Filter>
     </ClCompile>
   </ItemGroup>
