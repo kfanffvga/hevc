@@ -4,40 +4,25 @@
 GolombReadr::GolombReadr(BitStream* bit_stream)
     : bit_stream_(bit_stream)
 {
-
+    assert(bit_stream);
 }
 
 GolombReadr::~GolombReadr()
 {
-    bit_stream_ = nullptr;
+    
 }
 
-bool GolombReadr::Read(uint64* read_result)
+uint32 GolombReadr::ReadUnsignedValue()
 {
-    if (!bit_stream_)
-        return false;
-
-    int leading_zero_bits = 0;
+    int zero_bits = 0;
     while (!bit_stream_->Read<uint8>(1))
-        ++leading_zero_bits;
+        ++zero_bits;
 
-    int code_num = (1 << leading_zero_bits) - 1 + bit_stream_->Read<uint8>(
-        leading_zero_bits);
-
-    if (read_result)
-        *read_result = code_num;
-
-    return true;
+    return (1 << zero_bits) - 1 + bit_stream_->Read<uint32>(zero_bits);
 }
 
-bool GolombReadr::Read(int64* read_result)
+int32 GolombReadr::ReadSignedValue()
 {
-    if (!read_result)
-        return false;
-
-    int32 code_num = 0;
-    Read(reinterpret_cast<uint64*>(&code_num));
-    code_num >>= 1;
-    *read_result = (code_num & 0x01) ? (-code_num) : (code_num);
-    return true;
+    int32 code_num = static_cast<int32>(ReadUnsignedValue());
+    return (code_num & 0x01) ? (-(code_num >> 1)) : (code_num >> 1);
 }

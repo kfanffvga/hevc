@@ -11,8 +11,8 @@ public:
     GolombReadr(BitStream* bit_stream);
     ~GolombReadr();
 
-    bool Read(uint64* read_result);
-    bool Read(int64* read_result);
+    uint32 ReadUnsignedValue();
+    int32 ReadSignedValue();
 
 private:
     BitStream* bit_stream_;

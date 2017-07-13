@@ -75,8 +75,12 @@
     <ClInclude Include="syntax\profile_tier_level.h" />
     <ClInclude Include="syntax\syntax_manager.h" />
     <ClInclude Include="syntax\video_parameter_set.h" />
-    <ClInclude Include="syntax\hrd_parameters.h" />
-    <ClInclude Include="base\growing_buffer.h" />
+    <ClInclude Include="base\growing_buffer.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\hrd_parameters.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -114,9 +118,6 @@
     <ClCompile Include="syntax\syntax_manager.cpp">
       <Filter>syntax</Filter>
     </ClCompile>
-    <ClCompile Include="syntax\video_parameter_set.cpp">
-      <Filter>syntax</Filter>
-    </ClCompile>
     <ClCompile Include="variant_length_data_decoder\common_cabac_syntax_reader.cpp">
       <Filter>variant_length_data_decoder</Filter>
     </ClCompile>
@@ -126,6 +127,11 @@
     <ClCompile Include="syntax\profile_tier_level.cpp" />
     <ClCompile Include="syntax\syntax_manager.cpp" />
     <ClCompile Include="syntax\video_parameter_set.cpp" />
-    <ClCompile Include="syntax\hrd_parameters.cpp" />
+    <ClCompile Include="syntax\video_parameter_set.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\hrd_parameters.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
