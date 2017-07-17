@@ -13,9 +13,8 @@ using std::unique_ptr;
 using std::move;
 using boost::multi_array;
 
-VideoParameterSet::VideoParameterSet(unique_ptr<NalUnit> nal_unit)
-    : nal_unit_(move(nal_unit))
-    , profile_tier_level_(nullptr)
+VideoParameterSet::VideoParameterSet()
+    : profile_tier_level_(nullptr)
 {
 
 }
@@ -25,9 +24,8 @@ VideoParameterSet::~VideoParameterSet()
 
 }
 
-bool VideoParameterSet::Parser()
+bool VideoParameterSet::Parse(BitStream* bit_stream)
 {
-    BitStream* bit_stream = nal_unit_->GetBitSteam();
     if (!bit_stream)
         return false;
 
@@ -41,18 +39,19 @@ bool VideoParameterSet::Parser()
     if (!profile_tier_level_)
     {
         profile_tier_level_.reset(
-            new ProfileTierLevel(bit_stream, true, (vps_max_sub_layers - 1)));
+            new ProfileTierLevel(true, vps_max_sub_layers));
     }
 
-    profile_tier_level_->Parser();
-    bool vps_sub_layer_ordering_info_present = bit_stream->ReadBool();
+    profile_tier_level_->Parse(bit_stream);
+    bool is_vps_sub_layer_ordering_info_present = bit_stream->ReadBool();
     vector<uint64> vps_max_dec_pic_buffering;
     vector<uint64> vps_max_num_reorder_pics;
     vector<uint64> vps_max_latency_increase;
 
     GolombReadr golomb_reader(bit_stream);
-    for (int i = vps_sub_layer_ordering_info_present ? 0 : vps_max_sub_layers; 
-         i <= vps_max_sub_layers; ++i)
+    int sub_layer_start_index = 
+        is_vps_sub_layer_ordering_info_present ? 0 : vps_max_sub_layers;
+    for (int i = sub_layer_start_index; i <= vps_max_sub_layers; ++i)
     {
         vps_max_dec_pic_buffering.push_back(
             golomb_reader.ReadUnsignedValue() + 1);

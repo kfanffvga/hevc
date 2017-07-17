@@ -14,7 +14,7 @@ EndOfSliceSegmentFlagReader::~EndOfSliceSegmentFlagReader()
 }
 
 bool EndOfSliceSegmentFlagReader::Read()
-{
+{ 
     return !!ReadBit();
 }
 

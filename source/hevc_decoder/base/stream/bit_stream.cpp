@@ -70,3 +70,20 @@ bool BitStream::ReadBool()
     ReadBitInByte(1, &read_result);
     return !!read_result;
 }
+
+void BitStream::SkipBits(uint32 bits)
+{
+    uint32 bit_pos = byte_inner_sequence_ + bits;
+    uint32 skip_bytes = bit_pos >> 3;
+    uint32 max_skip_bytes = end_ptr_ - current_pos_ptr_;
+    if (max_skip_bytes < skip_bytes)
+    {
+        current_pos_ptr_ += max_skip_bytes;
+        byte_inner_sequence_ = 0;
+    }
+    else
+    {
+        current_pos_ptr_ += skip_bytes;
+        byte_inner_sequence_ = bit_pos & 0x7;
+    }
+}

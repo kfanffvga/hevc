@@ -24,10 +24,8 @@ bool SyntaxDispatcher::CreateSyntaxAndDispatch(unique_ptr<NalUnit> nal_unit)
     {
         case NalUnitType::VPS_NUT:
         {
-            unique_ptr<VideoParameterSet> vps(
-                new VideoParameterSet(move(nal_unit)));
-            return vps->Parser();
-            break;
+            unique_ptr<VideoParameterSet> vps(new VideoParameterSet());
+            return vps->Parse(nal_unit->GetBitSteam());
         }
         default:
             break;

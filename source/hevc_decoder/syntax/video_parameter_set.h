@@ -7,22 +7,18 @@
 #include "hevc_decoder/syntax/base_syntax.h"
 
 class BitStream;
-class NalUnit;
 class ProfileTierLevel;
-
-using std::unique_ptr;
 
 class VideoParameterSet : public BaseSyntax
 {
 public:
-    VideoParameterSet(unique_ptr<NalUnit> nal_unit);
+    VideoParameterSet();
     ~VideoParameterSet();
     
-    virtual bool Parser() override;
+    virtual bool Parse(BitStream* nal_unit) override;
 
 private:
-    unique_ptr<NalUnit> nal_unit_;
-    unique_ptr<ProfileTierLevel> profile_tier_level_;
+    std::unique_ptr<ProfileTierLevel> profile_tier_level_;
 };
 
 #endif

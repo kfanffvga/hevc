@@ -90,6 +90,7 @@
     <ClInclude Include="syntax\nal_unit.h" />
     <ClInclude Include="syntax\nal_unit_types.h" />
     <ClInclude Include="syntax\parameters_manager.h" />
+    <ClInclude Include="syntax\picture_parameter_set.h" />
     <ClInclude Include="syntax\profile_tier_level.h" />
     <ClInclude Include="syntax\slice_segment_syntax.h" />
     <ClInclude Include="syntax\slice_syntax.h" />

@@ -38,6 +38,7 @@ public:
     int GetSize();
     int GetBytePosition();
     int GetBitPosition();
+    void SkipBits(uint32 bits);
 
 private:
     inline int ReadBitInByte(int length, int64* read_result);

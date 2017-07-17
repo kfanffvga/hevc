@@ -8,14 +8,15 @@ class BitStream;
 class ProfileTierLevel : BaseSyntax
 {
 public:
-    ProfileTierLevel(BitStream* bit_stream, bool profile_present_flag,
-                     int max_num_sub_layers);
-    ~ProfileTierLevel();
+    ProfileTierLevel(bool profile_present_flag, int max_num_sub_layers);
+    virtual ~ProfileTierLevel();
 
-    virtual bool Parser() override;
+    virtual bool Parse(BitStream* bit_stream) override;
 
 private:
-    BitStream* bit_stream_;
+    void ParseGeneralProfileInfo(BitStream* bit_stream);
+    void ParseSubLayerInfo(BitStream* bit_stream);
+
     bool profile_present_flag_;
     int max_num_sub_layers_;
 };
