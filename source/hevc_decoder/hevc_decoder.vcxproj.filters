@@ -140,5 +140,8 @@
     <ClCompile Include="syntax\parameters_manager.cpp">
       <Filter>syntax</Filter>
     </ClCompile>
+    <ClCompile Include="syntax\picture_parameter_set.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

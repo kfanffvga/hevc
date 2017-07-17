@@ -112,6 +112,7 @@
     <ClCompile Include="syntax\nal_organizer.cpp" />
     <ClCompile Include="syntax\nal_unit.cpp" />
     <ClCompile Include="syntax\parameters_manager.cpp" />
+    <ClCompile Include="syntax\picture_parameter_set.cpp" />
     <ClCompile Include="syntax\profile_tier_level.cpp" />
     <ClCompile Include="syntax\slice_segment_syntax.cpp" />
     <ClCompile Include="syntax\slice_syntax.cpp" />
