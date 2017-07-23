@@ -10,7 +10,7 @@ SliceSegmentSyntax::~SliceSegmentSyntax()
 
 }
 
-uint32 SliceSegmentSyntax::GetQuantizationParameter() const
+uint32_t SliceSegmentSyntax::GetQuantizationParameter() const
 {
     return 1;
 }
@@ -25,12 +25,12 @@ bool SliceSegmentSyntax::IsDependentSliceSegment() const
     return false;
 }
 
-uint32 SliceSegmentSyntax::GetSliceSegmentAddress() const
+uint32_t SliceSegmentSyntax::GetSliceSegmentAddress() const
 {
     return 0;
 }
 
-uint32 SliceSegmentSyntax::GetCABACStorageIndex() const
+uint32_t SliceSegmentSyntax::GetCABACStorageIndex() const
 {
     return 0;
 }

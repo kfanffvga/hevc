@@ -6,11 +6,11 @@
 class ISliceSegmentContext
 {
 public:
-    virtual uint32 GetQuantizationParameter() const = 0;
+    virtual uint32_t GetQuantizationParameter() const = 0;
     virtual bool IsEntropyCodingSyncEnabled() const = 0;
     virtual bool IsDependentSliceSegment() const = 0;
-    virtual uint32 GetSliceSegmentAddress() const = 0;
-    virtual uint32 GetCABACStorageIndex() const = 0;
+    virtual uint32_t GetSliceSegmentAddress() const = 0;
+    virtual uint32_t GetCABACStorageIndex() const = 0;
 };
 
 #endif

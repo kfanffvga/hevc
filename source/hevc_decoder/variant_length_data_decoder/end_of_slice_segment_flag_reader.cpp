@@ -18,7 +18,7 @@ bool EndOfSliceSegmentFlagReader::Read()
     return !!ReadBit();
 }
 
-int EndOfSliceSegmentFlagReader::GetArithmeticContextIndex(uint16 bin_idx)
+int EndOfSliceSegmentFlagReader::GetArithmeticContextIndex(uint16_t bin_idx)
 {
     return 0;
 }
@@ -29,7 +29,7 @@ SyntaxElementName EndOfSliceSegmentFlagReader::GetSyntaxElementName()
 }
 
 CommonCABACSyntaxReader::ReadFunctionIndex 
-    EndOfSliceSegmentFlagReader::GetFunctionIndex(uint16 bin_idx)
+    EndOfSliceSegmentFlagReader::GetFunctionIndex(uint16_t bin_idx)
 {
     return CommonCABACSyntaxReader::TERMIRATE_READER;
 }

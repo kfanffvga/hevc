@@ -17,12 +17,12 @@ HEVCDecoder::~HEVCDecoder()
 
 }
 
-bool HEVCDecoder::Init(uint32 thread_count)
+bool HEVCDecoder::Init(uint32_t thread_count)
 {
     return false;
 }
 
-HEVC_ERROR HEVCDecoder::Decode(const int8* buffer, uint32 len, 
+HEVC_ERROR HEVCDecoder::Decode(const int8_t* buffer, uint32_t len, 
                                list<unique_ptr<Frame>>* frames)
 {    
     organizer_->Decode(buffer, len);

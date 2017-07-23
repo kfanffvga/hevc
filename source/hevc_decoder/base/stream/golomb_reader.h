@@ -1,7 +1,7 @@
 #ifndef _GOLOMB_READER_H_
 #define _GOLOMB_READER_H_
 
-#include "hevc_decoder/base/basic_types.h"
+#include <stdint.h>
 
 class BitStream;
 
@@ -11,8 +11,8 @@ public:
     GolombReader(BitStream* bit_stream);
     ~GolombReader();
 
-    uint32 ReadUnsignedValue();
-    int32 ReadSignedValue();
+    uint32_t ReadUnsignedValue();
+    int32_t ReadSignedValue();
 
 private:
     BitStream* bit_stream_;

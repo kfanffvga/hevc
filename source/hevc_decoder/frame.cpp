@@ -10,17 +10,17 @@ Frame::~Frame()
 
 }
 
-const uint8* Frame::GetY()
+const uint8_t* Frame::GetY()
 {
     return nullptr;
 }
 
-const uint8* Frame::GetU()
+const uint8_t* Frame::GetU()
 {
     return nullptr;
 }
 
-const uint8* Frame::GetV()
+const uint8_t* Frame::GetV()
 {
     return nullptr;
 }

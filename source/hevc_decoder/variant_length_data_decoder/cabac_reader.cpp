@@ -11,7 +11,7 @@
 namespace
 {
 // pstateidx, qrangeidx
-static const uint16 range_of_lps[][4] = 
+static const uint16_t range_of_lps[][4] = 
 { 
     {128, 176, 208, 240}, {128, 167, 197, 227}, {128, 158, 187, 216},
     {123, 150, 178, 205}, {116, 142, 169, 195}, {111, 135, 160, 185}, 
@@ -33,7 +33,7 @@ static const uint16 range_of_lps[][4] =
     
 };
 
-static const uint8 trans_idx_mps[] = 
+static const uint8_t trans_idx_mps[] = 
 { 
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 
     22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
@@ -41,7 +41,7 @@ static const uint8 trans_idx_mps[] =
     60, 61, 62, 62, 63
 };
 
-static const uint8 trans_idx_lps[] = 
+static const uint8_t trans_idx_lps[] = 
 {
     0,  0, 1, 2, 2, 4, 4, 5, 6, 7, 8, 9, 9, 11, 11, 12, 13, 13, 15, 15, 16, 16, 
     18, 18, 19, 19, 21, 21, 22, 22, 23, 24, 24, 25, 26, 26, 27, 27, 28, 29, 29, 
@@ -96,7 +96,7 @@ bool CABACReader::StartToReadWithNewCTB(const Coordinate& current_ctb)
     return !context_.syntax_context.empty();
 }
 
-bool CABACReader::FinishToReadInCTB(uint32* index_of_ctb_pool)
+bool CABACReader::FinishToReadInCTB(uint32_t* index_of_ctb_pool)
 {
     if (!index_of_ctb_pool)
         return false;
@@ -109,10 +109,10 @@ void CABACReader::InitReader(const Coordinate& current_ctb)
 {
     InitContext(current_ctb);
     current_range_ = 510;
-    offset_ = stream_->Read<uint16>(9);
+    offset_ = stream_->Read<uint16_t>(9);
 }
 
-bool CABACReader::FinishToReadSliceSegment(uint32* index_of_slice_segment_pool)
+bool CABACReader::FinishToReadSliceSegment(uint32_t* index_of_slice_segment_pool)
 {
     if (!index_of_slice_segment_pool)
         return false;
@@ -147,7 +147,7 @@ void CABACReader::InitContext(const Coordinate& current_ctb)
             const ICodingTreeBlockContext* ctb_context = 
                 frame_context_->GetCodingTreeBlockContext(neighbouring_ctb);
 
-            uint32 index = ctb_context->GetCABACStorageIndex();
+            uint32_t index = ctb_context->GetCABACStorageIndex();
             context_ = cabac_context_storage_->GetCTBStorageContext(index);
             return;
         }
@@ -158,26 +158,26 @@ void CABACReader::InitContext(const Coordinate& current_ctb)
         if (!slice_segment_context_->IsDependentSliceSegment())
             break;
 
-        uint32 address = slice_segment_context_->GetSliceSegmentAddress();
+        uint32_t address = slice_segment_context_->GetSliceSegmentAddress();
         const ISliceSegmentContext* independent_slice_segmengt_context = 
             frame_context_->GetIndependentSliceSegmentContext(address);
 
         if (!independent_slice_segmengt_context)
             break;
 
-        uint32 index = 
+        uint32_t index = 
             independent_slice_segmengt_context->GetCABACStorageIndex();
         context_ = cabac_context_storage_->GetSliceSegmentStorageContext(index);
         return;
 
     } while (false);
-    uint32 qp = slice_segment_context_->GetQuantizationParameter();
+    uint32_t qp = slice_segment_context_->GetQuantizationParameter();
     context_ = cabac_context_storage_->GetDefaultContext(qp);
 }
 
-uint8 CABACReader::ReadBypassBit()
+uint8_t CABACReader::ReadBypassBit()
 {
-   offset_ = (offset_ << 1) | stream_->Read<uint16>(1);
+   offset_ = (offset_ << 1) | stream_->Read<uint16_t>(1);
    if (offset_ > current_range_)
    {
        offset_ -= current_range_;
@@ -186,7 +186,7 @@ uint8 CABACReader::ReadBypassBit()
    return 0;
 }
 
-uint8 CABACReader::ReadTerminateBit()
+uint8_t CABACReader::ReadTerminateBit()
 {
     current_range_ -= 2;
     if (offset_ > current_range_)
@@ -196,13 +196,13 @@ uint8 CABACReader::ReadTerminateBit()
     return 0;
 }
 
-uint8 CABACReader::ReadNormalBit(SyntaxElementName syntax_name, uint32 ctxidx)
+uint8_t CABACReader::ReadNormalBit(SyntaxElementName syntax_name, uint32_t ctxidx)
 {
-    uint32 q = (current_range_ >> 6) & 3;
+    uint32_t q = (current_range_ >> 6) & 3;
     ContextItem& context_item = context_.syntax_context[syntax_name][ctxidx];
-    uint32 lps_range = range_of_lps[context_item.state_idx][q];
-    uint32 mps_range = current_range_ - lps_range;
-    uint8 val = 0;
+    uint32_t lps_range = range_of_lps[context_item.state_idx][q];
+    uint32_t mps_range = current_range_ - lps_range;
+    uint8_t val = 0;
     if (offset_ >= mps_range)
     {
         val = !context_item.val_mps;
@@ -229,5 +229,5 @@ uint8 CABACReader::ReadNormalBit(SyntaxElementName syntax_name, uint32 ctxidx)
 void CABACReader::Renormalize()
 {
     current_range_ <<= 1;
-    offset_ = (offset_ << 1) | stream_->Read<uint16>(1);
+    offset_ = (offset_ << 1) | stream_->Read<uint16_t>(1);
 }

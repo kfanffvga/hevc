@@ -64,7 +64,7 @@ struct CABACContext
 
     }
     std::vector<std::vector<ContextItem>> syntax_context;
-    std::array<uint32, 4> state_coefficient;
+    std::array<uint32_t, 4> state_coefficient;
 };
 
 #endif

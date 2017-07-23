@@ -1,7 +1,7 @@
 ﻿#ifndef _FRAME_H_
 #define _FRAME_H_
 
-#include "hevc_decoder/base/basic_types.h"
+#include <stdint.h>
 
 enum ColorSpace
 {
@@ -14,9 +14,9 @@ public:
     Frame();
     ~Frame();
 
-    const uint8* GetY();
-    const uint8* GetU();
-    const uint8* GetV();
+    const uint8_t* GetY();
+    const uint8_t* GetU();
+    const uint8_t* GetV();
     ColorSpace GetColorSpace();
     int GetWidth();
     int GetHeight();

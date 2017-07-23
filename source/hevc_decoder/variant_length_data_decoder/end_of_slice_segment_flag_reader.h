@@ -12,8 +12,8 @@ public:
     bool Read();
 
 private:
-    virtual int GetArithmeticContextIndex(uint16 bin_idx) override;
+    virtual int GetArithmeticContextIndex(uint16_t bin_idx) override;
     virtual SyntaxElementName GetSyntaxElementName() override;
-    virtual ReadFunctionIndex GetFunctionIndex(uint16 bin_idx) override;
+    virtual ReadFunctionIndex GetFunctionIndex(uint16_t bin_idx) override;
 };
 #endif

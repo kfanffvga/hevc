@@ -3,8 +3,8 @@
 
 #include <memory>
 #include <list>
+#include <stdint.h>
 
-#include "base/basic_types.h"
 #include "hevc_decoder/hevc_decoder.h"
 
 class Frame;
@@ -17,9 +17,9 @@ public:
     HEVCDecoder();
     ~HEVCDecoder();
 
-    bool Init(uint32 thread_count);
+    bool Init(uint32_t thread_count);
 
-    HEVC_ERROR Decode(const int8* buffer, uint32 len, 
+    HEVC_ERROR Decode(const int8_t* buffer, uint32_t len, 
                       std::list<std::unique_ptr<Frame>>* frames);
 
     HEVC_ERROR Flush();

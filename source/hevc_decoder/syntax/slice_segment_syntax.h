@@ -10,11 +10,11 @@ public:
     virtual ~SliceSegmentSyntax();
 
 private:
-    virtual uint32 GetQuantizationParameter() const override;
+    virtual uint32_t GetQuantizationParameter() const override;
     virtual bool IsEntropyCodingSyncEnabled() const override;
     virtual bool IsDependentSliceSegment() const override;
-    virtual uint32 GetSliceSegmentAddress() const override;
-    virtual uint32 GetCABACStorageIndex() const override;
+    virtual uint32_t GetSliceSegmentAddress() const override;
+    virtual uint32_t GetCABACStorageIndex() const override;
 };
 
 #endif

@@ -4,7 +4,6 @@
 #include <vector>
 #include <memory>
 
-#include "hevc_decoder/base/basic_types.h"
 #include "hevc_decoder/syntax/base_syntax.h"
 
 class BitStream;

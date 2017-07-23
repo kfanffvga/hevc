@@ -14,7 +14,7 @@ using boost::multi_array;
 
 namespace
 {
-const uint32 compatibility_flag_count = 32;
+const uint32_t compatibility_flag_count = 32;
 }
 
 ProfileTierLevel::ProfileTierLevel(bool profile_present_flag,
@@ -37,7 +37,7 @@ bool ProfileTierLevel::Parse(BitStream* bit_stream)
 
     ParseGeneralProfileInfo(bit_stream);
 
-    uint8 general_level_idc = bit_stream->Read<uint8>(8);
+    uint8_t general_level_idc = bit_stream->Read<uint8_t>(8);
 
     ParseSubLayerInfo(bit_stream);
     return true;
@@ -48,9 +48,9 @@ void ProfileTierLevel::ParseGeneralProfileInfo(BitStream* bit_stream)
     if (!profile_present_flag_)
         return;
 
-    uint8 general_profile_space = bit_stream->Read<uint8>(2);
+    uint8_t general_profile_space = bit_stream->Read<uint8_t>(2);
     bool is_general_tier = bit_stream->ReadBool();
-    uint8 general_profile_idc = bit_stream->Read<uint8>(5);
+    uint8_t general_profile_idc = bit_stream->Read<uint8_t>(5);
     bool is_general_profile_compatibility[compatibility_flag_count] = { };
     for (int i = 0; i < compatibility_flag_count; ++i)
         is_general_profile_compatibility[i] = bit_stream->ReadBool();
@@ -86,8 +86,8 @@ void ProfileTierLevel::ParseGeneralProfileInfo(BitStream* bit_stream)
         }
         else
         {
-            bit_stream->SkipBits(34);
-        }
+        bit_stream->SkipBits(34);
+    }
     }
     else
     {
@@ -131,8 +131,8 @@ void ProfileTierLevel::ParseSubLayerInfo(BitStream* bit_stream)
     if (max_num_sub_layers_minus1 > 0)
         bit_stream->SkipBits(max(8 - max_num_sub_layers_minus1, 0) << 1);
 
-    vector<uint8> sub_layer_profile_space;
-    vector<uint8> sub_layer_profile_idc;
+    vector<uint8_t> sub_layer_profile_space;
+    vector<uint8_t> sub_layer_profile_idc;
     multi_array<bool, 2> has_sub_layer_profile_compatibility(
         boost::extents[max_num_sub_layers_minus1][compatibility_flag_count]);
 
@@ -156,9 +156,9 @@ void ProfileTierLevel::ParseSubLayerInfo(BitStream* bit_stream)
     {
         if (has_sub_layer_profile_present[i])
         {
-            sub_layer_profile_space.push_back(bit_stream->Read<uint8>(2));
+            sub_layer_profile_space.push_back(bit_stream->Read<uint8_t>(2));
             is_sub_layer_tier[i] = bit_stream->ReadBool();
-            sub_layer_profile_idc.push_back(bit_stream->Read<uint8>(5));
+            sub_layer_profile_idc.push_back(bit_stream->Read<uint8_t>(5));
             for (int j = 0; j < compatibility_flag_count; ++j)
             {
                 has_sub_layer_profile_compatibility[i][j] = 
@@ -206,8 +206,8 @@ void ProfileTierLevel::ParseSubLayerInfo(BitStream* bit_stream)
                 }
                 else
                 {
-                    bit_stream->SkipBits(34);
-                }
+                bit_stream->SkipBits(34);
+            }
             }
             else
             {
@@ -233,8 +233,8 @@ void ProfileTierLevel::ParseSubLayerInfo(BitStream* bit_stream)
             }
         }
 
-        vector<uint8> sub_layer_level_idc;
+        vector<uint8_t> sub_layer_level_idc;
         if (has_sub_layer_level_present[i])
-            sub_layer_level_idc.push_back(bit_stream->Read<uint8>(8));
+            sub_layer_level_idc.push_back(bit_stream->Read<uint8_t>(8));
     }
 }

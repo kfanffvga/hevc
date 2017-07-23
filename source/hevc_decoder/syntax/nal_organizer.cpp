@@ -2,6 +2,7 @@
 
 #include <assert.h>
 
+#include "hevc_decoder/base/basic_types.h"
 #include "hevc_decoder/syntax/nal_unit.h"
 #include "hevc_decoder/syntax/syntax_dispatcher.h"
 
@@ -20,14 +21,14 @@ NalOrganizer::~NalOrganizer()
 
 }
 
-bool NalOrganizer::Decode(const int8* data, int length)
+bool NalOrganizer::Decode(const int8_t* data, int length)
 {
     raw_nal_unit_data_.SetSize(length + nal_unit_unused_length_);
     const int24 end_mark = int_to_int24(0x10000);
-    const int8* raw_nal_current_point = data;
-    const int8* raw_nal_end_point = data + length;
-    int8* raw_nal_unit_point = raw_nal_unit_data_.GetBuffer();
-    int8 raw_nal_byte_data = 0;
+    const int8_t* raw_nal_current_point = data;
+    const int8_t* raw_nal_end_point = data + length;
+    int8_t* raw_nal_unit_point = raw_nal_unit_data_.GetBuffer();
+    int8_t raw_nal_byte_data = 0;
     while (raw_nal_current_point != raw_nal_end_point)
     {
         if ((*reinterpret_cast<const int*>(raw_nal_current_point) == 0x1000000) ||

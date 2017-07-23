@@ -150,7 +150,7 @@ CABACContextStorage::~CABACContextStorage()
 
 void CABACContextStorage::Init()
 {
-    for (uint32 qp = 0; qp < 52; ++qp)
+    for (uint32_t qp = 0; qp < 52; ++qp)
         InitByQuantizationParameter(qp);
 }
 
@@ -165,36 +165,36 @@ int CABACContextStorage::GetInitType(SliceType slice_type, bool is_cabac_init)
     return is_cabac_init ? 1 : 2;
 }
 
-CABACContext CABACContextStorage::GetDefaultContext(uint32 qp)
+CABACContext CABACContextStorage::GetDefaultContext(uint32_t qp)
 {
     assert(qp < 52);
     return qp >= 52 ? CABACContext() : default_contexts_[qp];
 }
 
-CABACContext CABACContextStorage::GetCTBStorageContext(uint32 ctb_storage_id)
+CABACContext CABACContextStorage::GetCTBStorageContext(uint32_t ctb_storage_id)
 {
     return ctb_storage_id >= tile_contexts_.size() ? CABACContext() : 
         tile_contexts_[ctb_storage_id];
 }
 
 CABACContext CABACContextStorage::GetSliceSegmentStorageContext(
-    uint32 slice_segment_storage_id)
+    uint32_t slice_segment_storage_id)
 {
     return slice_segment_storage_id >= slice_segment_contexts_.size() ? 
         CABACContext() : slice_segment_contexts_[slice_segment_storage_id];
 }
 
-uint32 CABACContextStorage::SaveCTBStorageContext(const CABACContext& context)
+uint32_t CABACContextStorage::SaveCTBStorageContext(const CABACContext& context)
 {
-    uint32 index = tile_contexts_.size();
+    uint32_t index = tile_contexts_.size();
     tile_contexts_.push_back(context);
     return index;
 }
 
-uint32 CABACContextStorage::SaveSliceSegmentStorageContext(
+uint32_t CABACContextStorage::SaveSliceSegmentStorageContext(
     const CABACContext& context)
 {
-    uint32 index = slice_segment_contexts_.size();
+    uint32_t index = slice_segment_contexts_.size();
     slice_segment_contexts_.push_back(context);
     return index;
 }
@@ -205,7 +205,7 @@ void CABACContextStorage::ClearStorageContext()
     tile_contexts_.clear();
 }
 
-void CABACContextStorage::InitByQuantizationParameter(uint32 qp)
+void CABACContextStorage::InitByQuantizationParameter(uint32_t qp)
 {
     CABACContext context_of_qp;
     for (const auto& values_of_syntax_element : init_values)

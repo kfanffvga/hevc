@@ -20,7 +20,7 @@ public:
     bool AddSliceSegment(std::unique_ptr<SliceSegmentSyntax> slice_segment);
 
 private:
-    virtual uint32 GetSliceAddressByRasterScanBlockIndex(uint32 index) const
+    virtual uint32_t GetSliceAddressByRasterScanBlockIndex(uint32_t index) const
         override;
     
     virtual bool IsTheFirstBlockInTile(const Coordinate& block) const override;
@@ -30,7 +30,7 @@ private:
     virtual bool IsTheFirstBlockInRowOfFrame(const Coordinate& block) const 
         override;
 
-    virtual uint32 GetCTBHeight() const override;
+    virtual uint32_t GetCTBHeight() const override;
     virtual bool IsZScanOrderNeighbouringBlockAvailable(
         const Coordinate& current_block, 
         const Coordinate& neighbouring_block) const override;
@@ -39,7 +39,7 @@ private:
         const Coordinate& block) const override;
 
     virtual const ISliceSegmentContext* GetIndependentSliceSegmentContext(
-        uint32 slice_segment_address) const override;
+        uint32_t slice_segment_address) const override;
 
     std::vector<std::unique_ptr<SliceSyntax>> slices_;
 };

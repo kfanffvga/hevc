@@ -1,8 +1,9 @@
 ﻿#ifndef _CABAC_READER_H_
 #define _CABAC_READER_H_
 
-#include "hevc_decoder/base/basic_types.h"
+#include <stdint.h>
 
+#include "hevc_decoder/base/basic_types.h"
 #include "hevc_decoder/variant_length_data_decoder/cabac_context_types.h"
 
 class BitStream;
@@ -19,12 +20,12 @@ public:
     ~CABACReader();
 
     bool StartToReadWithNewCTB(const Coordinate& current_ctb);
-    bool FinishToReadInCTB(uint32* index_of_ctb_pool);
-    bool FinishToReadSliceSegment(uint32* index_of_slice_segment_pool);
+    bool FinishToReadInCTB(uint32_t* index_of_ctb_pool);
+    bool FinishToReadSliceSegment(uint32_t* index_of_slice_segment_pool);
 
-    uint8 ReadBypassBit();
-    uint8 ReadTerminateBit();
-    uint8 ReadNormalBit(SyntaxElementName syntax_name, uint32 ctxidx);
+    uint8_t ReadBypassBit();
+    uint8_t ReadTerminateBit();
+    uint8_t ReadNormalBit(SyntaxElementName syntax_name, uint32_t ctxidx);
 
 private:
     void InitReader(const Coordinate& current_ctb);
@@ -38,8 +39,8 @@ private:
     const ISliceSegmentContext* slice_segment_context_;
     bool is_first_ctb_in_slice_segment_;
     CABACContext context_;
-    uint16 current_range_;
-    uint16 offset_;
+    uint16_t current_range_;
+    uint16_t offset_;
 };
 
 #endif

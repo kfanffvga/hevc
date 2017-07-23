@@ -3,8 +3,8 @@
 
 #include <array>
 #include <functional>
+#include <stdint.h>
 
-#include "hevc_decoder/base/basic_types.h"
 #include "hevc_decoder/variant_length_data_decoder/cabac_context_types.h"
 
 class CABACReader;
@@ -23,19 +23,19 @@ protected:
         BYPASS_READER = 2,
     };
 
-    uint8 ReadBit();
-    virtual int GetArithmeticContextIndex(uint16 bin_idx) = 0;
+    uint8_t ReadBit();
+    virtual int GetArithmeticContextIndex(uint16_t bin_idx) = 0;
     virtual SyntaxElementName GetSyntaxElementName() = 0;
-    virtual ReadFunctionIndex GetFunctionIndex(uint16 bin_idx) = 0;
+    virtual ReadFunctionIndex GetFunctionIndex(uint16_t bin_idx) = 0;
     
 private:
-    uint8 ArithmeticRead();
-    uint8 BypassRead();
-    uint8 TerminateRead();
+    uint8_t ArithmeticRead();
+    uint8_t BypassRead();
+    uint8_t TerminateRead();
 
-    uint16 bin_idx_;
+    uint16_t bin_idx_;
     CABACReader* reader_;
-    std::array<std::function<uint8()>, 3> read_functions_;
+    std::array<std::function<uint8_t()>, 3> read_functions_;
 };
 
 #endif

@@ -6,7 +6,7 @@
 class ICodingTreeBlockContext
 {
 public:
-    virtual uint32 GetCABACStorageIndex() const = 0;
+    virtual uint32_t GetCABACStorageIndex() const = 0;
 };
 
 #endif

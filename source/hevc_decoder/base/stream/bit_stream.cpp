@@ -2,7 +2,7 @@
 
 using std::min;
 
-BitStream::BitStream(const int8* data, int length)
+BitStream::BitStream(const int8_t* data, int length)
     : data_(data)
     , byte_inner_sequence_(0)
     , current_pos_ptr_(data)
@@ -42,7 +42,7 @@ int BitStream::GetBitPosition()
     return byte_inner_sequence_;
 }
 
-int BitStream::ReadBitInByte(int length, int64* read_result)
+int BitStream::ReadBitInByte(int length, int64_t* read_result)
 {
     if (!read_result || (current_pos_ptr_ == end_ptr_))
         return -1;
@@ -50,8 +50,8 @@ int BitStream::ReadBitInByte(int length, int64* read_result)
     assert(byte_inner_sequence_ >= 0 && byte_inner_sequence_ < 8);
     int raw_bits = 8 - byte_inner_sequence_;
     int read_reality_length = min(raw_bits, length);
-    uint8 offset = raw_bits - read_reality_length;
-    uint8 mask = ((1 << read_reality_length) - 1) << offset;
+    uint8_t offset = raw_bits - read_reality_length;
+    uint8_t mask = ((1 << read_reality_length) - 1) << offset;
     *read_result = (*current_pos_ptr_ & mask) >> offset;
     byte_inner_sequence_ += read_reality_length;
     if (8 == byte_inner_sequence_)
@@ -66,16 +66,16 @@ int BitStream::ReadBitInByte(int length, int64* read_result)
 
 bool BitStream::ReadBool()
 {
-    int64 read_result = 0;
+    int64_t read_result = 0;
     ReadBitInByte(1, &read_result);
     return !!read_result;
 }
 
-void BitStream::SkipBits(uint32 bits)
+void BitStream::SkipBits(uint32_t bits)
 {
-    uint32 bit_pos = byte_inner_sequence_ + bits;
-    uint32 skip_bytes = bit_pos >> 3;
-    uint32 max_skip_bytes = end_ptr_ - current_pos_ptr_;
+    uint32_t bit_pos = byte_inner_sequence_ + bits;
+    uint32_t skip_bytes = bit_pos >> 3;
+    uint32_t max_skip_bytes = end_ptr_ - current_pos_ptr_;
     if (max_skip_bytes < skip_bytes)
     {
         current_pos_ptr_ += max_skip_bytes;

@@ -23,25 +23,25 @@ CommonCABACSyntaxReader::~CommonCABACSyntaxReader()
 
 }
 
-uint8 CommonCABACSyntaxReader::ReadBit()
+uint8_t CommonCABACSyntaxReader::ReadBit()
 {
-    uint8 value = read_functions_[GetFunctionIndex(bin_idx_)]();
+    uint8_t value = read_functions_[GetFunctionIndex(bin_idx_)]();
     ++bin_idx_;
     return value;
 }
 
-uint8 CommonCABACSyntaxReader::ArithmeticRead()
+uint8_t CommonCABACSyntaxReader::ArithmeticRead()
 {
     return reader_->ReadNormalBit(GetSyntaxElementName(), 
                                   GetArithmeticContextIndex(bin_idx_));
 }
 
-uint8 CommonCABACSyntaxReader::BypassRead()
+uint8_t CommonCABACSyntaxReader::BypassRead()
 {
     return reader_->ReadBypassBit();
 }
 
-uint8 CommonCABACSyntaxReader::TerminateRead()
+uint8_t CommonCABACSyntaxReader::TerminateRead()
 {
     return reader_->ReadTerminateBit();
 }

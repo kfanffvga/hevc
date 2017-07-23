@@ -10,16 +10,16 @@
 class BitStream
 {
 public:
-    BitStream(const int8* data, int length);
+    BitStream(const int8_t* data, int length);
     ~BitStream();
 
     template<typename T>
     T Read(int length)
     {
         assert(length > 0 && length <= 32);
-        uint64 result = 0;
+        uint64_t result = 0;
         int remain_length = length;
-        int64 read_result = 0;
+        int64_t read_result = 0;
         do
         {
             int read_bits = ReadBitInByte(remain_length, &read_result);
@@ -38,15 +38,15 @@ public:
     int GetSize();
     int GetBytePosition();
     int GetBitPosition();
-    void SkipBits(uint32 bits);
+    void SkipBits(uint32_t bits);
 
 private:
-    inline int ReadBitInByte(int length, int64* read_result);
+    inline int ReadBitInByte(int length, int64_t* read_result);
 
-    const int8* data_;
+    const int8_t* data_;
     int byte_inner_sequence_;
-    const int8* current_pos_ptr_;
-    const int8* end_ptr_;
+    const int8_t* current_pos_ptr_;
+    const int8_t* end_ptr_;
 };
 
 #endif

@@ -15,7 +15,7 @@ FrameSyntax::~FrameSyntax()
 
 }
 
-uint32 FrameSyntax::GetSliceAddressByRasterScanBlockIndex(uint32 index) const
+uint32_t FrameSyntax::GetSliceAddressByRasterScanBlockIndex(uint32_t index) const
 {
     return 0;
 }
@@ -35,7 +35,7 @@ bool FrameSyntax::IsTheFirstBlockInRowOfFrame(const Coordinate& block) const
     return false;
 }
 
-uint32 FrameSyntax::GetCTBHeight() const
+uint32_t FrameSyntax::GetCTBHeight() const
 {
     return 0;
 }
@@ -53,7 +53,7 @@ const ICodingTreeBlockContext* FrameSyntax::GetCodingTreeBlockContext(
 }
 
 const ISliceSegmentContext* FrameSyntax::GetIndependentSliceSegmentContext(
-    uint32 slice_segment_address) const
+    uint32_t slice_segment_address) const
 {
     return nullptr;
 }
