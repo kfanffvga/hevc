@@ -5,11 +5,11 @@
 
 class BitStream;
 
-class GolombReadr
+class GolombReader
 {
 public:
-    GolombReadr(BitStream* bit_stream);
-    ~GolombReadr();
+    GolombReader(BitStream* bit_stream);
+    ~GolombReader();
 
     uint32 ReadUnsignedValue();
     int32 ReadSignedValue();

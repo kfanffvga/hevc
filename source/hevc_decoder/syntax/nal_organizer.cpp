@@ -43,9 +43,8 @@ bool NalOrganizer::Decode(const int8* data, int length)
             {
                 unique_ptr<NalUnit> nal_unit(new NalUnit(raw_nal_unit_point,
                                                          nal_unit_unused_length_));
-                // TO DO : 未完成 暂时注释代码
-//                 SyntaxManager manager;
-//                 manager.CreateSyntaxElement(std::move(nal_unit));
+                SyntaxDispatcher manager;
+                 manager.CreateSyntaxAndDispatch(std::move(nal_unit));
                 nal_unit_unused_length_ = 0;
             }
         }

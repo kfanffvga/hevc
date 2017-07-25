@@ -86,6 +86,7 @@
     <ClInclude Include="syntax\picture_parameter_set.h">
       <Filter>syntax</Filter>
     </ClInclude>
+    <ClInclude Include="syntax\sub_layer_hrd_parameters.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -143,5 +144,6 @@
     <ClCompile Include="syntax\picture_parameter_set.cpp">
       <Filter>syntax</Filter>
     </ClCompile>
+    <ClCompile Include="syntax\sub_layer_hrd_parameters.cpp" />
   </ItemGroup>
 </Project>

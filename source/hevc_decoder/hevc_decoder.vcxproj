@@ -94,6 +94,7 @@
     <ClInclude Include="syntax\profile_tier_level.h" />
     <ClInclude Include="syntax\slice_segment_syntax.h" />
     <ClInclude Include="syntax\slice_syntax.h" />
+    <ClInclude Include="syntax\sub_layer_hrd_parameters.h" />
     <ClInclude Include="syntax\syntax_dispatcher.h" />
     <ClInclude Include="syntax\video_parameter_set.h" />
     <ClInclude Include="variant_length_data_decoder\cabac_context_storage.h" />
@@ -116,6 +117,7 @@
     <ClCompile Include="syntax\profile_tier_level.cpp" />
     <ClCompile Include="syntax\slice_segment_syntax.cpp" />
     <ClCompile Include="syntax\slice_syntax.cpp" />
+    <ClCompile Include="syntax\sub_layer_hrd_parameters.cpp" />
     <ClCompile Include="syntax\syntax_dispatcher.cpp" />
     <ClCompile Include="syntax\video_parameter_set.cpp" />
     <ClCompile Include="variant_length_data_decoder\cabac_context_storage.cpp" />

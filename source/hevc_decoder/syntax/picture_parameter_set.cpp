@@ -18,7 +18,7 @@ bool PictureParameterSet::Parse(BitStream* bit_stream)
     if (!bit_stream)
         return false;
 
-    GolombReadr golomb_reader(bit_stream);
+    GolombReader golomb_reader(bit_stream);
     uint32 pps_pic_parameter_set_id = golomb_reader.ReadUnsignedValue();
     uint32 pps_seq_parameter_set_id = golomb_reader.ReadUnsignedValue();
     bool is_dependent_slice_segments_enabled = bit_stream->ReadBool();
