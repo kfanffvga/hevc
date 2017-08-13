@@ -25,6 +25,17 @@ private:
         bool loop_filter_across_tiles_enabled;
     };
 
+    struct DeblockingFilterControlInfo
+    {
+        bool deblocking_filter_override_enabled;
+        bool pps_deblocking_filter_disabled;
+        int32_t beta_offset;
+        int32_t tc_offset;
+    };
+
     void ParseTileInfo(BitStream* bit_stream);
+    void ParseDeblockingFilterControlInfo(BitStream* bit_stream);
+    bool ParsePPSExtensionInfo(bool is_transform_skip_enabled, 
+                               BitStream* bit_stream);
 };
 #endif

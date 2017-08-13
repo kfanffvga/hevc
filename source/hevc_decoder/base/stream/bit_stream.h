@@ -14,7 +14,7 @@ public:
     ~BitStream();
 
     template<typename T>
-    T Read(int length)
+    T Read(uint32_t length)
     {
         assert(length > 0 && length <= 32);
         uint64_t result = 0;
