@@ -32,7 +32,7 @@ bool PPSMultilayerExtension::Parse(BitStream* bit_stream)
     if (has_pps_infer_scaling_list)
         uint8_t pps_scaling_list_ref_layer_id = bit_stream->Read<uint8_t>(6);
 
-    GolombReadr golomb_reader(bit_stream);
+    GolombReader golomb_reader(bit_stream);
     uint32_t num_ref_loc_offsets = golomb_reader.ReadUnsignedValue();
 
     map<uint32_t, ScaledRefLayerInfo> scaled_ref_layer_infos;

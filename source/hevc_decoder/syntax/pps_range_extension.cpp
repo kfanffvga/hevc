@@ -24,7 +24,7 @@ bool PPSRangeExtension::Parse(BitStream* bit_stream)
     if (!bit_stream)
         return false;
 
-    GolombReadr golomb_reader(bit_stream);
+    GolombReader golomb_reader(bit_stream);
     if (is_transform_skip_enabled_)
     {
         uint32_t log2_max_transform_skip_block_size = 

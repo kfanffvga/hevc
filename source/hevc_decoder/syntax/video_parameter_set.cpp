@@ -40,12 +40,12 @@ bool VideoParameterSet::Parse(BitStream* bit_stream)
 void VideoParameterSet::ParasVPSInfo(BitStream* bit_stream,
                                      GolombReader* golomb_reader)
 {   
-    uint8 vps_video_parameter_set_id = bit_stream->Read<uint8>(4);
+    uint8_t vps_video_parameter_set_id = bit_stream->Read<uint8_t>(4);
     bool is_vps_base_layer_internal = bit_stream->ReadBool();
     bool is_vps_base_layer_available = bit_stream->ReadBool();
-    uint8 vps_max_layers = bit_stream->Read<uint8>(6) + 1;
+    uint8_t vps_max_layers = bit_stream->Read<uint8_t>(6) + 1;
     assert((vps_max_layers > 0) && (vps_max_layers < 63));
-    uint8 vps_max_sub_layers = bit_stream->Read<uint8>(3) + 1;
+    uint8_t vps_max_sub_layers = bit_stream->Read<uint8_t>(3) + 1;
     assert((vps_max_sub_layers >= 0) && (vps_max_sub_layers <= 6));
     bool is_vps_temporal_id_nesting = bit_stream->ReadBool();
 
@@ -58,9 +58,9 @@ void VideoParameterSet::ParasVPSInfo(BitStream* bit_stream,
 
     profile_tier_level_->Parse(bit_stream);
     bool is_vps_sub_layer_ordering_info_present = bit_stream->ReadBool();
-    vector<uint32> vps_max_dec_pic_buffering;
-    vector<uint64> vps_max_num_reorder_pics;
-    vector<uint64> vps_max_latency_increase;
+    vector<uint32_t> vps_max_dec_pic_buffering;
+    vector<uint64_t> vps_max_num_reorder_pics;
+    vector<uint64_t> vps_max_latency_increase;
     
     int sub_layer_start_index =
         is_vps_sub_layer_ordering_info_present ? 0 : (vps_max_sub_layers - 1);
@@ -73,25 +73,25 @@ void VideoParameterSet::ParasVPSInfo(BitStream* bit_stream,
             golomb_reader->ReadUnsignedValue() - 1);
     }
 
-    uint8 vps_max_layer_id = bit_stream->Read<uint8>(6);
+    uint8_t vps_max_layer_id = bit_stream->Read<uint8_t>(6);
     assert(vps_max_layer_id < 63);
-    uint32 vps_num_layer_sets = golomb_reader->ReadUnsignedValue() + 1;
+    uint32_t vps_num_layer_sets = golomb_reader->ReadUnsignedValue() + 1;
     multi_array<bool, 2> layer_id_included(
         boost::extents[vps_num_layer_sets][vps_max_layer_id + 1]);
-    uint32 vps_num_layer_sets_minus1 = vps_num_layer_sets - 1;
-    for (uint32 i = 0; i < vps_num_layer_sets_minus1; ++i)
-        for (uint8 j = 0; j <= vps_max_layer_id; ++j)
+    uint32_t vps_num_layer_sets_minus1 = vps_num_layer_sets - 1;
+    for (uint32_t i = 0; i < vps_num_layer_sets_minus1; ++i)
+        for (uint8_t j = 0; j <= vps_max_layer_id; ++j)
             layer_id_included[i][j] = bit_stream->ReadBool();
 
     bool vps_timing_info_present = bit_stream->ReadBool();
     if (vps_timing_info_present)
     {
-        uint32 vps_num_units_in_tick = bit_stream->Read<uint32>(32);
-        uint32 vps_time_scale = bit_stream->Read<uint32>(32);
+        uint32_t vps_num_units_in_tick = bit_stream->Read<uint32_t>(32);
+        uint32_t vps_time_scale = bit_stream->Read<uint32_t>(32);
         bool vps_poc_proportional_to_timing = bit_stream->ReadBool();
         if (vps_poc_proportional_to_timing)
         {
-            uint32 vps_num_ticks_poc_diff_one =
+            uint32_t vps_num_ticks_poc_diff_one =
                 golomb_reader->ReadUnsignedValue() + 1;
         }
 
@@ -103,12 +103,12 @@ void VideoParameterSet::ParasVPSInfo(BitStream* bit_stream,
 
 void VideoParameterSet::ParasHRDInfo(BitStream* bit_stream,
                                      GolombReader* golomb_reader,
-                                     uint32 vps_max_sub_layers)
+                                     uint32_t vps_max_sub_layers)
 {
-    uint32 vps_num_hrd_parameters = golomb_reader->ReadUnsignedValue();
-    vector<uint32> hrd_layer_set_idx;
+    uint32_t vps_num_hrd_parameters = golomb_reader->ReadUnsignedValue();
+    vector<uint32_t> hrd_layer_set_idx;
     multi_array<bool, 1> cprms_present(extents[vps_num_hrd_parameters]);
-    for (uint32 i = 0; i < vps_num_hrd_parameters; ++i)
+    for (uint32_t i = 0; i < vps_num_hrd_parameters; ++i)
     {
         hrd_layer_set_idx.push_back(golomb_reader->ReadUnsignedValue());
         if (i > 0)

@@ -24,7 +24,7 @@ ScalingListData::~ScalingListData()
 bool ScalingListData::Parse(BitStream* bit_stream)
 {
     multi_array<vector<int32_t>, 2> scaling_list(boost::extents[4][6]);
-    GolombReadr golomb_reader(bit_stream);
+    GolombReader golomb_reader(bit_stream);
     for (int size_id = 0; size_id < 4; ++size_id)
     {
         int32_t coef_num = min(64, 1 << (4 + (size_id << 1)));

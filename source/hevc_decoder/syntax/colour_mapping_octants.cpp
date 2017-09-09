@@ -67,7 +67,7 @@ void ColourMappingOctants::ReadColourMappingOctantsElement(
     {
         ColourIndex current_colour_index = colour_index;
         uint32_t delta_depth = cm_octant_depth_ - current_depth;
-        GolombReadr golomb_reader(bit_stream);
+        GolombReader golomb_reader(bit_stream);
         for (uint32_t i = 0; i < y_part_num_; ++i)
         {
             current_colour_index.y = colour_index.y + (i << delta_depth);

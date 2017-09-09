@@ -26,7 +26,7 @@ bool PPSScreenContentCodingExtension::Parse(BitStream* bit_stream)
     bool is_pps_curr_pic_ref_enabled = bit_stream->ReadBool();
     bool is_residual_adaptive_colour_transform_enabled = bit_stream->ReadBool();
 
-    GolombReadr golomb_reader(bit_stream);
+    GolombReader golomb_reader(bit_stream);
     if (is_residual_adaptive_colour_transform_enabled)
     {
         bool has_pps_slice_act_qp_offsets_present = bit_stream->ReadBool();

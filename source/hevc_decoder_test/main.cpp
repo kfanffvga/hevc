@@ -28,7 +28,7 @@ int main(int argc, char** argv, char** env)
     length = ::GetFileSize(h265_video_handle, nullptr);    
     HEVCDecoder decoder;
     decoder.Init(1);
-    std::vector<int8> viode_buffer(buffer_size);
+    std::vector<int8_t> viode_buffer(buffer_size);
     DWORD read_length = 0;
 
     if (::ReadFile(h265_video_handle, &viode_buffer.front(), buffer_size,

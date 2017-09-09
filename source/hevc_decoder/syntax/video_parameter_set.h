@@ -22,7 +22,7 @@ public:
 private:
     void ParasVPSInfo(BitStream* bit_stream, GolombReader* golomb_reader);
     void ParasHRDInfo(BitStream* bit_stream, GolombReader* golomb_reader,
-                      uint32 vps_max_sub_layers);
+                      uint32_t vps_max_sub_layers);
 
     std::unique_ptr<ProfileTierLevel> profile_tier_level_;
     std::vector<std::unique_ptr<HrdParmeters>> hrd_parameters_;

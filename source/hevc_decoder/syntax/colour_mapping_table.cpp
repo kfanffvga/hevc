@@ -26,7 +26,7 @@ bool ColourMappingTable::Parse(BitStream* bit_stream)
     if (!bit_stream)
         return false;
 
-    GolombReadr golomb_reader(bit_stream);
+    GolombReader golomb_reader(bit_stream);
     uint32_t num_cm_ref_layers = golomb_reader.ReadUnsignedValue();
     vector<uint8_t> cm_ref_layer_ids;
     for (uint32_t i = 0; i < num_cm_ref_layers; ++i)

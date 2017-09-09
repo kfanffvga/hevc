@@ -84,7 +84,7 @@ bool PictureParameterSet::Parse(BitStream* bit_stream)
 
 void PictureParameterSet::ParseTileInfo(BitStream* bit_stream)
 {
-    GolombReadr golomb_reader(bit_stream);
+    GolombReader golomb_reader(bit_stream);
     uint32_t num_tile_columns_minus1 = golomb_reader.ReadUnsignedValue();
     uint32_t num_tile_rows_minus1 = golomb_reader.ReadUnsignedValue();
     TileInfo tile_info = {};
@@ -111,7 +111,7 @@ void PictureParameterSet::ParseDeblockingFilterControlInfo(BitStream* bit_stream
     DeblockingFilterControlInfo control_info = { };
     control_info.deblocking_filter_override_enabled = bit_stream->ReadBool();
     control_info.pps_deblocking_filter_disabled = bit_stream->ReadBool();
-    GolombReadr golomb_reader(bit_stream);
+    GolombReader golomb_reader(bit_stream);
     control_info.beta_offset = golomb_reader.ReadSignedValue() * 2;
     control_info.tc_offset = golomb_reader.ReadSignedValue() * 2;
 }
