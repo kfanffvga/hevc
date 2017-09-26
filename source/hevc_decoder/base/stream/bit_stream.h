@@ -16,7 +16,8 @@ public:
     template<typename T>
     T Read(uint32_t length)
     {
-        assert(length > 0 && length <= 32);
+        assert((sizeof(T) << 3) >= length);
+
         uint64_t result = 0;
         int remain_length = length;
         int64_t read_result = 0;

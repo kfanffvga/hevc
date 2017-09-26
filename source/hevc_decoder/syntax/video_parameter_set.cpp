@@ -16,7 +16,8 @@ using boost::multi_array;
 using boost::extents;
 
 VideoParameterSet::VideoParameterSet()
-    : profile_tier_level_()
+    : video_parameter_set_id_(0)
+    , profile_tier_level_()
     , hrd_parameters_()
 {
 
@@ -40,7 +41,7 @@ bool VideoParameterSet::Parse(BitStream* bit_stream)
 void VideoParameterSet::ParasVPSInfo(BitStream* bit_stream,
                                      GolombReader* golomb_reader)
 {   
-    uint8_t vps_video_parameter_set_id = bit_stream->Read<uint8_t>(4);
+    video_parameter_set_id_ = bit_stream->Read<uint8_t>(4);
     bool is_vps_base_layer_internal = bit_stream->ReadBool();
     bool is_vps_base_layer_available = bit_stream->ReadBool();
     uint8_t vps_max_layers = bit_stream->Read<uint8_t>(6) + 1;
@@ -50,11 +51,7 @@ void VideoParameterSet::ParasVPSInfo(BitStream* bit_stream,
     bool is_vps_temporal_id_nesting = bit_stream->ReadBool();
 
     bit_stream->SkipBits(16);
-    if (!profile_tier_level_)
-    {
-        profile_tier_level_.reset(
-            new ProfileTierLevel(true, vps_max_sub_layers));
-    }
+    profile_tier_level_.reset(new ProfileTierLevel(true, vps_max_sub_layers));
 
     profile_tier_level_->Parse(bit_stream);
     bool is_vps_sub_layer_ordering_info_present = bit_stream->ReadBool();
@@ -119,4 +116,9 @@ void VideoParameterSet::ParasHRDInfo(BitStream* bit_stream,
         hrd_parameters_.push_back(unique_ptr<HrdParmeters>(
             new HrdParmeters(cprms_present[i], vps_max_sub_layers)));
     }
+}
+
+uint8_t VideoParameterSet::GetVideoParameterSetID()
+{
+    return video_parameter_set_id_;
 }

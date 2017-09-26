@@ -8,7 +8,7 @@
 
 int main(int argc, char** argv, char** env)
 {
-    const wchar_t h265_video_file[] = L"E:\\r\\3_2048_1080.265";    
+    const wchar_t h265_video_file[] = L"D:\\mv_test\\hevc_sequence\\BQTerrace_1920x1080_60_600f_420_8bit_qp24_wpp_io_main_Ejctvc-hm12.1.hevc";    
     HANDLE h265_video_handle = ::CreateFileW(h265_video_file,
                                              GENERIC_READ, FILE_SHARE_READ,
                                              NULL, OPEN_EXISTING,
@@ -43,7 +43,7 @@ int main(int argc, char** argv, char** env)
     while (length > 0)
     {
         if (::ReadFile(h265_video_handle, &viode_buffer.front(), 8192,
-            &read_length, NULL))
+                       &read_length, NULL))
         {
             decoder.Decode(&viode_buffer.front(), read_length, nullptr);
         }

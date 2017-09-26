@@ -18,7 +18,8 @@ uint32_t GolombReader::ReadUnsignedValue()
     while (!bit_stream_->Read<uint8_t>(1))
         ++zero_bits;
 
-    return (1 << zero_bits) - 1 + bit_stream_->Read<uint32_t>(zero_bits);
+    return (0 == zero_bits) ? 0 :
+        (1 << zero_bits) - 1 + bit_stream_->Read<uint32_t>(zero_bits);
 }
 
 int32_t GolombReader::ReadSignedValue()

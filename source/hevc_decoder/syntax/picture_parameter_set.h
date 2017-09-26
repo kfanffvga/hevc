@@ -16,6 +16,8 @@ public:
 
     virtual bool Parse(BitStream* bit_stream) override;
 
+    uint32_t GetPictureParameterSetID();
+
 private:
     struct TileInfo
     {
@@ -37,5 +39,7 @@ private:
     void ParseDeblockingFilterControlInfo(BitStream* bit_stream);
     bool ParsePPSExtensionInfo(bool is_transform_skip_enabled, 
                                BitStream* bit_stream);
+
+    uint32_t pps_pic_parameter_set_id_;
 };
 #endif

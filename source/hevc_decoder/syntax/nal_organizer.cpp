@@ -5,23 +5,25 @@
 #include "hevc_decoder/base/basic_types.h"
 #include "hevc_decoder/syntax/nal_unit.h"
 #include "hevc_decoder/syntax/syntax_dispatcher.h"
+#include "hevc_decoder/syntax/parameters_manager.h"
 
 using std::move;
 
-NalOrganizer::NalOrganizer() 
+NALOrganizer::NALOrganizer(ParametersManager* parameters_manager) 
     : zero_count_(0)
     , nal_unit_unused_length_(0)
     , raw_nal_unit_data_(4096)
+    , dispatcher_(new SyntaxDispatcher(parameters_manager))
 {
 
 }
 
-NalOrganizer::~NalOrganizer()
+NALOrganizer::~NALOrganizer()
 {
 
 }
 
-bool NalOrganizer::Decode(const int8_t* data, int length)
+bool NALOrganizer::Decode(const int8_t* data, int length)
 {
     raw_nal_unit_data_.SetSize(length + nal_unit_unused_length_);
     const int24 end_mark = int_to_int24(0x10000);
@@ -42,10 +44,9 @@ bool NalOrganizer::Decode(const int8_t* data, int length)
 
             if (nal_unit_unused_length_ > 0)
             {
-                unique_ptr<NalUnit> nal_unit(new NalUnit(raw_nal_unit_point,
-                                                         nal_unit_unused_length_));
-                SyntaxDispatcher manager;
-                 manager.CreateSyntaxAndDispatch(std::move(nal_unit));
+                unique_ptr<NalUnit> nal_unit(
+                    new NalUnit(raw_nal_unit_point, nal_unit_unused_length_));
+                dispatcher_->CreateSyntaxAndDispatch(move(nal_unit));
                 nal_unit_unused_length_ = 0;
             }
         }

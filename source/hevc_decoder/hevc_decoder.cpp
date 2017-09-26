@@ -2,12 +2,14 @@
 
 #include "hevc_decoder/hevc_decoder_def.h"
 #include "hevc_decoder/syntax/nal_organizer.h"
+#include "hevc_decoder/syntax/parameters_manager.h"
 
 using std::unique_ptr;
 using std::list;
 
 HEVCDecoder::HEVCDecoder()
-    : organizer_(new NalOrganizer())
+    : parameters_manager_(new ParametersManager())
+    , organizer_(new NALOrganizer(parameters_manager_.get()))
 {
 
 }

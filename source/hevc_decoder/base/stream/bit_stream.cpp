@@ -45,23 +45,21 @@ int BitStream::GetBitPosition()
 int BitStream::ReadBitInByte(int length, int64_t* read_result)
 {
     if (!read_result || (current_pos_ptr_ == end_ptr_))
-        return -1;
+        return 0;
 
-    assert(byte_inner_sequence_ >= 0 && byte_inner_sequence_ < 8);
-    int raw_bits = 8 - byte_inner_sequence_;
-    int read_reality_length = min(raw_bits, length);
-    uint8_t offset = raw_bits - read_reality_length;
-    uint8_t mask = ((1 << read_reality_length) - 1) << offset;
-    *read_result = (*current_pos_ptr_ & mask) >> offset;
-    byte_inner_sequence_ += read_reality_length;
+    assert((byte_inner_sequence_ >= 0) && (byte_inner_sequence_ < 8));
+    int max_provide_bits = 8 - byte_inner_sequence_;
+    int read_reality_bits = min(max_provide_bits, length);
+    *read_result = static_cast<uint8_t>(
+        *current_pos_ptr_ << byte_inner_sequence_) >> (8 - read_reality_bits);
+
+    byte_inner_sequence_ += read_reality_bits;
     if (8 == byte_inner_sequence_)
     {
         byte_inner_sequence_ = 0;
-        if (current_pos_ptr_ < end_ptr_)
-            ++current_pos_ptr_;
+        ++current_pos_ptr_;
     }
-
-    return read_reality_length;
+    return read_reality_bits;
 }
 
 bool BitStream::ReadBool()

@@ -8,8 +8,8 @@
 #include "hevc_decoder/syntax/pps_3d_extension.h"
 #include "hevc_decoder/syntax/pps_screen_content_coding_extension.h"
 
-
 PictureParameterSet::PictureParameterSet()
+    : pps_pic_parameter_set_id_(0)
 {
 
 }
@@ -25,7 +25,7 @@ bool PictureParameterSet::Parse(BitStream* bit_stream)
         return false;
 
     GolombReader golomb_reader(bit_stream);
-    uint32_t pps_pic_parameter_set_id = golomb_reader.ReadUnsignedValue();
+    pps_pic_parameter_set_id_ = golomb_reader.ReadUnsignedValue();
     uint32_t pps_seq_parameter_set_id = golomb_reader.ReadUnsignedValue();
     bool is_dependent_slice_segments_enabled = bit_stream->ReadBool();
     bool has_output_flag_present = bit_stream->ReadBool();
@@ -149,4 +149,9 @@ bool PictureParameterSet::ParsePPSExtensionInfo(bool is_transform_skip_enabled,
             return false;
     }
     return true;
+}
+
+uint32_t PictureParameterSet::GetPictureParameterSetID()
+{
+    return pps_pic_parameter_set_id_;
 }
