@@ -31,6 +31,8 @@ bool ScalingListData::Parse(BitStream* bit_stream)
         for (int matrix_id = 0; matrix_id < 6;)
         {
             bool has_scaling_list_pred_mode = bit_stream->ReadBool();
+            // 如果是预设模式的话,就去取预设的,如果没有预设的话,那就需要文件记录了,
+            // 文件记录为了减少字节的开销,因此文件记录的是与上一个的差值
             if (!has_scaling_list_pred_mode)
             {
                 uint32_t scaling_list_pred_matrix_id_delta = 

@@ -5,7 +5,7 @@
 
 using std::vector;
 
-FramePartition::FramePartition(uint32 frame_width, uint32 frame_height)
+FramePartition::FramePartition(uint32_t frame_width, uint32_t frame_height)
     : frame_height_(frame_height)
     , frame_width_(frame_width)
     , ctb_log2_size_y_(0)
@@ -22,23 +22,23 @@ FramePartition::~FramePartition()
 
 }
 
-bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols, 
-                                          uint32 num_tile_rows, 
-                                          uint32 ctb_log2_size_y, 
-                                          uint32 min_tb_log2_size_y)
+bool FramePartition::InitOnUniformSpacing(uint32_t num_tile_cols, 
+                                          uint32_t num_tile_rows, 
+                                          uint32_t ctb_log2_size_y, 
+                                          uint32_t min_tb_log2_size_y)
 {
     if ((0 == num_tile_rows) || (0 == num_tile_cols))
         return false;
 
-    uint32 tile_width_in_ctb = (frame_width_ >> ctb_log2_size_y) / num_tile_cols;
-    vector<uint32> tile_cols_width_in_ctb;
+    uint32_t tile_width_in_ctb = (frame_width_ >> ctb_log2_size_y) / num_tile_cols;
+    vector<uint32_t> tile_cols_width_in_ctb;
     tile_cols_width_in_ctb.resize(num_tile_cols);
     for (auto& width : tile_cols_width_in_ctb)
         width = tile_width_in_ctb;
 
-    uint32 tile_height_in_ctb = 
+    uint32_t tile_height_in_ctb = 
         (frame_height_ >> ctb_log2_size_y) / num_tile_rows;
-    vector<uint32> tile_rows_height_in_ctb;
+    vector<uint32_t> tile_rows_height_in_ctb;
     tile_rows_height_in_ctb.resize(num_tile_rows);
     for (auto& height : tile_rows_height_in_ctb)
         height = tile_height_in_ctb;
@@ -47,9 +47,9 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
                 ctb_log2_size_y, min_tb_log2_size_y);
 }
 
- bool FramePartition::Init(const vector<uint32>& tile_cols_width_in_ctb, 
-                           const vector<uint32>& tile_rows_height_in_ctb, 
-                           uint32 ctb_log2_size_y, uint32 min_tb_log2_size_y)
+ bool FramePartition::Init(const vector<uint32_t>& tile_cols_width_in_ctb, 
+                           const vector<uint32_t>& tile_rows_height_in_ctb, 
+                           uint32_t ctb_log2_size_y, uint32_t min_tb_log2_size_y)
 {
     if (tile_cols_width_in_ctb.empty() || tile_rows_height_in_ctb.empty())
         return false;
@@ -57,8 +57,8 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
     if (!ctb_log2_size_y || !min_tb_log2_size_y) 
         return false;
 
-    vector<uint32> absolute_tile_width;
-    uint32 base = 0;
+    vector<uint32_t> absolute_tile_width;
+    uint32_t base = 0;
     for (const auto& i : tile_cols_width_in_ctb)
     {
         base += i << ctb_log2_size_y;
@@ -66,25 +66,25 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
     }
     
     base = 0;
-    vector<uint32> absolute_tile_height;
+    vector<uint32_t> absolute_tile_height;
     for (const auto& i : tile_rows_height_in_ctb)
     {
         base += i << ctb_log2_size_y;
         absolute_tile_height.push_back(base);
     }
 
-    uint32 tile_index = 0, tile_begin_x = 0, tile_begin_y = 0;
-    uint32 ctbs_per_row = 
+    uint32_t tile_index = 0, tile_begin_x = 0, tile_begin_y = 0;
+    uint32_t ctbs_per_row = 
         UpAlign(frame_width_, ctb_log2_size_y) >> ctb_log2_size_y;
-    uint32 tile_scan_index = 0;
+    uint32_t tile_scan_index = 0;
     for (const auto& tile_end_y : absolute_tile_height)
     {
         for (const auto& tile_end_x : absolute_tile_width)
         {
-            uint32 end_x = tile_end_x == frame_width_ ? 
+            uint32_t end_x = tile_end_x == frame_width_ ? 
                 UpAlign(tile_end_x, ctb_log2_size_y) : tile_end_x;
 
-            uint32 end_y = tile_end_y == frame_height_ ?
+            uint32_t end_y = tile_end_y == frame_height_ ?
                 UpAlign(tile_end_y, ctb_log2_size_y) : tile_end_y;
 
             InitSingleTilePartition(tile_begin_x, tile_begin_y, end_x, end_y, 
@@ -104,24 +104,24 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
     return true;
 }
 
- void FramePartition::InitSingleTilePartition(uint32 tile_begin_x, 
-                                              uint32 tile_begin_y, 
-                                              uint32 tile_end_x, 
-                                              uint32 tile_end_y, 
-                                              uint32 tile_index, 
-                                              uint32 ctb_log2_size_y,
-                                              uint32 ctbs_per_row,
-                                              uint32* tile_scan_index)
+ void FramePartition::InitSingleTilePartition(uint32_t tile_begin_x, 
+                                              uint32_t tile_begin_y, 
+                                              uint32_t tile_end_x, 
+                                              uint32_t tile_end_y, 
+                                              uint32_t tile_index, 
+                                              uint32_t ctb_log2_size_y,
+                                              uint32_t ctbs_per_row,
+                                              uint32_t* tile_scan_index)
  {
      bool is_first_block_in_tile = true;
-     uint32 block_tile_scan_index = 0;
-     uint32 ctb_size_y = 1 << ctb_log2_size_y;
-     for (uint32 y = tile_begin_y; y < tile_end_y; y += ctb_size_y)
+     uint32_t block_tile_scan_index = 0;
+     uint32_t ctb_size_y = 1 << ctb_log2_size_y;
+     for (uint32_t y = tile_begin_y; y < tile_end_y; y += ctb_size_y)
      {
-         uint32 row_begin_index = (y >> ctb_log2_size_y) * ctbs_per_row;
-         for (uint32 x = tile_begin_x; x < tile_end_x; x += ctb_size_y)
+         uint32_t row_begin_index = (y >> ctb_log2_size_y) * ctbs_per_row;
+         for (uint32_t x = tile_begin_x; x < tile_end_x; x += ctb_size_y)
          {
-             uint32 raster_scan_index = (x >> ctb_log2_size_y) + row_begin_index;
+             uint32_t raster_scan_index = (x >> ctb_log2_size_y) + row_begin_index;
              
              CodedTreeBlockPositionInfo info = 
              {
@@ -135,8 +135,8 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
      }
  }
 
- void FramePartition::InitTransformBlockPartition(uint32 ctb_log2_size_y, 
-                                                  uint32 min_tb_log2_size_y)
+ void FramePartition::InitTransformBlockPartition(uint32_t ctb_log2_size_y, 
+                                                  uint32_t min_tb_log2_size_y)
  {
      // Fix Me 对齐问题,此处没考虑
      if (ctb_log2_size_y < min_tb_log2_size_y)
@@ -144,19 +144,19 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
 
      auto& tile_scan_values = 
          tile_and_raster_partition_info_.get<FramePartition::TileScanIndex>();
-     uint32 log2_min_tbs_per_ctb = ctb_log2_size_y - min_tb_log2_size_y;
-     uint32 ctb_width_in_min_tbs = 1 << log2_min_tbs_per_ctb;
+     uint32_t log2_min_tbs_per_ctb = ctb_log2_size_y - min_tb_log2_size_y;
+     uint32_t ctb_width_in_min_tbs = 1 << log2_min_tbs_per_ctb;
      for (const auto& i : tile_scan_values)
      {
-         uint32 tb_index = i.block_tile_scan_index << log2_min_tbs_per_ctb;
-         for (uint32 x = 0; x < ctb_width_in_min_tbs; ++x)
+         uint32_t tb_index = i.block_tile_scan_index << log2_min_tbs_per_ctb;
+         for (uint32_t x = 0; x < ctb_width_in_min_tbs; ++x)
          {
-             for (uint32 y = 0; y < ctb_width_in_min_tbs; ++y)
+             for (uint32_t y = 0; y < ctb_width_in_min_tbs; ++y)
              {
-                 uint32 tb_index_of_current_ctb = 0;
-                 for (uint32 j = 0; j < log2_min_tbs_per_ctb; ++j)
+                 uint32_t tb_index_of_current_ctb = 0;
+                 for (uint32_t j = 0; j < log2_min_tbs_per_ctb; ++j)
                  {
-                     uint32 v = 1 << j;
+                     uint32_t v = 1 << j;
                      if ((v > x) && (v > y))
                          break;
 
@@ -177,7 +177,7 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
      }
  }
 
- uint32 FramePartition::RasterScanToTileScan(uint32 index)
+ uint32_t FramePartition::RasterScanToTileScan(uint32_t index)
  {
     auto& raster_scan_values = 
         tile_and_raster_partition_info_.get<FramePartition::RasterScanIndex>();
@@ -227,11 +227,11 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
         tb_of_neighbouring_block->belong_to_tile_index)
         return false;
 
-    uint32 slice_address_of_current_block = 
+    uint32_t slice_address_of_current_block = 
         frame_context->GetSliceAddressByRasterScanBlockIndex(
             tb_of_current_block->belong_to_raster_scan_index);
 
-    uint32 slice_address_of_neighbouring_block =
+    uint32_t slice_address_of_neighbouring_block =
         frame_context->GetSliceAddressByRasterScanBlockIndex(
             tb_of_neighbouring_block->belong_to_raster_scan_index);
     
@@ -239,14 +239,14 @@ bool FramePartition::InitOnUniformSpacing(uint32 num_tile_cols,
     return slice_address_of_current_block == slice_address_of_neighbouring_block;
  }
 
- uint32 FramePartition::GetTileIndex(const Coordinate& block)
+ uint32_t FramePartition::GetTileIndex(const Coordinate& block)
  {
      auto& coordinate_values = 
          tile_and_raster_partition_info_.get<CoordinateKey>();
 
      auto block_info = coordinate_values.find(block);
      if (coordinate_values.end() == block_info)
-         return static_cast<uint32>(-1);
+         return static_cast<uint32_t>(-1);
 
      return block_info->tile_index;
  }

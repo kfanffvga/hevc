@@ -77,6 +77,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="base\basic_types.h" />
+    <ClInclude Include="base\frame_partition.h" />
     <ClInclude Include="base\growing_buffer.h" />
     <ClInclude Include="base\stream\bit_stream.h" />
     <ClInclude Include="base\stream\golomb_reader.h" />
@@ -100,11 +101,19 @@
     <ClInclude Include="syntax\pps_screen_content_coding_extension.h" />
     <ClInclude Include="syntax\profile_tier_level.h" />
     <ClInclude Include="syntax\scaling_list_data.h" />
+    <ClInclude Include="syntax\sequence_parameter_set.h" />
+    <ClInclude Include="syntax\short_term_reference_picture_set.h" />
+    <ClInclude Include="syntax\short_term_reference_picture_set_context.h" />
     <ClInclude Include="syntax\slice_segment_syntax.h" />
     <ClInclude Include="syntax\slice_syntax.h" />
+    <ClInclude Include="syntax\sps_3d_extension.h" />
+    <ClInclude Include="syntax\sps_multilayer_extension.h" />
+    <ClInclude Include="syntax\sps_range_extension.h" />
+    <ClInclude Include="syntax\sps_screen_content_coding_extension.h" />
     <ClInclude Include="syntax\sub_layer_hrd_parameters.h" />
     <ClInclude Include="syntax\syntax_dispatcher.h" />
     <ClInclude Include="syntax\video_parameter_set.h" />
+    <ClInclude Include="syntax\video_usability_infomation_parameters.h" />
     <ClInclude Include="variant_length_data_decoder\cabac_context_storage.h" />
     <ClInclude Include="variant_length_data_decoder\cabac_context_types.h" />
     <ClInclude Include="variant_length_data_decoder\cabac_reader.h" />
@@ -112,6 +121,7 @@
     <ClInclude Include="variant_length_data_decoder\end_of_slice_segment_flag_reader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="base\frame_partition.cpp" />
     <ClCompile Include="base\stream\bit_stream.cpp" />
     <ClCompile Include="base\stream\golomb_reader.cpp" />
     <ClCompile Include="frame.cpp" />
@@ -131,11 +141,18 @@
     <ClCompile Include="syntax\pps_screen_content_coding_extension.cpp" />
     <ClCompile Include="syntax\profile_tier_level.cpp" />
     <ClCompile Include="syntax\scaling_list_data.cpp" />
+    <ClCompile Include="syntax\sequence_parameter_set.cpp" />
+    <ClCompile Include="syntax\short_term_reference_picture_set.cpp" />
     <ClCompile Include="syntax\slice_segment_syntax.cpp" />
     <ClCompile Include="syntax\slice_syntax.cpp" />
+    <ClCompile Include="syntax\sps_3d_extension.cpp" />
+    <ClCompile Include="syntax\sps_multilayer_extension.cpp" />
+    <ClCompile Include="syntax\sps_range_extension.cpp" />
+    <ClCompile Include="syntax\sps_screen_content_coding_extension.cpp" />
     <ClCompile Include="syntax\sub_layer_hrd_parameters.cpp" />
     <ClCompile Include="syntax\syntax_dispatcher.cpp" />
     <ClCompile Include="syntax\video_parameter_set.cpp" />
+    <ClCompile Include="syntax\video_usability_infomation_parameters.cpp" />
     <ClCompile Include="variant_length_data_decoder\cabac_context_storage.cpp" />
     <ClCompile Include="variant_length_data_decoder\cabac_reader.cpp" />
     <ClCompile Include="variant_length_data_decoder\common_cabac_syntax_reader.cpp" />

@@ -110,7 +110,36 @@
     <ClInclude Include="syntax\pps_screen_content_coding_extension.h">
       <Filter>syntax</Filter>
     </ClInclude>
-    <ClInclude Include="syntax\sub_layer_hrd_parameters.h" />
+    <ClInclude Include="syntax\sequence_parameter_set.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\short_term_reference_picture_set.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\short_term_reference_picture_set_context.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\video_usability_infomation_parameters.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\sps_range_extension.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\sps_multilayer_extension.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\sps_3d_extension.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\sps_screen_content_coding_extension.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\sub_layer_hrd_parameters.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="base\frame_partition.h">
+      <Filter>base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -152,7 +181,6 @@
       <Filter>variant_length_data_decoder</Filter>
     </ClCompile>
     <ClCompile Include="syntax\profile_tier_level.cpp" />
-    <ClCompile Include="syntax\video_parameter_set.cpp" />
     <ClCompile Include="syntax\video_parameter_set.cpp">
       <Filter>syntax</Filter>
     </ClCompile>
@@ -192,6 +220,35 @@
     <ClCompile Include="syntax\pps_screen_content_coding_extension.cpp">
       <Filter>syntax</Filter>
     </ClCompile>
-    <ClCompile Include="syntax\sub_layer_hrd_parameters.cpp" />
+    <ClCompile Include="syntax\sequence_parameter_set.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\short_term_reference_picture_set.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\video_usability_infomation_parameters.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\sps_range_extension.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\sps_multilayer_extension.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\sps_3d_extension.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\sps_screen_content_coding_extension.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\sub_layer_hrd_parameters.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\video_parameter_set.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="base\frame_partition.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

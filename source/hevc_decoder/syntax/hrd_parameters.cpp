@@ -17,7 +17,7 @@ namespace
 const uint32_t numerals_twenty_three = 23;
 }
 
-HrdParmeters::HrdParmeters(bool commin_inf_present, int max_num_sub_layers)
+HrdParmeters::HrdParmeters(bool commin_inf_present, uint32_t max_num_sub_layers)
     : BaseSyntax()
     , commin_inf_present_(commin_inf_present)
     , max_num_sub_layers_(max_num_sub_layers)
@@ -80,7 +80,7 @@ bool HrdParmeters::Parse(BitStream* bit_stream)
     vector<uint32_t> elemental_duration_in_tc(max_num_sub_layers_);
     vector<uint32_t> cpb_cnt(max_num_sub_layers_);
     GolombReader golomb_reader(bit_stream);
-    for (int i = 0; i <= max_num_sub_layers_; ++i)
+    for (uint32_t i = 0; i <= max_num_sub_layers_; ++i)
     {
         is_fixed_pic_rate_general[i] = bit_stream->ReadBool();
         is_fixed_pic_rate_within_cvs[i] = is_fixed_pic_rate_general[i] ?

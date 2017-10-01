@@ -9,6 +9,14 @@ struct Coordinate
     uint32_t y;
 };
 
+struct Rect
+{
+    uint32_t left;
+    uint32_t right;
+    uint32_t top;
+    uint32_t bottom;
+};
+
 #pragma pack(push, 1)
 struct int24
 {

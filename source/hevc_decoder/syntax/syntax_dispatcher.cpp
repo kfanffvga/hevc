@@ -4,6 +4,7 @@
 #include "hevc_decoder/syntax/video_parameter_set.h"
 #include "hevc_decoder/syntax/picture_parameter_set.h"
 #include "hevc_decoder/syntax/parameters_manager.h"
+#include "hevc_decoder/syntax/sequence_parameter_set.h"
 
 using std::unique_ptr;
 using std::move;
@@ -35,6 +36,7 @@ bool SyntaxDispatcher::CreateSyntaxAndDispatch(unique_ptr<NalUnit> nal_unit)
 
             return success;
         }
+
         case NalUnitType::PPS_NUT:
         {
             unique_ptr<PictureParameterSet> pps(new PictureParameterSet());
@@ -42,6 +44,14 @@ bool SyntaxDispatcher::CreateSyntaxAndDispatch(unique_ptr<NalUnit> nal_unit)
             if (success)
                 success = parameters_manager_->AddPictureParameterSet(move(pps));
 
+            return success;
+        }
+
+        case NalUnitType::SPS_NUT:
+        {
+            unique_ptr<SequenceParameterSet> sps(new SequenceParameterSet());
+            bool success = sps->Parse(nal_unit->GetBitSteam());
+            
             return success;
         }
         default:
