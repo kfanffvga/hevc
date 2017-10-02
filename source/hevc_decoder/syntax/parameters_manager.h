@@ -6,6 +6,7 @@
 
 class VideoParameterSet;
 class PictureParameterSet;
+class SequenceParameterSet;
 
 class ParametersManager
 {
@@ -18,10 +19,14 @@ public:
 
     bool AddPictureParameterSet(std::unique_ptr<PictureParameterSet> pps);
     const PictureParameterSet* GetPictureParameterSet(uint32_t pps_id);
+            
+    bool AddSequenceParameterSet(std::unique_ptr<SequenceParameterSet> sps);
+    const SequenceParameterSet* GetSequenceParameterSet(uint32_t sps_id);
 
 private:
     std::map<uint8_t, std::unique_ptr<VideoParameterSet>> vpss_;
     std::map<uint32_t, std::unique_ptr<PictureParameterSet>> ppss_;
+    std::map<uint32_t, std::unique_ptr<SequenceParameterSet>> spss_;
 };
 
 #endif

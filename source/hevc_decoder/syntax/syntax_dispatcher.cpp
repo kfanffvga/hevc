@@ -51,7 +51,11 @@ bool SyntaxDispatcher::CreateSyntaxAndDispatch(unique_ptr<NalUnit> nal_unit)
         {
             unique_ptr<SequenceParameterSet> sps(new SequenceParameterSet());
             bool success = sps->Parse(nal_unit->GetBitSteam());
-            
+            if (success)
+            {
+                success =
+                    parameters_manager_->AddSequenceParameterSet(move(sps));
+            }
             return success;
         }
         default:
