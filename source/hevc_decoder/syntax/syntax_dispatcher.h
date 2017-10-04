@@ -18,7 +18,8 @@ public:
     bool CreateSyntaxAndDispatch(std::unique_ptr<NalUnit> nal_unit);
 
 private:
-    bool CreateSliceSegmentSyntaxAndDispatch(NalUnit* nal_unit);
+    bool CreateSliceSegmentSyntaxAndDispatch(NalUnit* nal_unit, 
+                                             bool is_idr_frame);
 
     ParametersManager* parameters_manager_;
     DecodeProcessorManager* decode_processor_manager_;

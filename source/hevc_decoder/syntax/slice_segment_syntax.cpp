@@ -1,6 +1,8 @@
 ﻿#include "hevc_decoder/syntax/slice_segment_syntax.h"
 
-SliceSegmentSyntax::SliceSegmentSyntax()
+SliceSegmentSyntax::SliceSegmentSyntax(
+    IFrameSyntaxContext* frame_syntax_context)
+    : frame_syntax_context_(frame_syntax_context)
 {
 
 }

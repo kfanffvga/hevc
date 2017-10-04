@@ -1,12 +1,16 @@
 #include "hevc_decoder/syntax/syntax_dispatcher.h"
 
+#include <cassert>
+
 #include "hevc_decoder/syntax/nal_unit.h"
 #include "hevc_decoder/syntax/video_parameter_set.h"
 #include "hevc_decoder/syntax/picture_parameter_set.h"
 #include "hevc_decoder/syntax/parameters_manager.h"
 #include "hevc_decoder/syntax/sequence_parameter_set.h"
 #include "hevc_decoder/syntax/frame_syntax.h"
-#include "hevc_decoder/predictors/predictor_manager.h"
+#include "hevc_decoder/syntax/slice_segment_syntax.h"
+#include "hevc_decoder/decode_processor_manager.h"
+#include "hevc_decoder/base/stream/bit_stream.h"
 
 using std::unique_ptr;
 using std::move;
@@ -77,13 +81,12 @@ bool SyntaxDispatcher::CreateSyntaxAndDispatch(unique_ptr<NalUnit> nal_unit)
         case NalUnitType::BLA_W_RADL:
         case NalUnitType::BLA_N_LP:
         case NalUnitType::CRA_NUT:
-            return CreateSliceSegmentSyntaxAndDispatch(nal_unit.get());
+            return CreateSliceSegmentSyntaxAndDispatch(nal_unit.get(), false);
 
         case NalUnitType::IDR_W_RADL:
         case NalUnitType::IDR_N_LP:
         {
-            //TODO: flush all
-            return CreateSliceSegmentSyntaxAndDispatch(nal_unit.get());
+            return CreateSliceSegmentSyntaxAndDispatch(nal_unit.get(), true);
         }
 
         default:
@@ -93,8 +96,24 @@ bool SyntaxDispatcher::CreateSyntaxAndDispatch(unique_ptr<NalUnit> nal_unit)
     return true;
 }
 
-bool SyntaxDispatcher::CreateSliceSegmentSyntaxAndDispatch(NalUnit* nal_unit)
+bool SyntaxDispatcher::CreateSliceSegmentSyntaxAndDispatch(NalUnit* nal_unit,
+                                                           bool is_idr_frame)
 {
+    assert(nal_unit);
+    if (nal_unit->GetBitSteam()->ReadBool())
+    {
+        decode_processor_manager_->Decode(frame_syntax_.get());
+        if (is_idr_frame)
+            decode_processor_manager_->Flush();
 
-    return false;
+        frame_syntax_.reset(new FrameSyntax());
+    }
+    nal_unit->GetBitSteam()->Seek(0, 0);
+    unique_ptr<SliceSegmentSyntax> slice_segment_syntax(
+        new SliceSegmentSyntax(frame_syntax_.get()));
+    bool success = slice_segment_syntax->Parse(nal_unit->GetBitSteam());
+    if (!success)
+        return false;
+
+    return frame_syntax_->AddSliceSegment(move(slice_segment_syntax));
 }

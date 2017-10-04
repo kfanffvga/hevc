@@ -22,7 +22,7 @@ public:
     ~DecodeProcessorManager();
 
     bool Flush();
-    bool Decode(const std::shared_ptr<FrameSyntax>& frame_syntax);
+    bool Decode(const FrameSyntax* frame_syntax);
 
 private:
     ParametersManager* parameters_manager_;
