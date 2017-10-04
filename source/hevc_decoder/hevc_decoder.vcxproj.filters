@@ -13,6 +13,9 @@
     <Filter Include="variant_length_data_decoder">
       <UniqueIdentifier>{9d6cdb04-b389-4805-8471-6a38afe7349c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="predictors">
+      <UniqueIdentifier>{77410b83-15cf-4914-a7e6-cfbbe568d453}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hevc_decoder.h" />
@@ -140,6 +143,11 @@
     <ClInclude Include="base\frame_partition.h">
       <Filter>base</Filter>
     </ClInclude>
+    <ClInclude Include="predictors\predictor_manager.h">
+      <Filter>predictors</Filter>
+    </ClInclude>
+    <ClInclude Include="decode_processor_manager.h" />
+    <ClInclude Include="frame_sequence_arranger.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -250,5 +258,10 @@
     <ClCompile Include="base\frame_partition.cpp">
       <Filter>base</Filter>
     </ClCompile>
+    <ClCompile Include="predictors\predictor_manager.cpp">
+      <Filter>predictors</Filter>
+    </ClCompile>
+    <ClCompile Include="decode_processor_manager.cpp" />
+    <ClCompile Include="frame_sequence_arranger.cpp" />
   </ItemGroup>
 </Project>

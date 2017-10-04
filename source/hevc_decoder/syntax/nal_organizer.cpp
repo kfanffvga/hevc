@@ -9,11 +9,11 @@
 
 using std::move;
 
-NALOrganizer::NALOrganizer(ParametersManager* parameters_manager) 
+NALOrganizer::NALOrganizer(SyntaxDispatcher* dispatcher) 
     : zero_count_(0)
     , nal_unit_unused_length_(0)
     , raw_nal_unit_data_(4096)
-    , dispatcher_(new SyntaxDispatcher(parameters_manager))
+    , dispatcher_(dispatcher)
 {
 
 }

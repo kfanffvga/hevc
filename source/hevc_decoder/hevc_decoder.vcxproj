@@ -81,9 +81,12 @@
     <ClInclude Include="base\growing_buffer.h" />
     <ClInclude Include="base\stream\bit_stream.h" />
     <ClInclude Include="base\stream\golomb_reader.h" />
+    <ClInclude Include="decode_processor_manager.h" />
     <ClInclude Include="frame.h" />
+    <ClInclude Include="frame_sequence_arranger.h" />
     <ClInclude Include="hevc_decoder.h" />
     <ClInclude Include="hevc_decoder_def.h" />
+    <ClInclude Include="predictors\predictor_manager.h" />
     <ClInclude Include="syntax\base_syntax.h" />
     <ClInclude Include="syntax\colour_mapping_octants.h" />
     <ClInclude Include="syntax\colour_mapping_table.h" />
@@ -124,8 +127,11 @@
     <ClCompile Include="base\frame_partition.cpp" />
     <ClCompile Include="base\stream\bit_stream.cpp" />
     <ClCompile Include="base\stream\golomb_reader.cpp" />
+    <ClCompile Include="decode_processor_manager.cpp" />
     <ClCompile Include="frame.cpp" />
+    <ClCompile Include="frame_sequence_arranger.cpp" />
     <ClCompile Include="hevc_decoder.cpp" />
+    <ClCompile Include="predictors\predictor_manager.cpp" />
     <ClCompile Include="syntax\colour_mapping_octants.cpp" />
     <ClCompile Include="syntax\colour_mapping_table.cpp" />
     <ClCompile Include="syntax\delta_dlt.cpp" />
