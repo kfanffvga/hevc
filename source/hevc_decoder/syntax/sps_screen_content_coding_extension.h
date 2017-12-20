@@ -13,8 +13,11 @@ public:
 
     virtual bool Parse(BitStream* bit_stream) override;
 
+    uint8_t GetMotionVectorResolutionControlIDC() const;
+
 private:
     uint32_t num_of_color_compoments_;
+    uint8_t motion_vector_resolution_control_idc_;
 };
 
 #endif

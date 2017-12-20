@@ -9,9 +9,9 @@ class ShortTermReferencePictureSetContext
 {
 public: 
     virtual ~ShortTermReferencePictureSetContext() { }
-    virtual uint32_t GetShortTermReferencePictureSetCount() = 0;
+    virtual uint32_t GetShortTermReferencePictureSetCount() const = 0;
     virtual const ShortTermReferencePictureSet*
-        GetShortTermReferencePictureSet(uint32_t index) = 0;
+        GetShortTermReferencePictureSet(uint32_t index) const = 0;
 
 };
 #endif

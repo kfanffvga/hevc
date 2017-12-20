@@ -2,6 +2,7 @@
 
 #include "hevc_decoder/base/stream/bit_stream.h"
 #include "hevc_decoder/base/stream/golomb_reader.h"
+#include "hevc_decoder/base/math.h"
 #include "hevc_decoder/syntax/profile_tier_level.h"
 #include "hevc_decoder/syntax/scaling_list_data.h"
 #include "hevc_decoder/syntax/short_term_reference_picture_set.h"
@@ -15,6 +16,19 @@ using std::vector;
 using std::unique_ptr;
 
 SequenceParameterSet::SequenceParameterSet()
+    : sps_seq_parameter_set_id_(0)
+    , short_term_reference_picture_sets_()
+    , slice_segment_address_bit_length_(0)
+    , log2_max_pic_order_cnt_lsb_(0)
+    , has_long_term_ref_pics_present_(false)
+    , lt_ref_poc_infos_()
+    , is_sps_temporal_mvp_enabled_(false)
+    , is_sample_adaptive_offset_enabled_(false)
+    , chroma_array_type_(MONO_CHROME)
+    , max_lsb_of_pic_order_count_(1 << 4)
+    , sps_range_extension_(new SPSRangeExtension())
+    , sps_scc_extension_()
+    , bit_depth_chroma_(0)
 {
 
 }
@@ -39,8 +53,13 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
     GolombReader golomb_reader(bit_stream);
     sps_seq_parameter_set_id_ = golomb_reader.ReadUnsignedValue();
     uint32_t chroma_format_idc = golomb_reader.ReadUnsignedValue();
+    chroma_array_type_ = static_cast<ChromaFormatType>(chroma_format_idc);
     if (3 == chroma_format_idc)
+    {
         bool is_separate_colour_plane = bit_stream->ReadBool();
+        if (is_separate_colour_plane)
+            chroma_array_type_ = YUV_MONO_CHROME;
+    }
 
     uint32_t pic_width_in_luma_samples = golomb_reader.ReadUnsignedValue();
     uint32_t pic_height_in_luma_samples = golomb_reader.ReadUnsignedValue();
@@ -54,9 +73,10 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
         uint32_t conf_win_bottom_offset = golomb_reader.ReadUnsignedValue();
     }
     uint32_t bit_depth_luma = golomb_reader.ReadUnsignedValue() + 8;
-    uint32_t bit_depth_chroma = golomb_reader.ReadUnsignedValue() + 8;
+    bit_depth_chroma_ = golomb_reader.ReadUnsignedValue() + 8;
 
-    uint32_t log2_max_pic_order_cnt_lsb = golomb_reader.ReadUnsignedValue() + 4;
+    log2_max_pic_order_cnt_lsb_ = golomb_reader.ReadUnsignedValue() + 4;
+    max_lsb_of_pic_order_count_ = 1 << log2_max_pic_order_cnt_lsb_;
 
     bool has_sps_sub_layer_ordering_info_present = bit_stream->ReadBool();
     ParseSubLayerOrderingInfo(&golomb_reader, sps_max_sub_layers, 
@@ -66,8 +86,15 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
         golomb_reader.ReadUnsignedValue() + 3;
     uint32_t log2_diff_max_min_luma_coding_block_size = 
         golomb_reader.ReadUnsignedValue();
+
     uint32_t ctb_log2_size_y = log2_min_luma_coding_block_size + 
         log2_diff_max_min_luma_coding_block_size;
+    uint32_t pic_width_in_ctb_y =
+        UpAlignRightShift(pic_width_in_luma_samples, ctb_log2_size_y);
+    uint32_t pic_height_in_ctb_y =
+        UpAlignRightShift(pic_height_in_luma_samples, ctb_log2_size_y);
+    uint32_t pic_size_in_ctb = pic_width_in_ctb_y * pic_height_in_ctb_y;
+    slice_segment_address_bit_length_ = CeilLog2(pic_size_in_ctb);
 
     uint32_t log2_min_luma_transform_block_size = 
         golomb_reader.ReadUnsignedValue() + 2;
@@ -91,7 +118,7 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
         }
     }
     bool is_amp_enabled = bit_stream->ReadBool();
-    bool is_sample_adaptive_offset_enabled = bit_stream->ReadBool();
+    is_sample_adaptive_offset_enabled_ = bit_stream->ReadBool();
     bool is_pcm_enabled = bit_stream->ReadBool();
     if (is_pcm_enabled)
     {
@@ -104,11 +131,11 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
         bool is_pcm_loop_filter_disabled = bit_stream->ReadBool();
     }
     bool success = ParseReferencePicturesInfo(bit_stream, 
-                                              log2_max_pic_order_cnt_lsb);
+                                              log2_max_pic_order_cnt_lsb_);
     if (!success)
         return false;
 
-    bool is_sps_temporal_mvp_enabled = bit_stream->ReadBool();
+    is_sps_temporal_mvp_enabled_ = bit_stream->ReadBool();
     bool is_strong_intra_smoothing_enabled = bit_stream->ReadBool();
     bool has_vui_parameters_present = bit_stream->ReadBool();
     if (has_vui_parameters_present)
@@ -174,31 +201,30 @@ bool SequenceParameterSet::ParseReferencePicturesInfo(
         short_term_reference_picture_sets_.push_back(move(st_ref_pic_set));
     }
 
-    bool has_long_term_ref_pics_present = bit_stream->ReadBool();
+    has_long_term_ref_pics_present_ = bit_stream->ReadBool();
 
-    if (has_long_term_ref_pics_present)
+    if (has_long_term_ref_pics_present_)
     {
         uint32_t num_long_term_ref_pics_sps = golomb_reader.ReadUnsignedValue();
-        vector<LongTermReferencePictureOrderCountInfo> lt_ref_poc_info;
         for (uint32_t i = 0; i < num_long_term_ref_pics_sps; ++i)
         {
-            LongTermReferencePictureOrderCountInfo info = { };
+            LongTermReferenceLSBPictureOrderCountInfo info = { };
             info.lt_ref_pic_poc_lsb_sps = 
                 bit_stream->Read<uint32_t>(log2_max_pic_order_cnt_lsb);
             info.is_used_by_curr_pic_lt_sps_flag = bit_stream->ReadBool();
-            lt_ref_poc_info.push_back(info);
+            lt_ref_poc_infos_.push_back(info);
         }
     }
     return true;
 }
 
-uint32_t SequenceParameterSet::GetShortTermReferencePictureSetCount()
+uint32_t SequenceParameterSet::GetShortTermReferencePictureSetCount() const
 {
     return short_term_reference_picture_sets_.size();
 }
 
 const ShortTermReferencePictureSet*
-    SequenceParameterSet::GetShortTermReferencePictureSet(uint32_t index)
+    SequenceParameterSet::GetShortTermReferencePictureSet(uint32_t index) const
 {
     if (index >= short_term_reference_picture_sets_.size())
         return nullptr;
@@ -227,8 +253,7 @@ bool SequenceParameterSet::ParseExtensionInfo(BitStream* bit_stream,
     }
     if (has_sps_range_extension)
     {
-        SPSRangeExtension sps_range_extension;
-        bool success = sps_range_extension.Parse(bit_stream);
+        bool success = sps_range_extension_->Parse(bit_stream);
         if (!success)
             return false;
     }
@@ -249,10 +274,63 @@ bool SequenceParameterSet::ParseExtensionInfo(BitStream* bit_stream,
     if (has_sps_scc_extension)
     {
         uint32_t num_of_color_compoments = 0 == chroma_format_idc ? 1 : 3;
-        SPSScreenContentCodingExtension sps_scc_extension(chroma_format_idc);
-        bool success = sps_scc_extension.Parse(bit_stream);
+        sps_scc_extension_.reset(
+            new SPSScreenContentCodingExtension(chroma_format_idc));
+        bool success = sps_scc_extension_->Parse(bit_stream);
         if (!success)
             return false;
     }
     return true;
+}
+
+uint32_t SequenceParameterSet::GetSliceSegmentAddressBitLength() const
+{
+    return slice_segment_address_bit_length_;
+}
+
+uint32_t SequenceParameterSet::GetPicOrderCountLSBBitLength() const
+{
+    return log2_max_pic_order_cnt_lsb_;
+}
+
+bool SequenceParameterSet::HasLongTermReferencePicturesPresent() const
+{
+    return has_long_term_ref_pics_present_;
+}
+
+const vector<LongTermReferenceLSBPictureOrderCountInfo>& 
+    SequenceParameterSet::GetLongTermReferencePictureOrderCountInfos() const
+{
+    return lt_ref_poc_infos_;
+}
+
+bool SequenceParameterSet::IsTemporalMVPEnabled() const
+{
+    return is_sps_temporal_mvp_enabled_;
+}
+
+bool SequenceParameterSet::IsSampleAdaptiveOffsetEnabled() const
+{
+    return is_sample_adaptive_offset_enabled_;
+}
+
+ChromaFormatType SequenceParameterSet::GetChromaArrayType() const
+{
+    return chroma_array_type_;
+}
+
+const SPSRangeExtension* SequenceParameterSet::GetSPSRangeExtension() const
+{
+    return sps_range_extension_.get();
+}
+
+uint32_t SequenceParameterSet::GetBitDepthChroma() const
+{
+    return bit_depth_chroma_;
+}
+
+const SPSScreenContentCodingExtension* 
+    SequenceParameterSet::GetSPSScreenContentCodingExtension() const
+{
+    return sps_scc_extension_.get();
 }

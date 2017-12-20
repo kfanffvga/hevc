@@ -20,8 +20,9 @@ public:
     typedef std::vector<ShortTermReferenceDeltaPictureOrderCountItem> 
         ReferenceDeltaPOCs;
 
-    ShortTermReferencePictureSet(ShortTermReferencePictureSetContext* context,
-                                 uint32_t current_rps_index);
+    ShortTermReferencePictureSet(
+        const ShortTermReferencePictureSetContext* context, 
+        uint32_t current_rps_index);
 
     virtual ~ShortTermReferencePictureSet();
 
@@ -52,7 +53,7 @@ private:
         int delta_rps_of_item, const std::vector<bool>& can_use_delta,
         const std::vector<bool>& is_used_by_curr_pic);
 
-    ShortTermReferencePictureSetContext* context_;
+    const ShortTermReferencePictureSetContext* context_;
     ReferenceDeltaPOCs positive_delta_pocs_;
     ReferenceDeltaPOCs negative_delta_pocs_;
     uint32_t current_rps_index_;

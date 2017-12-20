@@ -28,7 +28,8 @@ bool ParametersManager::AddVideoParameterSet(unique_ptr<VideoParameterSet> vps)
     return true;
 }
 
-const VideoParameterSet* ParametersManager::GetVideoParameterSet(uint8_t vps_id)
+const VideoParameterSet* ParametersManager::GetVideoParameterSet(
+    uint8_t vps_id) const
 {
     auto r = vpss_.find(vps_id);
     return vpss_.end() == r ? nullptr : r->second.get();
@@ -45,7 +46,7 @@ bool ParametersManager::AddPictureParameterSet(
 }
 
 const PictureParameterSet* ParametersManager::GetPictureParameterSet(
-    uint32_t pps_id)
+    uint32_t pps_id) const
 {
     auto r = ppss_.find(pps_id);
     return ppss_.end() == r ? nullptr : r->second.get();
@@ -62,7 +63,7 @@ bool ParametersManager::AddSequenceParameterSet(
 }
 
 const SequenceParameterSet* ParametersManager::GetSequenceParameterSet(
-    uint32_t sps_id)
+    uint32_t sps_id) const
 {
     auto r = spss_.find(sps_id);
     return spss_.end() == r ? nullptr : r->second.get();

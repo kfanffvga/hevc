@@ -10,6 +10,7 @@ using std::vector;
 PPSRangeExtension::PPSRangeExtension(bool is_transform_skip_enabled)
     : BaseSyntax()
     , is_transform_skip_enabled_(is_transform_skip_enabled)
+    , is_chroma_qp_offset_list_enabled_(false)
 {
 
 }
@@ -31,8 +32,8 @@ bool PPSRangeExtension::Parse(BitStream* bit_stream)
             golomb_reader.ReadUnsignedValue();
     }
     bool is_cross_component_prediction_enabled = bit_stream->ReadBool();
-    bool is_chroma_qp_offset_list_enabled = bit_stream->ReadBool();
-    if (is_chroma_qp_offset_list_enabled)
+    is_chroma_qp_offset_list_enabled_ = bit_stream->ReadBool();
+    if (is_chroma_qp_offset_list_enabled_)
     {
         uint32_t diff_cu_chroma_qp_offset_depth = 
             golomb_reader.ReadUnsignedValue();
@@ -49,4 +50,9 @@ bool PPSRangeExtension::Parse(BitStream* bit_stream)
         uint32_t sao_offset_scale_chroma = golomb_reader.ReadUnsignedValue();
     }
     return true;
+}
+
+bool PPSRangeExtension::IsChromaQPOffsetListEnabled() const
+{
+    return is_chroma_qp_offset_list_enabled_;
 }

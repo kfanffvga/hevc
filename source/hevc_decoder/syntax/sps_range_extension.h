@@ -10,6 +10,11 @@ public:
     virtual ~SPSRangeExtension();
 
     virtual bool Parse(BitStream* bit_stream) override;
+
+    bool IsHighPrecisionOffsetsEnabled() const;
+
+private:
+    bool is_high_precision_offsets_enabled_;
 };
 
 #endif

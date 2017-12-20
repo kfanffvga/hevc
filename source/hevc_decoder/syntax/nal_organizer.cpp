@@ -10,12 +10,13 @@
 using std::move;
 
 NALOrganizer::NALOrganizer(SyntaxDispatcher* dispatcher) 
-    : zero_count_(0)
-    , nal_unit_unused_length_(0)
+    : unused_length_(0)
     , raw_nal_unit_data_(4096)
+    , cache_pos_(0)
     , dispatcher_(dispatcher)
+    , has_start_prefix_(false)
 {
-
+    memset(cache_, 0, 4);
 }
 
 NALOrganizer::~NALOrganizer()
@@ -23,51 +24,95 @@ NALOrganizer::~NALOrganizer()
 
 }
 
-bool NALOrganizer::Decode(const int8_t* data, int length)
+bool NALOrganizer::Decode(const int8_t* data, uint32_t length)
 {
-    raw_nal_unit_data_.SetSize(length + nal_unit_unused_length_);
-    const int24 end_mark = int_to_int24(0x10000);
-    const int8_t* raw_nal_current_point = data;
-    const int8_t* raw_nal_end_point = data + length;
-    int8_t* raw_nal_unit_point = raw_nal_unit_data_.GetBuffer();
-    int8_t raw_nal_byte_data = 0;
-    while (raw_nal_current_point != raw_nal_end_point)
+    if (!data || (length <= 0))
+        return false;
+     
+    raw_nal_unit_data_.SetSize(length + unused_length_);
+    for (uint32_t i = 0; i < length; ++i)
     {
-        if ((*reinterpret_cast<const int*>(raw_nal_current_point) == 0x1000000) ||
-            (*reinterpret_cast<const int24*>(raw_nal_current_point) == end_mark))
+        if (((data[i] != 3) && (data[i] != 1) && (data[i] != 0)) || 
+            (((3 == data[i]) || (1 == data[i])) && (cache_pos_ < 2)))
         {
-            ++raw_nal_current_point;
-            if (*reinterpret_cast<const int24*>(raw_nal_current_point) == end_mark)
+            if (cache_pos_ > 0)
             {
-                raw_nal_current_point += 3;
+                for (uint32_t j = 0; j < cache_pos_; ++j)
+                {
+                    raw_nal_unit_data_.GetBuffer()[unused_length_] = cache_[j];
+                    ++unused_length_;
+                }
+                ClearCache();
             }
-
-            if (nal_unit_unused_length_ > 0)
-            {
-                unique_ptr<NalUnit> nal_unit(
-                    new NalUnit(raw_nal_unit_point, nal_unit_unused_length_));
-                dispatcher_->CreateSyntaxAndDispatch(move(nal_unit));
-                nal_unit_unused_length_ = 0;
-            }
-        }
-
-        raw_nal_byte_data = *raw_nal_current_point;
-        if ((2 == zero_count_) && (0x03 == raw_nal_byte_data))
-        {
-            zero_count_ = 0;
-            ++raw_nal_current_point;
+            raw_nal_unit_data_.GetBuffer()[unused_length_] = data[i];
+            ++unused_length_;
             continue;
         }
-
-        if (0x00 == raw_nal_byte_data)
-            ++zero_count_;
-        else
-            zero_count_ = 0;
-
-        raw_nal_unit_point[nal_unit_unused_length_] = raw_nal_byte_data;
-        ++raw_nal_current_point;
-        ++nal_unit_unused_length_;
+        
+        cache_[cache_pos_] = data[i];
+        ++cache_pos_;
+        
+        if (3 == cache_pos_)
+        {
+            if (3 == cache_[2])
+            {
+                int8_t* p = raw_nal_unit_data_.GetBuffer() + unused_length_;
+                *reinterpret_cast<uint16_t*>(p) = 0;
+                unused_length_ += 2;
+                ClearCache();
+            }
+            else if (1 == cache_[2])
+            {
+                DispatchNalUnit();
+                ClearCache();
+            }
+        }
+        else if (4 == cache_pos_)
+        {
+            if (3 == cache_[3])
+            {
+                for (uint32_t j = 0; j < 3; ++j)
+                {
+                    int8_t* p = raw_nal_unit_data_.GetBuffer() + unused_length_;
+                    p[j] = cache_[j];
+                    ++unused_length_;
+                }
+                ClearCache();
+            }
+            else if (1 == cache_[3])
+            {
+                DispatchNalUnit();
+                ClearCache();
+            }
+            else
+            {
+                assert(false);
+            }
+        }
     }
-
     return true;
+}
+
+bool NALOrganizer::DispatchNalUnit()
+{
+    if (has_start_prefix_)
+    {
+        unique_ptr<NalUnit> nal_unit(
+            new NalUnit(raw_nal_unit_data_.GetBuffer(), unused_length_));
+        if (!dispatcher_->CreateSyntaxAndDispatch(move(nal_unit)))
+            return false;
+
+        unused_length_ = 0;
+    }
+    else
+    {
+        has_start_prefix_ = true;
+    }
+    return true;
+}
+
+void NALOrganizer::ClearCache()
+{
+    *reinterpret_cast<uint32_t*>(cache_) = 0;
+    cache_pos_ = 0;
 }

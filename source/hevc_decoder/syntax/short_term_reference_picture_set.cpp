@@ -18,7 +18,8 @@ using std::vector;
 // 因此推导两个数组的值的时候,要么从前往后,要么从后往前
 
 ShortTermReferencePictureSet::ShortTermReferencePictureSet(
-    ShortTermReferencePictureSetContext* context, uint32_t current_rps_index)
+    const ShortTermReferencePictureSetContext* context, 
+    uint32_t current_rps_index)
     : context_(context)
     , positive_delta_pocs_()
     , negative_delta_pocs_()

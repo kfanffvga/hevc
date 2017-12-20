@@ -2,10 +2,13 @@
 
 #include "hevc_decoder/syntax/slice_segment_syntax.h"
 #include "hevc_decoder/syntax/slice_syntax.h"
+#include "hevc_decoder/syntax/coded_video_sequence.h"
 
 using std::unique_ptr;
 
-FrameSyntax::FrameSyntax()
+FrameSyntax::FrameSyntax(ICodedVideoSequence* coded_video_sequence)
+    : picture_order_count_()
+    , coded_video_sequence_(coded_video_sequence)
 {
 
 }
@@ -61,4 +64,46 @@ const ISliceSegmentContext* FrameSyntax::GetIndependentSliceSegmentContext(
 bool FrameSyntax::AddSliceSegment(unique_ptr<SliceSegmentSyntax> slice_segment)
 {
     return false;
+}
+
+bool FrameSyntax::SetPictureOrderCountByLSB(uint32_t lsb, uint32_t max_lsb)
+{
+    PictureOrderCount preview_poc;
+    bool success = 
+        coded_video_sequence_->GetPreviewPictureOrderCount(&preview_poc);
+    if (!success)
+        return false;
+
+    picture_order_count_ = FrameSyntax::CalcPictureOrderCount(preview_poc.msb, 
+                                                              preview_poc.lsb,
+                                                              false, max_lsb, 
+                                                              lsb);
+    return true;
+}
+
+const PictureOrderCount& FrameSyntax::GetPictureOrderCount() const
+{
+    return picture_order_count_;
+}
+
+PictureOrderCount FrameSyntax::CalcPictureOrderCount(uint32_t previous_msb, 
+                                                     uint32_t previous_lsb, 
+                                                     bool is_idr_frame, 
+                                                     uint32_t max_lsb, 
+                                                     uint32_t lsb)
+{
+    PictureOrderCount poc = { };
+    if (is_idr_frame)
+        return poc;
+
+    poc.msb = previous_msb;
+    poc.lsb = lsb;
+    int delta_lsb = static_cast<int>(lsb) - static_cast<int>(previous_lsb);
+    if (delta_lsb > static_cast<int>(max_lsb >> 1))
+        poc.msb -= max_lsb;
+    else if (delta_lsb <= -static_cast<int>(max_lsb >> 1))
+        poc.msb += max_lsb;
+
+    poc.value = poc.msb + poc.lsb;
+    return poc;
 }

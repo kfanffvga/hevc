@@ -60,7 +60,13 @@ bool SPSScreenContentCodingExtension::Parse(BitStream* bit_stream)
             }
         }
     }
-    uint8_t motion_vector_resolution_control_idc = bit_stream->Read<uint8_t>(2);
+    motion_vector_resolution_control_idc_ = bit_stream->Read<uint8_t>(2);
     bool is_intra_boundary_filtering_disabled = bit_stream->ReadBool();
     return true;
+}
+
+uint8_t SPSScreenContentCodingExtension::GetMotionVectorResolutionControlIDC() 
+    const
+{
+    return motion_vector_resolution_control_idc_;
 }

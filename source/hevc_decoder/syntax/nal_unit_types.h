@@ -68,7 +68,7 @@ enum NalUnitType
     UNSPEC60,
     UNSPEC61,
     UNSPEC62,
-    UNSPEC63,
+    UNSPEC63
 };
 
 #endif

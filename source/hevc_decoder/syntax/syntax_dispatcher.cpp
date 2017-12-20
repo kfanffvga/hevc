@@ -1,6 +1,7 @@
 #include "hevc_decoder/syntax/syntax_dispatcher.h"
 
 #include <cassert>
+#include <algorithm>
 
 #include "hevc_decoder/syntax/nal_unit.h"
 #include "hevc_decoder/syntax/video_parameter_set.h"
@@ -14,12 +15,16 @@
 
 using std::unique_ptr;
 using std::move;
+using std::make_pair;
+using std::pair;
+using std::find_if;
 
 SyntaxDispatcher::SyntaxDispatcher(ParametersManager* parameters_manager, 
                                    DecodeProcessorManager* processor_manager)
     : parameters_manager_(parameters_manager)
     , decode_processor_manager_(processor_manager)
-    , frame_syntax_(new FrameSyntax())
+    , frame_syntax_(new FrameSyntax(this))
+    , pocs_info_()
 {
 
 }
@@ -100,20 +105,62 @@ bool SyntaxDispatcher::CreateSliceSegmentSyntaxAndDispatch(NalUnit* nal_unit,
                                                            bool is_idr_frame)
 {
     assert(nal_unit);
-    if (nal_unit->GetBitSteam()->ReadBool())
+    BitStream* bit_stream = nal_unit->GetBitSteam();
+    bool is_new_frame = bit_stream->ReadBool();
+    if (is_new_frame)
     {
-        decode_processor_manager_->Decode(frame_syntax_.get());
-        if (is_idr_frame)
-            decode_processor_manager_->Flush();
+        bool success = decode_processor_manager_->Decode(frame_syntax_.get());
+        if (!success)
+            return false;
 
-        frame_syntax_.reset(new FrameSyntax());
+        if (is_idr_frame)
+        {
+            decode_processor_manager_->Flush();
+            pocs_info_.clear();
+        }
+
+        frame_syntax_.reset(new FrameSyntax(this));
     }
-    nal_unit->GetBitSteam()->Seek(0, 0);
+    bit_stream->Seek(bit_stream->GetBytePosition(), 
+                     bit_stream->GetBitPosition() - 1);
     unique_ptr<SliceSegmentSyntax> slice_segment_syntax(
-        new SliceSegmentSyntax(frame_syntax_.get()));
+        new SliceSegmentSyntax(nal_unit->GetNalUnitType(), 
+                               nal_unit->GetNuhLayerID(), parameters_manager_, 
+                               frame_syntax_.get(), this));
     bool success = slice_segment_syntax->Parse(nal_unit->GetBitSteam());
     if (!success)
         return false;
 
-    return frame_syntax_->AddSliceSegment(move(slice_segment_syntax));
+    success = frame_syntax_->AddSliceSegment(move(slice_segment_syntax));
+    if (!success)
+        return false;
+
+    if (is_new_frame)
+    {
+        pocs_info_.push_back(
+            make_pair(frame_syntax_->GetPictureOrderCount(), 
+                      nal_unit->GetNuhLayerID()));
+    }
+    return true;
+}
+
+uint32_t SyntaxDispatcher::GetLayerID(uint32_t poc_value) const
+{
+    auto searchor = 
+        [poc_value](const pair<PictureOrderCount, uint32_t>& poc) -> bool
+    {
+        return poc.first.value == poc_value;
+    };
+
+    auto r = find_if(pocs_info_.begin(), pocs_info_.end(), searchor);
+    return r != pocs_info_.end() ? r->second : 0;
+}
+
+bool SyntaxDispatcher::GetPreviewPictureOrderCount(PictureOrderCount* poc) const
+{
+    if (!poc || pocs_info_.empty())
+        return false;
+
+    *poc = pocs_info_[pocs_info_.size() - 1].first;
+    return true;
 }

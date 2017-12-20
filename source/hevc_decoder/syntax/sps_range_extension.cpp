@@ -3,6 +3,7 @@
 #include "hevc_decoder/base/stream/bit_stream.h"
 
 SPSRangeExtension::SPSRangeExtension()
+    : is_high_precision_offsets_enabled_(false)
 {
 
 }
@@ -23,8 +24,13 @@ bool SPSRangeExtension::Parse(BitStream* bit_stream)
     bool is_explicit_rdpcm_enabled = bit_stream->ReadBool();
     bool is_extended_precision_processing = bit_stream->ReadBool();
     bool is_intra_smoothing_disabled = bit_stream->ReadBool();
-    bool is_high_precision_offsets_enabled = bit_stream->ReadBool();
+    is_high_precision_offsets_enabled_ = bit_stream->ReadBool();
     bool is_persistent_rice_adaptation_enabled = bit_stream->ReadBool();
     bool is_cabac_bypass_alignment_enabled = bit_stream->ReadBool();
     return true;
+}
+
+bool SPSRangeExtension::IsHighPrecisionOffsetsEnabled() const
+{
+    return is_high_precision_offsets_enabled_;
 }

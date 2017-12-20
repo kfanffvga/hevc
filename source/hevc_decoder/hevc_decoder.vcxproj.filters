@@ -148,6 +148,21 @@
     </ClInclude>
     <ClInclude Include="decode_processor_manager.h" />
     <ClInclude Include="frame_sequence_arranger.h" />
+    <ClInclude Include="syntax\slice_segment_header.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="base\math.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\reference_picture_lists_modification.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\prediction_weight_table.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\coded_video_sequence.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -263,5 +278,14 @@
     </ClCompile>
     <ClCompile Include="decode_processor_manager.cpp" />
     <ClCompile Include="frame_sequence_arranger.cpp" />
+    <ClCompile Include="syntax\slice_segment_header.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\reference_picture_lists_modification.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\prediction_weight_table.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

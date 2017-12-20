@@ -10,8 +10,24 @@
 
 PictureParameterSet::PictureParameterSet()
     : pps_pic_parameter_set_id_(0)
+    , pps_seq_parameter_set_id_(0)
+    , is_dependent_slice_segments_enabled_(false)
+    , num_extra_slice_header_bits_(0)
+    , has_output_flag_present_(false)
+    , has_lists_modification_present_(false)
+    , pps_scc_extension_()
+    , has_cabac_init_present_(false)
+    , has_weighted_pred_(false)
+    , has_weighted_bipred_(false)
+    , has_pps_slice_chroma_qp_offsets_present_(false)
+    , pps_range_extension_()
+    , deblocking_filter_control_info_()
+    , is_pps_loop_filter_across_slices_enabled_(false)
+    , is_tiles_enabled_(false)
+    , is_entropy_coding_sync_enabled_(false)
 {
-
+    memset(&deblocking_filter_control_info_, 0, 
+           sizeof(deblocking_filter_control_info_));
 }
 
 PictureParameterSet::~PictureParameterSet()
@@ -26,12 +42,12 @@ bool PictureParameterSet::Parse(BitStream* bit_stream)
 
     GolombReader golomb_reader(bit_stream);
     pps_pic_parameter_set_id_ = golomb_reader.ReadUnsignedValue();
-    uint32_t pps_seq_parameter_set_id = golomb_reader.ReadUnsignedValue();
-    bool is_dependent_slice_segments_enabled = bit_stream->ReadBool();
-    bool has_output_flag_present = bit_stream->ReadBool();
-    uint8_t num_extra_slice_header_bits = bit_stream->Read<uint8_t>(3);
+    pps_seq_parameter_set_id_ = golomb_reader.ReadUnsignedValue();
+    is_dependent_slice_segments_enabled_ = bit_stream->ReadBool();
+    has_output_flag_present_ = bit_stream->ReadBool();
+    num_extra_slice_header_bits_ = bit_stream->Read<uint8_t>(3);
     bool is_sign_data_hiding_enabled = bit_stream->ReadBool();
-    bool has_cabac_init_present = bit_stream->ReadBool();
+    has_cabac_init_present_ = bit_stream->ReadBool();
 
     uint32_t num_ref_idx_l0_default_active = 
         golomb_reader.ReadUnsignedValue() + 1;
@@ -47,16 +63,16 @@ bool PictureParameterSet::Parse(BitStream* bit_stream)
 
     int pps_cb_qp_offset = golomb_reader.ReadSignedValue();
     int pps_cr_qp_offset = golomb_reader.ReadSignedValue();
-    bool has_pps_slice_chroma_qp_offsets_present = bit_stream->ReadBool();
-    bool has_weighted_pred = bit_stream->ReadBool();
-    bool has_weighted_bipred = bit_stream->ReadBool();
+    has_pps_slice_chroma_qp_offsets_present_ = bit_stream->ReadBool();
+    has_weighted_pred_ = bit_stream->ReadBool();
+    has_weighted_bipred_ = bit_stream->ReadBool();
     bool is_transquant_bypass_enabled = bit_stream->ReadBool();
-    bool is_tiles_enabled = bit_stream->ReadBool();
-    bool is_entropy_coding_sync_enabled = bit_stream->ReadBool();
-    if (is_tiles_enabled)
+    is_tiles_enabled_ = bit_stream->ReadBool();
+    is_entropy_coding_sync_enabled_ = bit_stream->ReadBool();
+    if (is_tiles_enabled_)
         ParseTileInfo(bit_stream);
 
-    bool pps_loop_filter_across_slices_enabled = bit_stream->ReadBool();
+    is_pps_loop_filter_across_slices_enabled_ = bit_stream->ReadBool();
     bool is_deblocking_filter_control_present = bit_stream->ReadBool();
     if (is_deblocking_filter_control_present)
         ParseDeblockingFilterControlInfo(bit_stream);
@@ -69,7 +85,7 @@ bool PictureParameterSet::Parse(BitStream* bit_stream)
             return false;
     }
 
-    bool has_lists_modification_present = bit_stream->ReadBool();
+    has_lists_modification_present_ = bit_stream->ReadBool();
     uint32_t log2_parallel_merge_level = golomb_reader.ReadUnsignedValue() + 2;
     bool has_slice_segment_header_extension_present = bit_stream->ReadBool();
     bool has_pps_extension_present = bit_stream->ReadBool();
@@ -108,12 +124,19 @@ void PictureParameterSet::ParseTileInfo(BitStream* bit_stream)
 
 void PictureParameterSet::ParseDeblockingFilterControlInfo(BitStream* bit_stream)
 {
-    DeblockingFilterControlInfo control_info = { };
-    control_info.deblocking_filter_override_enabled = bit_stream->ReadBool();
-    control_info.pps_deblocking_filter_disabled = bit_stream->ReadBool();
+    
+    deblocking_filter_control_info_.is_deblocking_filter_override_enabled = 
+        bit_stream->ReadBool();
+
+    deblocking_filter_control_info_.is_pps_deblocking_filter_disabled = 
+        bit_stream->ReadBool();
+
     GolombReader golomb_reader(bit_stream);
-    control_info.beta_offset = golomb_reader.ReadSignedValue() * 2;
-    control_info.tc_offset = golomb_reader.ReadSignedValue() * 2;
+    deblocking_filter_control_info_.beta_offset = 
+        golomb_reader.ReadSignedValue() * 2;
+
+    deblocking_filter_control_info_.tc_offset = 
+        golomb_reader.ReadSignedValue() * 2;
 }
 
 bool PictureParameterSet::ParsePPSExtensionInfo(bool is_transform_skip_enabled, 
@@ -126,8 +149,9 @@ bool PictureParameterSet::ParsePPSExtensionInfo(bool is_transform_skip_enabled,
     bit_stream->SkipBits(4);
     if (has_pps_range_extension)
     {
-        PPSRangeExtension pps_range_extension(is_transform_skip_enabled);
-        if (!pps_range_extension.Parse(bit_stream))
+        pps_range_extension_.reset(
+            new PPSRangeExtension(is_transform_skip_enabled));
+        if (!pps_range_extension_->Parse(bit_stream))
             return false;
     }
     if (has_pps_multilayer_extension)
@@ -144,8 +168,8 @@ bool PictureParameterSet::ParsePPSExtensionInfo(bool is_transform_skip_enabled,
     }
     if (has_pps_scc_extension)
     {
-        PPSScreenContentCodingExtension pps_scc_extension;
-        if (!pps_scc_extension.Parse(bit_stream))
+        pps_scc_extension_.reset(new PPSScreenContentCodingExtension());
+        if (!pps_scc_extension_->Parse(bit_stream))
             return false;
     }
     return true;
@@ -154,4 +178,85 @@ bool PictureParameterSet::ParsePPSExtensionInfo(bool is_transform_skip_enabled,
 uint32_t PictureParameterSet::GetPictureParameterSetID()
 {
     return pps_pic_parameter_set_id_;
+}
+
+bool PictureParameterSet::IsDependentSliceSegmentEnabled() const
+{
+    return is_dependent_slice_segments_enabled_;
+}
+
+uint32_t PictureParameterSet::GetAssociateSequenceParameterSetID() const
+{
+    return pps_seq_parameter_set_id_;
+}
+
+uint8_t PictureParameterSet::GetExtraSliceHeaderBitLength() const
+{
+    return num_extra_slice_header_bits_;
+}
+
+bool PictureParameterSet::HasOutputFlagPresent() const
+{
+    return has_output_flag_present_;
+}
+
+bool PictureParameterSet::HasListsModificationPresent() const
+{
+    return has_lists_modification_present_;
+}
+
+const PPSScreenContentCodingExtension* PictureParameterSet::GetPPSSccExtension()
+    const
+{
+    return pps_scc_extension_.get();
+}
+
+bool PictureParameterSet::HasCABACInitPresent() const
+{
+    return has_cabac_init_present_;
+}
+
+bool PictureParameterSet::HasWeightedPred() const
+{
+    return has_weighted_pred_;
+}
+
+bool PictureParameterSet::HasWeightedBipred() const
+{
+    return has_weighted_bipred_;
+}
+
+bool PictureParameterSet::HasPPSSliceChromaQPOffsetPresent() const
+{
+    return has_pps_slice_chroma_qp_offsets_present_;
+}
+
+const PPSRangeExtension* PictureParameterSet::GetPPSRangeExtension() const
+{
+    return pps_range_extension_.get();
+}
+
+bool PictureParameterSet::IsDeblockingFilterOverrideEnabled() const
+{
+    return deblocking_filter_control_info_.is_deblocking_filter_override_enabled;
+}
+
+bool PictureParameterSet::IsPPSLoopFilterAcrossSliceEnabled() const
+{
+    return is_pps_loop_filter_across_slices_enabled_;
+}
+
+bool PictureParameterSet::IsDeblockingFilterDisabled() const
+{
+    return deblocking_filter_control_info_.is_pps_deblocking_filter_disabled;
+}
+
+bool PictureParameterSet::IsTilesEnabled() const
+{
+    return is_tiles_enabled_;
+}
+
+bool PictureParameterSet::IsEntropyCodingSyncEnabled() const
+{
+    return is_entropy_coding_sync_enabled_;
 }

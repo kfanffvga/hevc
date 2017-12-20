@@ -3,10 +3,24 @@
 
 #include <stdint.h>
 
+enum SliceType
+{
+    B_SLICE = 0,
+    P_SLICE = 1,
+    I_SLICE = 2
+};
+
 struct Coordinate
 {
     uint32_t x;
     uint32_t y;
+};
+
+struct PictureOrderCount
+{
+    uint32_t msb;
+    uint32_t lsb;
+    uint32_t value;
 };
 
 struct Rect

@@ -24,6 +24,9 @@ public:
 
     virtual const ISliceSegmentContext* GetIndependentSliceSegmentContext(
         uint32_t slice_segment_address) const = 0;
+
+    virtual bool SetPictureOrderCountByLSB(uint32_t lsb, uint32_t max_lsb) = 0;
+    virtual const PictureOrderCount& GetPictureOrderCount() const = 0;
 };
 
 #endif

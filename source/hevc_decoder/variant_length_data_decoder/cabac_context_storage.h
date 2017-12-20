@@ -9,12 +9,7 @@
 
 #include "hevc_decoder/variant_length_data_decoder/cabac_context_types.h"
 
-enum SliceType
-{
-    I_SLICE = 0,
-    P_SLICE = 1,
-    B_SLICE = 2 
-};
+enum SliceType;
 
 class CABACContextStorage
 {
