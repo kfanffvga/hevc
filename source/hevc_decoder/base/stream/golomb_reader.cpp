@@ -25,5 +25,5 @@ uint32_t GolombReader::ReadUnsignedValue()
 int32_t GolombReader::ReadSignedValue()
 {
     int32_t code_num = static_cast<int32_t>(ReadUnsignedValue());
-    return (code_num & 0x01) ? (-((code_num + 1) >> 1)) : (code_num >> 1);
+    return (code_num & 0x01) ? ((code_num + 1) >> 1) : (-(code_num >> 1));
 }

@@ -57,14 +57,16 @@ bool ShortTermReferencePictureSet::Parse(BitStream* bit_stream)
     {
         uint32_t delta_poc_s0 = golomb_reader.ReadUnsignedValue();
         bool is_used_by_curr_pic_s0 = bit_stream->ReadBool();
-        negative_delta_pocs_.push_back({delta_poc_s0, is_used_by_curr_pic_s0});
+        negative_delta_pocs_.push_back(
+            {static_cast<int>(delta_poc_s0), is_used_by_curr_pic_s0});
     }
 
     for (uint32_t i = 0; i < num_positive_pics; ++i)
     {
         uint32_t delta_poc_s1 = golomb_reader.ReadUnsignedValue();
         bool is_used_by_curr_pic_s1 = bit_stream->ReadBool();
-        positive_delta_pocs_.push_back({delta_poc_s1, is_used_by_curr_pic_s1});
+        positive_delta_pocs_.push_back(
+            {static_cast<int>(delta_poc_s1), is_used_by_curr_pic_s1});
     }
     return true;
 }

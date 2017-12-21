@@ -293,6 +293,11 @@ uint32_t SequenceParameterSet::GetPicOrderCountLSBBitLength() const
     return log2_max_pic_order_cnt_lsb_;
 }
 
+uint32_t SequenceParameterSet::GetMaxLSBOfPicOrderCount() const
+{
+    return max_lsb_of_pic_order_count_;
+}
+
 bool SequenceParameterSet::HasLongTermReferencePicturesPresent() const
 {
     return has_long_term_ref_pics_present_;
