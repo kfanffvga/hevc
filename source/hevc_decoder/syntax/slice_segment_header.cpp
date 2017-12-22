@@ -144,7 +144,7 @@ bool SliceSegmentHeader::ParseIndependentSyntax(const PictureParameterSet* pps,
 
     success = ParseReconstructPictureInfo(pps, is_slice_sao_luma, 
                                           is_slice_sao_chroma, bit_stream);
-    return true;
+    return success;
 }
 
 bool SliceSegmentHeader::ParseReferencePictureSet(

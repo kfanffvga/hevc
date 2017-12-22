@@ -63,7 +63,9 @@ bool NALOrganizer::Decode(const int8_t* data, uint32_t length)
             }
             else if (1 == cache_[2])
             {
-                DispatchNalUnit();
+                if (!DispatchNalUnit())
+                    return false;
+
                 ClearCache();
             }
         }
@@ -81,7 +83,9 @@ bool NALOrganizer::Decode(const int8_t* data, uint32_t length)
             }
             else if (1 == cache_[3])
             {
-                DispatchNalUnit();
+                if (!DispatchNalUnit())
+                    return false;
+
                 ClearCache();
             }
             else
@@ -99,10 +103,9 @@ bool NALOrganizer::DispatchNalUnit()
     {
         unique_ptr<NalUnit> nal_unit(
             new NalUnit(raw_nal_unit_data_.GetBuffer(), unused_length_));
-        if (!dispatcher_->CreateSyntaxAndDispatch(move(nal_unit)))
-            return false;
-
+        bool success = dispatcher_->CreateSyntaxAndDispatch(move(nal_unit));
         unused_length_ = 0;
+        return success;
     }
     else
     {
