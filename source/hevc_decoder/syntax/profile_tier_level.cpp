@@ -17,10 +17,7 @@ namespace
 const uint32_t compatibility_flag_count = 32;
 }
 
-ProfileTierLevel::ProfileTierLevel(bool profile_present_flag,
-                                   int max_num_sub_layers)
-    : profile_present_flag_(profile_present_flag)
-    , max_num_sub_layers_(max_num_sub_layers)
+ProfileTierLevel::ProfileTierLevel()
 {
 
 }
@@ -30,24 +27,23 @@ ProfileTierLevel::~ProfileTierLevel()
 
 }
 
-bool ProfileTierLevel::Parse(BitStream* bit_stream)
+bool ProfileTierLevel::Parse(BitStream* bit_stream, bool has_profile_present, 
+                             int max_num_sub_layers)
 {
     if (!bit_stream)
         return false;
 
-    ParseGeneralProfileInfo(bit_stream);
+    if (has_profile_present)
+        ParseGeneralProfileInfo(bit_stream);
 
     uint8_t general_level_idc = bit_stream->Read<uint8_t>(8);
 
-    ParseSubLayerInfo(bit_stream);
+    ParseSubLayerInfo(bit_stream, max_num_sub_layers);
     return true;
 }
 
 void ProfileTierLevel::ParseGeneralProfileInfo(BitStream* bit_stream)
 {
-    if (!profile_present_flag_)
-        return;
-
     uint8_t general_profile_space = bit_stream->Read<uint8_t>(2);
     bool is_general_tier = bit_stream->ReadBool();
     uint8_t general_profile_idc = bit_stream->Read<uint8_t>(5);
@@ -110,15 +106,10 @@ void ProfileTierLevel::ParseGeneralProfileInfo(BitStream* bit_stream)
     }
 }
 
-void ProfileTierLevel::ParseSubLayerInfo(BitStream* bit_stream)
+void ProfileTierLevel::ParseSubLayerInfo(BitStream* bit_stream, 
+                                         int max_num_sub_layers)
 {
-    if (max_num_sub_layers_ <= 0)
-    {
-        assert(false);
-        return;
-    }
-
-    int max_num_sub_layers_minus1 = max_num_sub_layers_ - 1;
+    int max_num_sub_layers_minus1 = max_num_sub_layers;
     auto sub_layers_range = boost::extents[max_num_sub_layers_minus1];
     multi_array<bool, 1> has_sub_layer_profile_present(sub_layers_range);
     multi_array<bool, 1> has_sub_layer_level_present(sub_layers_range);

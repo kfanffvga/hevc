@@ -41,9 +41,7 @@ const map<uint8_t, SampleAspectRatio> sar_info =
 };
 }
 
-VideoUsabilityInfomationParameter::VideoUsabilityInfomationParameter(
-    uint32_t sps_max_sub_layers)
-    : sps_max_sub_layers_(sps_max_sub_layers)
+VideoUsabilityInfomationParameter::VideoUsabilityInfomationParameter()
 {
 
 }
@@ -53,7 +51,8 @@ VideoUsabilityInfomationParameter::~VideoUsabilityInfomationParameter()
 
 }
 
-bool VideoUsabilityInfomationParameter::Parse(BitStream* bit_stream)
+bool VideoUsabilityInfomationParameter::Parse(BitStream* bit_stream, 
+                                              uint32_t sps_max_sub_layers)
 {
     if (!bit_stream)
         return false;
@@ -131,8 +130,9 @@ bool VideoUsabilityInfomationParameter::Parse(BitStream* bit_stream)
         bool has_vui_hrd_parameters_present = bit_stream->ReadBool();
         if (has_vui_hrd_parameters_present)
         {
-            HrdParmeters hrd_parameters(true, sps_max_sub_layers_);
-            bool success = hrd_parameters.Parse(bit_stream);
+            HrdParmeters hrd_parameters;
+            bool success = 
+                hrd_parameters.Parse(bit_stream, true, sps_max_sub_layers);
             if (!success)
                 return false;
         }

@@ -46,8 +46,8 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
     uint32_t sps_video_parameter_set_id = bit_stream->Read<uint32_t>(4);
     uint8_t sps_max_sub_layers = bit_stream->Read<uint32_t>(3) + 1;
     bool is_sps_temporal_id_nesting = bit_stream->ReadBool();
-    ProfileTierLevel profile_tier_level(true, sps_max_sub_layers);
-    if (!profile_tier_level.Parse(bit_stream))
+    ProfileTierLevel profile_tier_level;
+    if (!profile_tier_level.Parse(bit_stream, true, sps_max_sub_layers))
         return false;
 
     GolombReader golomb_reader(bit_stream);
@@ -140,8 +140,8 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
     bool has_vui_parameters_present = bit_stream->ReadBool();
     if (has_vui_parameters_present)
     {
-        VideoUsabilityInfomationParameter vui_parameters(sps_max_sub_layers);
-        bool success = vui_parameters.Parse(bit_stream);
+        VideoUsabilityInfomationParameter vui_parameters;
+        bool success = vui_parameters.Parse(bit_stream, sps_max_sub_layers);
         if (!success)
             return false;
     }

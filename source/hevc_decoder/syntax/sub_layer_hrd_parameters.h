@@ -8,15 +8,13 @@ class BitStream;
 class SubLayerHrdParameters
 {
 public:
-    SubLayerHrdParameters(uint32_t cpb_cnt_value,
-                          bool has_sub_pic_hrd_params_present);
+    SubLayerHrdParameters();
     ~SubLayerHrdParameters();
 
-    bool Parse(BitStream* bit_stream);
+    bool Parse(BitStream* bit_stream, uint32_t cpb_cnt, 
+               bool has_sub_pic_hrd_params_present);
 
 private:
-    uint32_t cpb_cnt_value_;
-    bool has_sub_pic_hrd_params_present_;
 };
 
 

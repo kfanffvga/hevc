@@ -8,13 +8,10 @@ class BitStream;
 class VideoUsabilityInfomationParameter
 {
 public:
-    VideoUsabilityInfomationParameter(uint32_t sps_max_sub_layers);
+    VideoUsabilityInfomationParameter();
     ~VideoUsabilityInfomationParameter();
 
-    bool Parse(BitStream* bit_stream);
-
-private:
-    uint32_t sps_max_sub_layers_;
+    bool Parse(BitStream* bit_stream, uint32_t sps_max_sub_layers);
 
 };
 

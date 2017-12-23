@@ -20,14 +20,9 @@ public:
     uint8_t GetVideoParameterSetID();
 
 private:
-    void ParasVPSInfo(BitStream* bit_stream, GolombReader* golomb_reader);
-    void ParasHRDInfo(BitStream* bit_stream, GolombReader* golomb_reader,
-                      uint32_t vps_max_sub_layers);
+    bool ParasHRDInfo(BitStream* bit_stream, uint32_t vps_max_sub_layers);
 
     uint8_t video_parameter_set_id_;
-
-    std::unique_ptr<ProfileTierLevel> profile_tier_level_;
-    std::vector<std::unique_ptr<HrdParmeters>> hrd_parameters_;
 };
 
 #endif

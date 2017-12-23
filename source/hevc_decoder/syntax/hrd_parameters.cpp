@@ -1,27 +1,13 @@
 #include "hevc_decoder/syntax/hrd_parameters.h"
 
-#include <boost/multi_array.hpp>
-
 #include "hevc_decoder/base/stream/bit_stream.h"
 #include "hevc_decoder/base/stream/golomb_reader.h"
 #include "hevc_decoder/syntax/sub_layer_hrd_parameters.h"
 
-using boost::multi_array;
-using boost::extents;
-using boost::detail::multi_array::extent_gen;
 using std::vector;
+using std::unique_ptr;
 
-namespace
-{
-// TODO: ¸ÄÃû
-const uint32_t numerals_twenty_three = 23;
-}
-
-HrdParmeters::HrdParmeters(bool commin_inf_present, uint32_t max_num_sub_layers)
-    : commin_inf_present_(commin_inf_present)
-    , max_num_sub_layers_(max_num_sub_layers)
-    , nal_sub_layer_hrd_parameters_(max_num_sub_layers_)
-    , vcl_sub_layer_hrd_parameters_(max_num_sub_layers_)
+HrdParmeters::HrdParmeters()
 {
 
 }
@@ -31,7 +17,8 @@ HrdParmeters::~HrdParmeters()
 
 }
 
-bool HrdParmeters::Parse(BitStream* bit_stream)
+bool HrdParmeters::Parse(BitStream* bit_stream, bool has_commin_inf_present,
+                         uint32_t max_num_sub_layers)
 {
     if (!bit_stream)
         return false;
@@ -39,13 +26,13 @@ bool HrdParmeters::Parse(BitStream* bit_stream)
     bool has_nal_hrd_parmeters_present = false;
     bool has_vcl_hrd_parameters_present = false;
     bool has_sub_pic_hrd_params_present = false;
-    if (commin_inf_present_)
+    if (has_commin_inf_present)
     {
         has_nal_hrd_parmeters_present = bit_stream->ReadBool();
         has_vcl_hrd_parameters_present = bit_stream->ReadBool();
-        uint8_t initial_cpb_removal_delay_length = numerals_twenty_three;
-        uint8_t au_cpb_removal_delay_length = numerals_twenty_three;
-        uint8_t dpb_output_delay_length = numerals_twenty_three;
+        uint8_t initial_cpb_removal_delay_length = 23;
+        uint8_t au_cpb_removal_delay_length = 23;
+        uint8_t dpb_output_delay_length = 23;
         if (has_nal_hrd_parmeters_present || has_vcl_hrd_parameters_present)
         {
             has_sub_pic_hrd_params_present = bit_stream->ReadBool();
@@ -72,47 +59,41 @@ bool HrdParmeters::Parse(BitStream* bit_stream)
         }
     }
 
-    extent_gen<1> alloc_size = extents[max_num_sub_layers_];
-    multi_array<bool, 1> is_fixed_pic_rate_general(alloc_size);
-    multi_array<bool, 1> is_fixed_pic_rate_within_cvs(alloc_size);    
-    multi_array<bool, 1> is_low_delay_hrd(alloc_size);
-    vector<uint32_t> elemental_duration_in_tc(max_num_sub_layers_);
-    vector<uint32_t> cpb_cnt(max_num_sub_layers_);
     GolombReader golomb_reader(bit_stream);
-    for (uint32_t i = 0; i <= max_num_sub_layers_; ++i)
+    for (uint32_t i = 0; i <= max_num_sub_layers; ++i)
     {
-        is_fixed_pic_rate_general[i] = bit_stream->ReadBool();
-        is_fixed_pic_rate_within_cvs[i] = is_fixed_pic_rate_general[i] ?
-            is_fixed_pic_rate_general[i] : bit_stream->ReadBool();
+        bool is_fixed_pic_rate_general = bit_stream->ReadBool();
+        bool is_fixed_pic_rate_within_cvs = is_fixed_pic_rate_general;
+        if (!is_fixed_pic_rate_general)
+            is_fixed_pic_rate_within_cvs = bit_stream->ReadBool();
 
-        if (is_fixed_pic_rate_within_cvs[i])
+        bool is_low_delay_hrd = false;
+        if (is_fixed_pic_rate_within_cvs)
         {
-            elemental_duration_in_tc[i] =
+            uint32_t elemental_duration_in_tc =
                 golomb_reader.ReadUnsignedValue() + 1;
-            assert(elemental_duration_in_tc[i] >= 0 &&
-                   elemental_duration_in_tc[i] <= 2047);
-            is_low_delay_hrd[i] = false;
         }
         else
         {
-            is_low_delay_hrd[i] = bit_stream->ReadBool();
+            is_low_delay_hrd = bit_stream->ReadBool();
         }
 
-        cpb_cnt[i] = is_low_delay_hrd[i] ? 
-            0 : (golomb_reader.ReadUnsignedValue() + 1);
-        assert(cpb_cnt[i] >= 0 && cpb_cnt[i] <= 31);
+        uint32_t cpb_cnt = 
+            is_low_delay_hrd ? 0 : (golomb_reader.ReadUnsignedValue() + 1);
+        
+        vector<unique_ptr<SubLayerHrdParameters>> nal_sub_layer_hrd_parameters;
+        vector<unique_ptr<SubLayerHrdParameters>> vcl_sub_layer_hrd_parameters;
+        unique_ptr<SubLayerHrdParameters> parameter(new SubLayerHrdParameters());
+        bool success = parameter->Parse(bit_stream, cpb_cnt, 
+                                        has_sub_pic_hrd_params_present);
+        if (!success)
+            return false;
 
         if (has_nal_hrd_parmeters_present)
-        {
-            nal_sub_layer_hrd_parameters_[i].reset(new SubLayerHrdParameters(
-                cpb_cnt[i], has_sub_pic_hrd_params_present));
-        }
+            nal_sub_layer_hrd_parameters.push_back(move(parameter));
 
         if (has_vcl_hrd_parameters_present)
-        {
-            vcl_sub_layer_hrd_parameters_[i].reset(new SubLayerHrdParameters(
-                cpb_cnt[i], has_sub_pic_hrd_params_present));
-        }
+            vcl_sub_layer_hrd_parameters.push_back(move(parameter));
     }
 
     return true;
