@@ -7,9 +7,8 @@
 
 using std::vector;
 
-PPSRangeExtension::PPSRangeExtension(bool is_transform_skip_enabled)
-    : is_transform_skip_enabled_(is_transform_skip_enabled)
-    , is_chroma_qp_offset_list_enabled_(false)
+PPSRangeExtension::PPSRangeExtension()
+    : is_chroma_qp_offset_list_enabled_(false)
 {
 
 }
@@ -19,13 +18,14 @@ PPSRangeExtension::~PPSRangeExtension()
 
 }
 
-bool PPSRangeExtension::Parse(BitStream* bit_stream)
+bool PPSRangeExtension::Parse(BitStream* bit_stream, 
+                              bool is_transform_skip_enabled)
 {
     if (!bit_stream)
         return false;
 
     GolombReader golomb_reader(bit_stream);
-    if (is_transform_skip_enabled_)
+    if (is_transform_skip_enabled)
     {
         uint32_t log2_max_transform_skip_block_size = 
             golomb_reader.ReadUnsignedValue();

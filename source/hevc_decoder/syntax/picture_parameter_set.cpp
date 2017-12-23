@@ -15,12 +15,12 @@ PictureParameterSet::PictureParameterSet()
     , num_extra_slice_header_bits_(0)
     , has_output_flag_present_(false)
     , has_lists_modification_present_(false)
-    , pps_scc_extension_()
+    , pps_scc_extension_(new PPSScreenContentCodingExtension())
     , has_cabac_init_present_(false)
     , has_weighted_pred_(false)
     , has_weighted_bipred_(false)
     , has_pps_slice_chroma_qp_offsets_present_(false)
-    , pps_range_extension_()
+    , pps_range_extension_(new PPSRangeExtension())
     , deblocking_filter_control_info_()
     , is_pps_loop_filter_across_slices_enabled_(false)
     , is_tiles_enabled_(false)
@@ -93,9 +93,7 @@ bool PictureParameterSet::Parse(BitStream* bit_stream)
         if (!ParsePPSExtensionInfo(is_transform_skip_enabled, bit_stream))
             return false;
 
-
     return true;
-
 }
 
 void PictureParameterSet::ParseTileInfo(BitStream* bit_stream)
@@ -149,9 +147,7 @@ bool PictureParameterSet::ParsePPSExtensionInfo(bool is_transform_skip_enabled,
     bit_stream->SkipBits(4);
     if (has_pps_range_extension)
     {
-        pps_range_extension_.reset(
-            new PPSRangeExtension(is_transform_skip_enabled));
-        if (!pps_range_extension_->Parse(bit_stream))
+        if (!pps_range_extension_->Parse(bit_stream, is_transform_skip_enabled))
             return false;
     }
     if (has_pps_multilayer_extension)
@@ -168,7 +164,6 @@ bool PictureParameterSet::ParsePPSExtensionInfo(bool is_transform_skip_enabled,
     }
     if (has_pps_scc_extension)
     {
-        pps_scc_extension_.reset(new PPSScreenContentCodingExtension());
         if (!pps_scc_extension_->Parse(bit_stream))
             return false;
     }
