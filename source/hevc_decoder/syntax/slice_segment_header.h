@@ -5,8 +5,6 @@
 #include <vector>
 #include <memory>
 
-#include "hevc_decoder/syntax/base_syntax.h"
-
 class ParametersManager;
 class IFrameSyntaxContext;
 class PictureParameterSet;
@@ -16,8 +14,9 @@ class ShortTermReferencePictureSet;
 class ICodedVideoSequence;
 enum NalUnitType;
 enum SliceType;
+class BitStream;
 
-class SliceSegmentHeader : public BaseSyntax
+class SliceSegmentHeader
 {
 public:
     SliceSegmentHeader(NalUnitType nal_type, int32_t nal_layer_id, 
@@ -26,7 +25,7 @@ public:
                        ICodedVideoSequence* coded_video_sequence);
     virtual ~SliceSegmentHeader();
     
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
 private:
     struct LongTermReferencePictureOrderCountBaseInfo

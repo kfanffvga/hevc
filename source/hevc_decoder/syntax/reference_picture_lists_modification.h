@@ -4,20 +4,19 @@
 #include <stdint.h>
 #include <vector>
 
-#include "hevc_decoder/syntax/base_syntax.h"
-
 enum SliceType;
+class BitStream;
 
-class ReferencePictureListsModification : public BaseSyntax
+class ReferencePictureListsModification
 {
 public:
     ReferencePictureListsModification(SliceType slice_type, 
                                       uint32_t num_ref_idx_negative_active,
                                       uint32_t num_ref_idx_positive_active,
                                       uint32_t reference_idx_bit_length);
-    virtual ~ReferencePictureListsModification();
+    ~ReferencePictureListsModification();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
     const std::vector<uint32_t>& GetListEntryOfNegative() const;
     const std::vector<uint32_t>& GetListEntryOfPositive() const;

@@ -1,15 +1,15 @@
 ﻿#ifndef _COLOUR_MAPPING_TABLE_H_
 #define _COLOUR_MAPPING_TABLE_H_
 
-#include "hevc_decoder/syntax/base_syntax.h"
+class BitStream;
 
-class ColourMappingTable : public BaseSyntax
+class ColourMappingTable
 {
 public:
     ColourMappingTable();
-    virtual ~ColourMappingTable();
+    ~ColourMappingTable();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 };
 
 #endif

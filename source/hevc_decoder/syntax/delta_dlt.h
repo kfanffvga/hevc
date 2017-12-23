@@ -3,15 +3,15 @@
 
 #include <stdint.h>
 
-#include "hevc_decoder/syntax/base_syntax.h"
+class BitStream;
 
-class DeltaDlt : public BaseSyntax
+class DeltaDlt
 {
 public:
     DeltaDlt(uint32_t depth_max_value);
-    virtual ~DeltaDlt();
+    ~DeltaDlt();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
 private:
     uint32_t depth_max_value_;

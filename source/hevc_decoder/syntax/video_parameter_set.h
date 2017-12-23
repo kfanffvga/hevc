@@ -4,20 +4,18 @@
 #include <vector>
 #include <memory>
 
-#include "hevc_decoder/syntax/base_syntax.h"
-
 class BitStream;
 class GolombReader;
 class ProfileTierLevel;
 class HrdParmeters;
 
-class VideoParameterSet : public BaseSyntax
+class VideoParameterSet
 {
 public:
     VideoParameterSet();
     ~VideoParameterSet();
     
-    virtual bool Parse(BitStream* nal_unit) override;
+    bool Parse(BitStream* bit_stream);
 
     uint8_t GetVideoParameterSetID();
 

@@ -4,19 +4,17 @@
 #include <vector>
 #include <memory>
 
-#include "hevc_decoder/syntax/base_syntax.h"
-
 class BitStream;
 class GolombReader;
 class SubLayerHrdParameters;
 
-class HrdParmeters : public BaseSyntax
+class HrdParmeters
 {
 public:
     HrdParmeters(bool commin_inf_present, uint32_t max_num_sub_layers);
     ~HrdParmeters();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
 private:
     bool commin_inf_present_;

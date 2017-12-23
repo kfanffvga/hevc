@@ -3,15 +3,15 @@
 
 #include <stdint.h>
 
-#include "hevc_decoder/syntax/base_syntax.h"
+class BitStream;
 
-class SPS3DExtension : public BaseSyntax
+class SPS3DExtension
 {
 public:
     SPS3DExtension(uint32_t ctb_log2_size_y);
     virtual ~SPS3DExtension();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
 private:
     struct SPS3DExtensionItem

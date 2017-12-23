@@ -5,19 +5,17 @@
 #include <vector>
 #include <memory>
 
-#include "hevc_decoder/syntax/base_syntax.h"
-
 class BitStream;
 class PPSScreenContentCodingExtension;
 class PPSRangeExtension;
 
-class PictureParameterSet : public BaseSyntax
+class PictureParameterSet
 {
 public:
     PictureParameterSet();
-    virtual ~PictureParameterSet();
+    ~PictureParameterSet();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
     uint32_t GetPictureParameterSetID();
     uint32_t GetAssociateSequenceParameterSetID() const;

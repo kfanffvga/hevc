@@ -51,9 +51,6 @@
     <ClInclude Include="variant_length_data_decoder\common_cabac_syntax_reader.h">
       <Filter>variant_length_data_decoder</Filter>
     </ClInclude>
-    <ClInclude Include="syntax\base_syntax.h">
-      <Filter>syntax</Filter>
-    </ClInclude>
     <ClInclude Include="syntax\frame_syntax.h">
       <Filter>syntax</Filter>
     </ClInclude>
@@ -161,6 +158,9 @@
       <Filter>syntax</Filter>
     </ClInclude>
     <ClInclude Include="syntax\coded_video_sequence.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\syntax_context.h">
       <Filter>syntax</Filter>
     </ClInclude>
   </ItemGroup>

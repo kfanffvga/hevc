@@ -1,15 +1,15 @@
 ﻿#ifndef _PPS_3D_EXTENSION_H_
 #define _PPS_3D_EXTENSION_H_
 
-#include "hevc_decoder/syntax/base_syntax.h"
+class BitStream;
 
-class PPS3DExtension : public BaseSyntax
+class PPS3DExtension
 {
 public:
     PPS3DExtension();
-    virtual ~PPS3DExtension();
+    ~PPS3DExtension();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 };
 
 #endif

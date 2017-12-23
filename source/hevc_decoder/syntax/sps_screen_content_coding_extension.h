@@ -3,15 +3,15 @@
 
 #include <stdint.h>
 
-#include "hevc_decoder/syntax/base_syntax.h"
+class BitStream;
 
-class SPSScreenContentCodingExtension : public BaseSyntax
+class SPSScreenContentCodingExtension
 {
 public:
     SPSScreenContentCodingExtension(uint32_t num_of_color_compoments);
     virtual ~SPSScreenContentCodingExtension();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
     uint8_t GetMotionVectorResolutionControlIDC() const;
 

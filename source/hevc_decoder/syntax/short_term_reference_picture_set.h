@@ -4,11 +4,10 @@
 #include <vector>
 #include <stdint.h>
 
-#include "hevc_decoder/syntax/base_syntax.h"
-
 class ShortTermReferencePictureSetContext;
+class BitStream;
 
-class ShortTermReferencePictureSet : public BaseSyntax
+class ShortTermReferencePictureSet
 {
 public:
     struct ShortTermReferenceDeltaPictureOrderCountItem
@@ -24,9 +23,9 @@ public:
         const ShortTermReferencePictureSetContext* context, 
         uint32_t current_rps_index);
 
-    virtual ~ShortTermReferencePictureSet();
+    ~ShortTermReferencePictureSet();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
     const ReferenceDeltaPOCs& GetPositiveDeltaPOCs() const;
 

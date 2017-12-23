@@ -5,15 +5,14 @@
 #include <vector>
 #include <array>
 
-#include "hevc_decoder/syntax/base_syntax.h"
-
 enum SliceType;
 enum ChromaFormatType;
 class ICodedVideoSequence;
 struct PictureOrderCount;
 class SequenceParameterSet;
+class BitStream;
 
-class PredictionWeightTable : public BaseSyntax
+class PredictionWeightTable
 {
 public:
     PredictionWeightTable(ChromaFormatType chroma_format_type, 
@@ -23,9 +22,9 @@ public:
                           const std::vector<int32_t>& negative_ref_poc_list,
                           const std::vector<int32_t>& positive_ref_poc_list,
                           const ICodedVideoSequence* coded_video_sequence);
-    virtual ~PredictionWeightTable();
+    ~PredictionWeightTable();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
 private:
     bool Parse(BitStream* bit_stream, const std::vector<int32_t>& ref_poc_list,

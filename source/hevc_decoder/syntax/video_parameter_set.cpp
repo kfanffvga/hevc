@@ -3,7 +3,6 @@
 #include <boost/multi_array.hpp>
 #include <vector>
 
-#include "hevc_decoder/syntax/nal_unit.h"
 #include "hevc_decoder/base/stream/bit_stream.h"
 #include "hevc_decoder/base/stream/golomb_reader.h"
 #include "hevc_decoder/syntax/profile_tier_level.h"

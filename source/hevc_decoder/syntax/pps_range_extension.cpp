@@ -8,8 +8,7 @@
 using std::vector;
 
 PPSRangeExtension::PPSRangeExtension(bool is_transform_skip_enabled)
-    : BaseSyntax()
-    , is_transform_skip_enabled_(is_transform_skip_enabled)
+    : is_transform_skip_enabled_(is_transform_skip_enabled)
     , is_chroma_qp_offset_list_enabled_(false)
 {
 

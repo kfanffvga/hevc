@@ -1,15 +1,15 @@
 ﻿#ifndef _PPS_RANGE_EXTENSION_H_
 #define _PPS_RANGE_EXTENSION_H_
 
-#include "hevc_decoder/syntax/base_syntax.h"
+class BitStream;
 
-class PPSRangeExtension : public BaseSyntax
+class PPSRangeExtension 
 {
 public:
     PPSRangeExtension(bool is_transform_skip_enabled);
-    virtual ~PPSRangeExtension();
+    ~PPSRangeExtension();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
     bool IsChromaQPOffsetListEnabled() const;
 
 private:

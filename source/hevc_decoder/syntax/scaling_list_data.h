@@ -4,15 +4,15 @@
 #include <stdint.h>
 #include <vector>
 
-#include "hevc_decoder/syntax/base_syntax.h"
+class BitStream;
 
-class ScalingListData : public BaseSyntax
+class ScalingListData
 {
 public:
     ScalingListData();
     virtual ~ScalingListData();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
 private:
     std::vector<int32_t> GetDefaultScalingList(int size_id, int ref_matrix_id);

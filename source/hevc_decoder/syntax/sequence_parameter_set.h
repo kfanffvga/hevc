@@ -5,12 +5,12 @@
 #include <vector>
 #include <memory>
 
-#include "hevc_decoder/syntax/base_syntax.h"
 #include "hevc_decoder/syntax/short_term_reference_picture_set_context.h"
 
 class GolombReader;
 class SPSRangeExtension;
 class SPSScreenContentCodingExtension;
+class BitStream;
 
 struct LongTermReferenceLSBPictureOrderCountInfo
 {
@@ -27,14 +27,13 @@ enum ChromaFormatType
     YUV_MONO_CHROME = 0xffff   // 此处可以认为chroma_array_type为0
 };
 
-class SequenceParameterSet : public BaseSyntax
-                           , public ShortTermReferencePictureSetContext
+class SequenceParameterSet : public ShortTermReferencePictureSetContext
 {
 public:
     SequenceParameterSet();
-    virtual ~SequenceParameterSet();
+    ~SequenceParameterSet();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
     uint32_t GetSequenceParameterSetID();
     uint32_t GetSliceSegmentAddressBitLength() const;

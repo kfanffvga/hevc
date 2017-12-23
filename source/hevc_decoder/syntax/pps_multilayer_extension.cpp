@@ -12,7 +12,6 @@ using std::map;
 using std::make_pair;
 
 PPSMultilayerExtension::PPSMultilayerExtension()
-    : BaseSyntax()
 {
 
 }

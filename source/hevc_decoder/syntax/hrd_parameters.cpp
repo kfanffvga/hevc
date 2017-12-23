@@ -18,8 +18,7 @@ const uint32_t numerals_twenty_three = 23;
 }
 
 HrdParmeters::HrdParmeters(bool commin_inf_present, uint32_t max_num_sub_layers)
-    : BaseSyntax()
-    , commin_inf_present_(commin_inf_present)
+    : commin_inf_present_(commin_inf_present)
     , max_num_sub_layers_(max_num_sub_layers)
     , nal_sub_layer_hrd_parameters_(max_num_sub_layers_)
     , vcl_sub_layer_hrd_parameters_(max_num_sub_layers_)

@@ -13,8 +13,7 @@ using boost::extents;
 
 SubLayerHrdParameters::SubLayerHrdParameters(uint32_t cpb_cnt_value,
                                              bool has_sub_pic_hrd_params_present)
-    : BaseSyntax()
-    , cpb_cnt_value_(cpb_cnt_value)
+    : cpb_cnt_value_(cpb_cnt_value)
     , has_sub_pic_hrd_params_present_(has_sub_pic_hrd_params_present)
 {
     assert(cpb_cnt_value_ >= 0 && cpb_cnt_value_ <= 31);

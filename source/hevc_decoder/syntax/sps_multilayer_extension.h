@@ -1,15 +1,15 @@
 ﻿#ifndef _SPS_MULTILAYER_EXTENSION_H_
 #define _SPS_MULTILAYER_EXTENSION_H_
 
-#include "hevc_decoder/syntax/base_syntax.h"
+class BitStream;
 
-class SPSMultilayerExtension : public BaseSyntax
+class SPSMultilayerExtension
 {
 public:
     SPSMultilayerExtension();
-    virtual ~SPSMultilayerExtension();
+    ~SPSMultilayerExtension();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 };
 
 #endif

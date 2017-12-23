@@ -3,15 +3,15 @@
 
 #include <stdint.h>
 
-#include "hevc_decoder/syntax/base_syntax.h"
+class BitStream;
 
-class VideoUsabilityInfomationParameter : public BaseSyntax
+class VideoUsabilityInfomationParameter
 {
 public:
     VideoUsabilityInfomationParameter(uint32_t sps_max_sub_layers);
-    virtual ~VideoUsabilityInfomationParameter();
+    ~VideoUsabilityInfomationParameter();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
 private:
     uint32_t sps_max_sub_layers_;

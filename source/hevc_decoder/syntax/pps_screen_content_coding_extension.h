@@ -1,15 +1,15 @@
 ﻿#ifndef _PPS_SCREEN_CONTENT_CODING_EXTENSION_H_
 #define _PPS_SCREEN_CONTENT_CODING_EXTENSION_H_
 
-#include "hevc_decoder/syntax/base_syntax.h"
+class BitStream;
 
-class PPSScreenContentCodingExtension : public BaseSyntax
+class PPSScreenContentCodingExtension
 {
 public:
     PPSScreenContentCodingExtension();
     virtual ~PPSScreenContentCodingExtension();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
     bool IsPPSCurrentPictureReferenceEnabled() const;
     bool HasPPSSliceActQPOffsetsPresent() const;

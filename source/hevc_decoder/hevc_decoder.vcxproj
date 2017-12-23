@@ -88,7 +88,6 @@
     <ClInclude Include="hevc_decoder.h" />
     <ClInclude Include="hevc_decoder_def.h" />
     <ClInclude Include="predictors\predictor_manager.h" />
-    <ClInclude Include="syntax\base_syntax.h" />
     <ClInclude Include="syntax\colour_mapping_octants.h" />
     <ClInclude Include="syntax\colour_mapping_table.h" />
     <ClInclude Include="syntax\delta_dlt.h" />
@@ -119,6 +118,7 @@
     <ClInclude Include="syntax\sps_range_extension.h" />
     <ClInclude Include="syntax\sps_screen_content_coding_extension.h" />
     <ClInclude Include="syntax\sub_layer_hrd_parameters.h" />
+    <ClInclude Include="syntax\syntax_context.h" />
     <ClInclude Include="syntax\syntax_dispatcher.h" />
     <ClInclude Include="syntax\video_parameter_set.h" />
     <ClInclude Include="syntax\video_usability_infomation_parameters.h" />

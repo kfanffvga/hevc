@@ -3,15 +3,15 @@
 
 #include <stdint.h>
 
-#include "hevc_decoder/syntax/base_syntax.h"
+class BitStream;
 
-class PPSMultilayerExtension : public BaseSyntax
+class PPSMultilayerExtension
 {
 public:
     PPSMultilayerExtension();
-    virtual ~PPSMultilayerExtension();
+    ~PPSMultilayerExtension();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
 private:
     struct ScaledRefLayerInfo

@@ -5,20 +5,20 @@
 #include <map>
 #include <array>
 
-#include "hevc_decoder/syntax/base_syntax.h"
+class BitStream;
 
 // TODO: 此处并不理解8叉树的分割方法,特别是句法结构中的
 // colour_mapping_octants( inpDepth, idxY, idxCb, idxCr, inpLength )
 // inpLength的意义,由于此处是在multilayer中使用,暂时性不考虑语义,留到将来再解决
 
-class ColourMappingOctants : public BaseSyntax
+class ColourMappingOctants
 {
 public:
     ColourMappingOctants(uint8_t cm_y_part_num_log2, uint8_t cm_octant_depth,
                          uint8_t cm_res_coeff_r_bits);
-    virtual ~ColourMappingOctants();
+    ~ColourMappingOctants();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
 private:
     struct ColourIndex

@@ -2,24 +2,23 @@
 #define _SLICE_SEGMENT_SYNTAX_H_
 
 #include "hevc_decoder/base/slice_segment_context.h"
-#include "hevc_decoder/syntax/base_syntax.h"
 
 class IFrameSyntaxContext;
 class ParametersManager;
 class ICodedVideoSequence;
+class BitStream;
 enum NalUnitType;
 
 class SliceSegmentSyntax : public ISliceSegmentContext
-                         , public BaseSyntax
 {
 public:
     SliceSegmentSyntax(NalUnitType nal_unit_type, uint8_t nal_layer_id,
                        const ParametersManager* parameters_manager,
                        IFrameSyntaxContext* frame_syntax_context,
                        ICodedVideoSequence* coded_video_sequence);
-    virtual ~SliceSegmentSyntax();
+    ~SliceSegmentSyntax();
 
-    virtual bool Parse(BitStream* bit_stream) override;
+    bool Parse(BitStream* bit_stream);
 
 private:
     virtual uint32_t GetQuantizationParameter() const override;
