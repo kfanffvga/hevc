@@ -124,8 +124,8 @@ bool SyntaxDispatcher::CreateSliceSegmentSyntaxAndDispatch(NalUnit* nal_unit,
     bit_stream->Seek(bit_stream->GetBytePosition(), 
                      bit_stream->GetBitPosition() - 1);
     unique_ptr<SliceSegmentSyntax> slice_segment_syntax(
-        new SliceSegmentSyntax(nal_unit->GetNalUnitType(), 
-                               nal_unit->GetNuhLayerID(), parameters_manager_, 
+        new SliceSegmentSyntax(nal_unit->GetNalUnitType(),
+                               nal_unit->GetNuhLayerID(), parameters_manager_,
                                frame_syntax_.get(), this));
     bool success = slice_segment_syntax->Parse(nal_unit->GetBitSteam());
     if (!success)

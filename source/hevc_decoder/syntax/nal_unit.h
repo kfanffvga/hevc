@@ -16,15 +16,11 @@ public:
     ~NalUnit();
 
     NalUnitType GetNalUnitType() const;
-
     uint8_t GetNuhLayerID() const;
-
-    uint8_t GetNuhTemporalID() const;
-
     BitStream* GetBitSteam();
 
 private:
-    bool Parser();
+    void Parse();
 
     struct NalUnitHeader
     {
