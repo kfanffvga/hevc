@@ -7,9 +7,7 @@
 
 using boost::multi_array;
 
-SPSScreenContentCodingExtension::SPSScreenContentCodingExtension(
-    uint32_t num_of_color_compoments)
-    : num_of_color_compoments_(num_of_color_compoments)
+SPSScreenContentCodingExtension::SPSScreenContentCodingExtension()
 {
 
 }
@@ -19,7 +17,8 @@ SPSScreenContentCodingExtension::~SPSScreenContentCodingExtension()
 
 }
 
-bool SPSScreenContentCodingExtension::Parse(BitStream* bit_stream)
+bool SPSScreenContentCodingExtension::Parse(BitStream* bit_stream,
+                                            uint32_t chroma_format_idc)
 {
     if (!bit_stream)
         return false;
@@ -41,15 +40,16 @@ bool SPSScreenContentCodingExtension::Parse(BitStream* bit_stream)
             uint32_t sps_num_palette_predictor_initializer = 
                 golomb_reader.ReadUnsignedValue() + 1;
 
+            uint32_t num_of_color_compoments = (0 == chroma_format_idc) ? 1 : 3;
             multi_array<uint32_t, 2> sps_palette_predictor_initializers(
-                boost::extents[num_of_color_compoments_]
+                boost::extents[num_of_color_compoments]
                               [sps_num_palette_predictor_initializer]);
 
             // 读取的大小纯属猜测,文档中没有提及,FFMPEG中也没有读取
             uint32_t predictor_bit_length = 
                 palette_max_size + delta_palette_max_predictor_size;
 
-            for (uint32_t i = 0; i < num_of_color_compoments_; ++i)
+            for (uint32_t i = 0; i < num_of_color_compoments; ++i)
             {
                 for (uint32_t j = 0; j < sps_num_palette_predictor_initializer;
                      ++j)

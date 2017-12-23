@@ -8,15 +8,14 @@ class BitStream;
 class SPSScreenContentCodingExtension
 {
 public:
-    SPSScreenContentCodingExtension(uint32_t num_of_color_compoments);
+    SPSScreenContentCodingExtension();
     virtual ~SPSScreenContentCodingExtension();
 
-    bool Parse(BitStream* bit_stream);
+    bool Parse(BitStream* bit_stream, uint32_t chroma_format_idc);
 
     uint8_t GetMotionVectorResolutionControlIDC() const;
 
 private:
-    uint32_t num_of_color_compoments_;
     uint8_t motion_vector_resolution_control_idc_;
 };
 

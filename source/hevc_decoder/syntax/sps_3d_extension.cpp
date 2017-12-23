@@ -7,8 +7,7 @@
 
 using std::vector;
 
-SPS3DExtension::SPS3DExtension(uint32_t ctb_log2_size_y)
-    : ctb_log2_size_y_(ctb_log2_size_y)
+SPS3DExtension::SPS3DExtension()
 {
 
 }
@@ -18,7 +17,7 @@ SPS3DExtension::~SPS3DExtension()
 
 }
 
-bool SPS3DExtension::Parse(BitStream* bit_stream)
+bool SPS3DExtension::Parse(BitStream* bit_stream, uint32_t ctb_log2_size_y)
 {
     if (!bit_stream)
         return false;
@@ -47,7 +46,7 @@ bool SPS3DExtension::Parse(BitStream* bit_stream)
         }
         else
         {
-            item.log2_ivmc_sub_pb_size = ctb_log2_size_y_;
+            item.log2_ivmc_sub_pb_size = ctb_log2_size_y;
             item.is_iv_res_pred_enabled = false;
             item.is_depth_ref_enabled = false;
             item.is_vsp_mc_enabled = false;

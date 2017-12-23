@@ -27,7 +27,7 @@ SequenceParameterSet::SequenceParameterSet()
     , chroma_array_type_(MONO_CHROME)
     , max_lsb_of_pic_order_count_(1 << 4)
     , sps_range_extension_(new SPSRangeExtension())
-    , sps_scc_extension_()
+    , sps_scc_extension_(new SPSScreenContentCodingExtension())
     , bit_depth_chroma_(0)
 {
 
@@ -266,17 +266,14 @@ bool SequenceParameterSet::ParseExtensionInfo(BitStream* bit_stream,
     }
     if (has_sps_3d_extension)
     {
-        SPS3DExtension sps_3d_extension(ctb_log2_size_y);
-        bool success = sps_3d_extension.Parse(bit_stream);
+        SPS3DExtension sps_3d_extension;
+        bool success = sps_3d_extension.Parse(bit_stream, ctb_log2_size_y);
         if (!success)
             return false;
     }
     if (has_sps_scc_extension)
     {
-        uint32_t num_of_color_compoments = 0 == chroma_format_idc ? 1 : 3;
-        sps_scc_extension_.reset(
-            new SPSScreenContentCodingExtension(chroma_format_idc));
-        bool success = sps_scc_extension_->Parse(bit_stream);
+        bool success = sps_scc_extension_->Parse(bit_stream, chroma_format_idc);
         if (!success)
             return false;
     }

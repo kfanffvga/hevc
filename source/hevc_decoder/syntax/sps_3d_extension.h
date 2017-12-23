@@ -8,10 +8,10 @@ class BitStream;
 class SPS3DExtension
 {
 public:
-    SPS3DExtension(uint32_t ctb_log2_size_y);
+    SPS3DExtension();
     virtual ~SPS3DExtension();
 
-    bool Parse(BitStream* bit_stream);
+    bool Parse(BitStream* bit_stream, uint32_t ctb_log2_size_y);
 
 private:
     struct SPS3DExtensionItem
@@ -31,8 +31,6 @@ private:
         bool is_inter_dc_only_enabled;
         bool is_skip_intra_enabled;
     };
-
-    uint32_t ctb_log2_size_y_;
 };
 
 #endif
