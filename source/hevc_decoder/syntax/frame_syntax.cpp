@@ -6,9 +6,9 @@
 
 using std::unique_ptr;
 
-FrameSyntax::FrameSyntax(ICodedVideoSequence* coded_video_sequence)
+FrameSyntax::FrameSyntax(IFrameSyntaxContext* frame_syntax_context)
     : picture_order_count_()
-    , coded_video_sequence_(coded_video_sequence)
+    , frame_syntax_context_(frame_syntax_context)
 {
 
 }
@@ -55,22 +55,23 @@ const ICodingTreeBlockContext* FrameSyntax::GetCodingTreeBlockContext(
     return nullptr;
 }
 
-const ISliceSegmentContext* FrameSyntax::GetIndependentSliceSegmentContext(
-    uint32_t slice_segment_address) const
+const ISliceSegmentInfoProviderForCABAC* 
+    FrameSyntax::GetSliceSegmentInfoProviderForCABAC(
+        uint32_t slice_segment_address) const
 {
     return nullptr;
 }
 
 bool FrameSyntax::AddSliceSegment(unique_ptr<SliceSegmentSyntax> slice_segment)
 {
-    return false;
+    return true;
 }
 
 bool FrameSyntax::SetPictureOrderCountByLSB(uint32_t lsb, uint32_t max_lsb)
 {
     PictureOrderCount preview_poc;
     bool success = 
-        coded_video_sequence_->GetPreviewPictureOrderCount(&preview_poc);
+        frame_syntax_context_->GetPreviewPictureOrderCount(&preview_poc);
     if (!success)
         return false;
 

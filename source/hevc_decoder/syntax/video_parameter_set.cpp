@@ -69,13 +69,13 @@ bool VideoParameterSet::Parse(BitStream* bit_stream)
     uint32_t vps_num_layer_sets = golomb_reader.ReadUnsignedValue() + 1;
     multi_array<bool, 2> layer_id_included(
         boost::extents[vps_num_layer_sets][vps_max_layer_id + 1]);
-    uint32_t vps_num_layer_sets_minus1 = vps_num_layer_sets - 1;
-    for (uint32_t i = 0; i < vps_num_layer_sets_minus1; ++i)
+    
+    for (uint32_t i = 0; i < vps_num_layer_sets - 1; ++i)
         for (uint8_t j = 0; j <= vps_max_layer_id; ++j)
             layer_id_included[i][j] = bit_stream->ReadBool();
 
-    bool vps_timing_info_present = bit_stream->ReadBool();
-    if (vps_timing_info_present)
+    bool has_vps_timing_info_present = bit_stream->ReadBool();
+    if (has_vps_timing_info_present)
     {
         uint32_t vps_num_units_in_tick = bit_stream->Read<uint32_t>(32);
         uint32_t vps_time_scale = bit_stream->Read<uint32_t>(32);

@@ -1,9 +1,9 @@
-﻿#ifndef _SLICE_SEGMENT_CONTEXT_H_
-#define _SLICE_SEGMENT_CONTEXT_H_
+﻿#ifndef _SLICE_SEGMENT_INFO_PROVIDER_FOR_CABAC_H_
+#define _SLICE_SEGMENT_INFO_PROVIDER_FOR_CABAC_H_
 
-#include "hevc_decoder/base/basic_types.h"
+#include <inttypes.h>
 
-class ISliceSegmentContext
+class ISliceSegmentInfoProviderForCABAC
 {
 public:
     virtual uint32_t GetQuantizationParameter() const = 0;
@@ -12,5 +12,4 @@ public:
     virtual uint32_t GetSliceSegmentAddress() const = 0;
     virtual uint32_t GetCABACStorageIndex() const = 0;
 };
-
 #endif

@@ -1,24 +1,24 @@
 ﻿#ifndef _SLICE_SEGMENT_SYNTAX_H_
 #define _SLICE_SEGMENT_SYNTAX_H_
 
-#include "hevc_decoder/base/slice_segment_context.h"
+#include "hevc_decoder/variant_length_data_decoder/slice_segment_info_provider_for_cabac.h"
 
-class IFrameSyntaxContext;
+class ISliceSegmentContext;
 class ParametersManager;
-class ICodedVideoSequence;
 class BitStream;
 enum NalUnitType;
 
-class SliceSegmentSyntax : public ISliceSegmentContext
+class SliceSegmentSyntax : public ISliceSegmentInfoProviderForCABAC
 {
 public:
-    SliceSegmentSyntax(NalUnitType nal_unit_type, uint8_t nal_layer_id,
-                       const ParametersManager* parameters_manager,
-                       IFrameSyntaxContext* frame_syntax_context,
-                       ICodedVideoSequence* coded_video_sequence);
+    SliceSegmentSyntax(NalUnitType nal_unit_type, uint8_t nuh_layer_id,
+                       const ParametersManager* parameters_manager);
     ~SliceSegmentSyntax();
 
-    bool Parse(BitStream* bit_stream);
+    bool Parse(BitStream* bit_stream, ISliceSegmentContext* context);
+
+    NalUnitType GetNalUnitType() const;
+    uint8_t GetNuhLayerID() const;
 
 private:
     virtual uint32_t GetQuantizationParameter() const override;
@@ -27,11 +27,9 @@ private:
     virtual uint32_t GetSliceSegmentAddress() const override;
     virtual uint32_t GetCABACStorageIndex() const override;
 
-    IFrameSyntaxContext* frame_syntax_context_;
-    ICodedVideoSequence* coded_video_sequence_;
     const ParametersManager* parameters_manager_;
     NalUnitType nal_unit_type_;
-    uint8_t nal_layer_id_;
+    uint8_t nuh_layer_id_;
 };
 
 #endif

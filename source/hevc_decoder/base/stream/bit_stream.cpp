@@ -85,3 +85,8 @@ void BitStream::SkipBits(uint32_t bits)
         byte_inner_sequence_ = bit_pos & 0x7;
     }
 }
+
+bool BitStream::IsEof()
+{
+    return (current_pos_ptr_ == end_ptr_) && (7 == byte_inner_sequence_);
+}

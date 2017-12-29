@@ -7,7 +7,7 @@
 
 enum SliceType;
 enum ChromaFormatType;
-class ICodedVideoSequence;
+class IFrameSyntaxContext;
 struct PictureOrderCount;
 class SequenceParameterSet;
 class BitStream;
@@ -21,7 +21,7 @@ public:
                           uint32_t nuh_layer_id, SliceType slice_type,
                           const std::vector<int32_t>& negative_ref_poc_list,
                           const std::vector<int32_t>& positive_ref_poc_list,
-                          const ICodedVideoSequence* coded_video_sequence);
+                          const IFrameSyntaxContext* coded_video_sequence);
     ~PredictionWeightTable();
 
     bool Parse(BitStream* bit_stream);
@@ -47,7 +47,7 @@ private:
     SliceType slice_type_;
     const std::vector<int32_t>& negative_ref_poc_list_;
     const std::vector<int32_t>& positive_ref_poc_list_;
-    const ICodedVideoSequence* coded_video_sequence_;
+    const IFrameSyntaxContext* coded_video_sequence_;
     const SequenceParameterSet* sps_;
 };
 

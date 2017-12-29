@@ -17,20 +17,14 @@
 #include "hevc_decoder/syntax/reference_picture_lists_modification.h"
 #include "hevc_decoder/syntax/sps_screen_content_coding_extension.h"
 #include "hevc_decoder/syntax/pps_range_extension.h"
+#include "hevc_decoder/syntax/slice_segment_header_context.h"
 
 using std::vector;
 using std::unique_ptr;
 
 SliceSegmentHeader::SliceSegmentHeader(
-    NalUnitType nal_unit_type, int32_t nal_layer_id, 
-    const ParametersManager* parameters_manager, 
-    IFrameSyntaxContext* frame_syntax_context,
-    ICodedVideoSequence* coded_video_sequence)
+    const ParametersManager* parameters_manager)
     : parameters_manager_(parameters_manager)
-    , frame_syntax_context_(frame_syntax_context)
-    , coded_video_sequence_(coded_video_sequence)
-    , nal_unit_type_(nal_unit_type)
-    , nal_layer_id_(nal_layer_id)
     , st_ref_pic_set_of_self_()
     , short_term_ref_pic_set_idx_(-1)
     , negative_ref_poc_list_()
@@ -44,13 +38,15 @@ SliceSegmentHeader::~SliceSegmentHeader()
 
 }
 
-bool SliceSegmentHeader::Parse(BitStream* bit_stream)
+bool SliceSegmentHeader::Parse(BitStream* bit_stream, 
+                               ISliceSegmentHeaderContext* context)
 {
-    if (!bit_stream)
+    if (!bit_stream || !context)
         return false;
 
     bool is_first_slice_segment_in_pic = bit_stream->ReadBool();
-    if ((nal_unit_type_ >= BLA_W_LP) && (nal_unit_type_ <= RSV_IRAP_VCL23))
+    if ((context->GetNalUnitType() >= BLA_W_LP) && 
+        (context->GetNalUnitType() <= RSV_IRAP_VCL23))
         bool is_no_output_of_prior_pics = bit_stream->ReadBool();
 
     GolombReader golomb_reader(bit_stream);
@@ -77,7 +73,7 @@ bool SliceSegmentHeader::Parse(BitStream* bit_stream)
     }
     if (!is_dependent_slice_segment)
     {
-        bool success = ParseIndependentSyntax(pps, sps, bit_stream);
+        bool success = ParseIndependentSyntax(pps, sps, bit_stream, context);
         if (!success)
             return false;
     }
@@ -85,9 +81,9 @@ bool SliceSegmentHeader::Parse(BitStream* bit_stream)
     return ParseTileInfo(pps, bit_stream);
 }
 
-bool SliceSegmentHeader::ParseIndependentSyntax(const PictureParameterSet* pps, 
-                                                const SequenceParameterSet* sps,
-                                                BitStream* bit_stream)
+bool SliceSegmentHeader::ParseIndependentSyntax(
+    const PictureParameterSet* pps, const SequenceParameterSet* sps,
+    BitStream* bit_stream, ISliceSegmentHeaderContext* context)
 {
     assert(bit_stream);
 
@@ -105,13 +101,15 @@ bool SliceSegmentHeader::ParseIndependentSyntax(const PictureParameterSet* pps,
 
     bool is_slice_temporal_mvp_enabled = false;
     LongTermRefPOCBaseInfoSet lt_ref_poc_base_infos;
-    if ((nal_unit_type_ != IDR_N_LP) && (nal_unit_type_ != IDR_W_RADL))
+    if ((context->GetNalUnitType() != IDR_N_LP) && 
+        (context->GetNalUnitType() != IDR_W_RADL))
     {
         uint8_t slice_pic_order_cnt_lsb =
             bit_stream->Read<uint8_t>(sps->GetPicOrderCountLSBBitLength());
-        frame_syntax_context_->SetPictureOrderCountByLSB(
-            slice_pic_order_cnt_lsb, sps->GetMaxLSBOfPicOrderCount());
-        bool success = ParseReferencePictureSet(pps, sps, bit_stream, 
+        context->SetPictureOrderCountByLSB(slice_pic_order_cnt_lsb, 
+                                           sps->GetMaxLSBOfPicOrderCount());
+
+        bool success = ParseReferencePictureSet(pps, sps, bit_stream, context,
                                                 &lt_ref_poc_base_infos);
         if (!success)
             return false;
@@ -134,7 +132,7 @@ bool SliceSegmentHeader::ParseIndependentSyntax(const PictureParameterSet* pps,
         bool success = ParseReferenceDetailInfo(pps, sps, slice_type, 
                                                 is_slice_temporal_mvp_enabled, 
                                                 lt_ref_poc_base_infos,
-                                                bit_stream);
+                                                bit_stream, context);
         if (!success)
             return false;
     }
@@ -149,7 +147,8 @@ bool SliceSegmentHeader::ParseIndependentSyntax(const PictureParameterSet* pps,
 
 bool SliceSegmentHeader::ParseReferencePictureSet(
     const PictureParameterSet* pps, const SequenceParameterSet* sps, 
-    BitStream* bit_stream, LongTermRefPOCBaseInfoSet* lt_ref_poc_base_infos)
+    BitStream* bit_stream, ISliceSegmentHeaderContext* context,
+    LongTermRefPOCBaseInfoSet* lt_ref_poc_base_infos)
 {
     assert(lt_ref_poc_base_infos);
     if (!lt_ref_poc_base_infos)
@@ -197,8 +196,7 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
         
         // lt_ref_lsb_poc_infos.size() == 0 则num_long_term_sps 也为0
         uint32_t preview_delta_poc_msb_cycle_lt = 0;
-        uint32_t current_poc_value = 
-            frame_syntax_context_->GetPictureOrderCount().value;
+        uint32_t current_poc_value = context->GetPictureOrderCount().value;
         auto get_lt_poc_value = 
             [current_poc_value, sps](uint32_t delta_poc_msb_cycle_lt, 
                                      uint32_t lsb) -> uint32_t
@@ -261,7 +259,7 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
     const PictureParameterSet* pps, const SequenceParameterSet* sps, 
     SliceType slice_type, bool is_slice_temporal_mvp_enabled, 
     const LongTermRefPOCBaseInfoSet& current_lt_ref_poc_base_infos,
-    BitStream* bit_stream)
+    BitStream* bit_stream, ISliceSegmentHeaderContext* context)
 {
     bool is_num_ref_idx_active_override = bit_stream->ReadBool();
     GolombReader golomb_reader(bit_stream);
@@ -292,7 +290,8 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
     bool is_current_picture_ref_enabled = pps_scc_extension ? 
         pps_scc_extension->IsPPSCurrentPictureReferenceEnabled() : false;
 
-    bool success = ConstructReferencePOCList(sps, short_term_ref_pic_set_idx_, 
+    bool success = ConstructReferencePOCList(sps, context,
+                                             short_term_ref_pic_set_idx_,
                                              current_lt_ref_poc_base_infos, 
                                              is_current_picture_ref_enabled,
                                              slice_type, 
@@ -321,11 +320,12 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
     if ((pps->HasWeightedPred() && (P_SLICE == slice_type)) ||
         (pps->HasWeightedBipred() && (B_SLICE == slice_type)))
     {
+        // Fix Me : nullptr
         PredictionWeightTable prediction_weight_table(
             sps->GetChromaArrayType(), sps, 
-            frame_syntax_context_->GetPictureOrderCount(), nal_layer_id_, 
+            context->GetPictureOrderCount(), context->GetNuhLayerID(), 
             slice_type, negative_ref_poc_list_, positive_ref_poc_list_, 
-            coded_video_sequence_);
+            nullptr);
         success = prediction_weight_table.Parse(bit_stream);
         if (!success)
             return false;
@@ -394,7 +394,8 @@ uint32_t SliceSegmentHeader::GetCurrentAvailableReferencePictureCount(
 }
 
 bool SliceSegmentHeader::ConstructReferencePOCList(
-    const SequenceParameterSet* sps, int short_term_ref_pic_set_idx,
+    const SequenceParameterSet* sps, ISliceSegmentHeaderContext* context, 
+    int short_term_ref_pic_set_idx,
     const LongTermRefPOCBaseInfoSet& current_lt_ref_poc_base_infos,
     bool is_current_picture_ref_enabled, SliceType slice_type, 
     const ReferencePictureListsModification* ref_pic_list_modification,
@@ -415,8 +416,7 @@ bool SliceSegmentHeader::ConstructReferencePOCList(
     if (!st_ref_pic_set)
         return false;
 
-    uint32_t current_poc_value = 
-        frame_syntax_context_->GetPictureOrderCount().value;
+    uint32_t current_poc_value = context->GetPictureOrderCount().value;
 
     // 暂时性还不清楚会不会产生负数,但由于poc都是正数,按照文档定义一致性的原则,认为这里也是
     // 正数
@@ -487,16 +487,14 @@ bool SliceSegmentHeader::ConstructReferencePOCList(
     };
     
     general_reference_list(poc_st_curr_before, poc_st_curr_after, poc_lt_curr, 
-                           is_current_picture_ref_enabled, 
-                           frame_syntax_context_->GetPictureOrderCount().value,
+                           is_current_picture_ref_enabled, current_poc_value,
                            ref_pic_list_modification->GetListEntryOfNegative(),
                            negative_ref_pic_list);
     if (B_SLICE == slice_type)
     {
         general_reference_list(
             poc_st_curr_after, poc_st_curr_before, poc_lt_curr, 
-            is_current_picture_ref_enabled,
-            frame_syntax_context_->GetPictureOrderCount().value,
+            is_current_picture_ref_enabled, current_poc_value,
             ref_pic_list_modification->GetListEntryOfPositive(),
             positive_ref_pic_list);
     }

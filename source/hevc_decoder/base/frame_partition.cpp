@@ -1,7 +1,7 @@
 ﻿#include "hevc_decoder/base/frame_partition.h"
 
 #include "hevc_decoder/base/math.h"
-#include "hevc_decoder/base/frame_syntax_context.h"
+#include "hevc_decoder/base/frame_info_provider_for_frame_partition.h"
 
 using std::vector;
 
@@ -192,9 +192,9 @@ bool FramePartition::InitOnUniformSpacing(uint32_t num_tile_cols,
 
  bool FramePartition::IsZScanOrderNeighbouringBlockAvailable(
      const Coordinate& current_block, const Coordinate& neighbouring_block,
-     const IFrameSyntaxContext* frame_context)
+     const FrameInfoProviderForFramePartition* frame_info_provider)
  {
-    if (!initialzed_ || !frame_context)
+    if (!initialzed_ || !frame_info_provider)
         return false;
 
     if ((current_block.x > frame_width_) || (current_block.y > frame_height_) ||
@@ -228,11 +228,11 @@ bool FramePartition::InitOnUniformSpacing(uint32_t num_tile_cols,
         return false;
 
     uint32_t slice_address_of_current_block = 
-        frame_context->GetSliceAddressByRasterScanBlockIndex(
+        frame_info_provider->GetSliceAddressByRasterScanBlockIndex(
             tb_of_current_block->belong_to_raster_scan_index);
 
     uint32_t slice_address_of_neighbouring_block =
-        frame_context->GetSliceAddressByRasterScanBlockIndex(
+        frame_info_provider->GetSliceAddressByRasterScanBlockIndex(
             tb_of_neighbouring_block->belong_to_raster_scan_index);
     
     // 两个块必须在同一个slice segment里

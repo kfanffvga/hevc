@@ -11,6 +11,7 @@ class Frame;
 class NALOrganizer;
 class ParametersManager;
 class DecodeProcessorManager;
+class CodedVideoSequence;
 class FrameSequenceArranger;
 class SyntaxDispatcher;
 enum HEVC_ERROR;
@@ -35,6 +36,7 @@ private:
     std::unique_ptr<ParametersManager> parameters_manager_;
     std::unique_ptr<FrameSequenceArranger> frame_sequence_arranger_;
     std::unique_ptr<DecodeProcessorManager> decode_processor_manager_;
+    std::unique_ptr<CodedVideoSequence> coded_video_sequence_;
     std::unique_ptr<SyntaxDispatcher> syntax_dispatcher_;
     std::unique_ptr<NALOrganizer> organizer_;
 };

@@ -41,6 +41,8 @@ public:
     int GetBitPosition();
     void SkipBits(uint32_t bits);
 
+    bool IsEof();
+
 private:
     inline int ReadBitInByte(int length, int64_t* read_result);
 

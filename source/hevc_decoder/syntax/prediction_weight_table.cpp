@@ -19,7 +19,7 @@ PredictionWeightTable::PredictionWeightTable(
     const PictureOrderCount& current_poc, uint32_t nuh_layer_id, 
     SliceType slice_type, const vector<int32_t>& negative_ref_poc_list,
     const vector<int32_t>& positive_ref_poc_list,
-    const ICodedVideoSequence* coded_video_sequence)
+    const IFrameSyntaxContext* coded_video_sequence)
     : chroma_format_type_(chroma_format_type)
     , current_poc_(current_poc)
     , nuh_layer_id_(nuh_layer_id)

@@ -2,8 +2,8 @@
 
 #include <cassert>
 
-#include "hevc_decoder/base/slice_segment_context.h"
-#include "hevc_decoder/base/frame_syntax_context.h"
+#include "hevc_decoder/variant_length_data_decoder/frame_info_provider_for_cabac.h"
+#include "hevc_decoder/variant_length_data_decoder/slice_segment_info_provider_for_cabac.h"
 #include "hevc_decoder/base/stream/bit_stream.h"
 #include "hevc_decoder/base/coding_tree_block_context.h"
 #include "hevc_decoder/variant_length_data_decoder/cabac_context_storage.h"
@@ -51,14 +51,14 @@ static const uint8_t trans_idx_lps[] =
 
 }
 
-CABACReader::CABACReader(CABACContextStorage* cabac_context_storage, 
-                         BitStream* stream, 
-                         const IFrameSyntaxContext* frame_context, 
-                         const ISliceSegmentContext* slice_segment_context)
+CABACReader::CABACReader(
+    CABACContextStorage* cabac_context_storage, BitStream* stream, 
+    const IFrameInfoProviderForCABAC* frame_info_provider,
+    const ISliceSegmentInfoProviderForCABAC* slice_segment_info_provider)
     : cabac_context_storage_(cabac_context_storage)
     , stream_(stream)
-    , frame_context_(frame_context)
-    , slice_segment_context_(slice_segment_context)
+    , frame_info_provider_(frame_info_provider)
+    , slice_segment_info_provider_(slice_segment_info_provider)
     , is_first_ctb_in_slice_segment_(true)
     , context_()
     , current_range_(0)
@@ -66,8 +66,8 @@ CABACReader::CABACReader(CABACContextStorage* cabac_context_storage,
 {
     assert(cabac_context_storage);
     assert(stream);
-    assert(frame_context);
-    assert(slice_segment_context);
+    assert(frame_info_provider);
+    assert(slice_segment_info_provider);
 }
 
 CABACReader::~CABACReader()
@@ -85,9 +85,9 @@ bool CABACReader::StartToReadWithNewCTB(const Coordinate& current_ctb)
             break;
         }
     
-        if (frame_context_->IsTheFirstBlockInTile(current_ctb) ||
-            (frame_context_->IsTheFirstBlockInRowOfTile(current_ctb) && 
-             slice_segment_context_->IsEntropyCodingSyncEnabled()))
+        if (frame_info_provider_->IsTheFirstBlockInTile(current_ctb) ||
+            (frame_info_provider_->IsTheFirstBlockInRowOfTile(current_ctb) &&
+             slice_segment_info_provider_->IsEntropyCodingSyncEnabled()))
         {
             InitReader(current_ctb);
             break;
@@ -125,27 +125,27 @@ bool CABACReader::FinishToReadSliceSegment(uint32_t* index_of_slice_segment_pool
 void CABACReader::InitContext(const Coordinate& current_ctb)
 {
     do {
-        if (frame_context_->IsTheFirstBlockInTile(current_ctb))
+        if (frame_info_provider_->IsTheFirstBlockInTile(current_ctb))
             break;
 
-        if (slice_segment_context_->IsEntropyCodingSyncEnabled() &&
-            (frame_context_->IsTheFirstBlockInRowOfFrame(current_ctb) ||
-             frame_context_->IsTheFirstBlockInRowOfTile(current_ctb)))
+        if (slice_segment_info_provider_->IsEntropyCodingSyncEnabled() &&
+            (frame_info_provider_->IsTheFirstBlockInRowOfFrame(current_ctb) ||
+             frame_info_provider_->IsTheFirstBlockInRowOfTile(current_ctb)))
         {
             Coordinate neighbouring_ctb = 
             {
-                current_ctb.x + frame_context_->GetCTBHeight(),
-                current_ctb.y - frame_context_->GetCTBHeight()
+                current_ctb.x + frame_info_provider_->GetCTBHeight(),
+                current_ctb.y - frame_info_provider_->GetCTBHeight()
             };
             bool is_available = 
-                frame_context_->IsZScanOrderNeighbouringBlockAvailable(
+                frame_info_provider_->IsZScanOrderNeighbouringBlockAvailable(
                     current_ctb, neighbouring_ctb);
 
             if (!is_available)
                 break;
 
             const ICodingTreeBlockContext* ctb_context = 
-                frame_context_->GetCodingTreeBlockContext(neighbouring_ctb);
+                frame_info_provider_->GetCodingTreeBlockContext(neighbouring_ctb);
 
             uint32_t index = ctb_context->GetCABACStorageIndex();
             context_ = cabac_context_storage_->GetCTBStorageContext(index);
@@ -155,23 +155,26 @@ void CABACReader::InitContext(const Coordinate& current_ctb)
         if (!is_first_ctb_in_slice_segment_)
             break;
 
-        if (!slice_segment_context_->IsDependentSliceSegment())
+        if (!slice_segment_info_provider_->IsDependentSliceSegment())
             break;
 
-        uint32_t address = slice_segment_context_->GetSliceSegmentAddress();
-        const ISliceSegmentContext* independent_slice_segmengt_context = 
-            frame_context_->GetIndependentSliceSegmentContext(address);
+        uint32_t address = 
+            slice_segment_info_provider_->GetSliceSegmentAddress();
+        const ISliceSegmentInfoProviderForCABAC* 
+            independent_slice_segmengt_info_provider =
+                frame_info_provider_->GetSliceSegmentInfoProviderForCABAC(
+                    address);
 
-        if (!independent_slice_segmengt_context)
+        if (!independent_slice_segmengt_info_provider)
             break;
 
         uint32_t index = 
-            independent_slice_segmengt_context->GetCABACStorageIndex();
+            independent_slice_segmengt_info_provider->GetCABACStorageIndex();
         context_ = cabac_context_storage_->GetSliceSegmentStorageContext(index);
         return;
 
     } while (false);
-    uint32_t qp = slice_segment_context_->GetQuantizationParameter();
+    uint32_t qp = slice_segment_info_provider_->GetQuantizationParameter();
     context_ = cabac_context_storage_->GetDefaultContext(qp);
 }
 

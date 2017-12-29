@@ -9,7 +9,7 @@
 
 #include "hevc_decoder/base/basic_types.h"
 
-class IFrameSyntaxContext;
+class FrameInfoProviderForFramePartition;
 
 class FramePartition
 {
@@ -32,7 +32,7 @@ public:
     // 并且当前块为邻居块的后面的可可用块
     bool IsZScanOrderNeighbouringBlockAvailable(
         const Coordinate& current_block, const Coordinate& neighbouring_block,
-        const IFrameSyntaxContext* frame_context);
+        const FrameInfoProviderForFramePartition* frame_info_provider);
 
 private:
     struct CodedTreeBlockPositionInfo

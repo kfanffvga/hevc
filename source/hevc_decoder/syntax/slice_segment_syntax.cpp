@@ -1,17 +1,59 @@
 ﻿#include "hevc_decoder/syntax/slice_segment_syntax.h"
 
+#include "hevc_decoder/base/basic_types.h"
 #include "hevc_decoder/syntax/slice_segment_header.h"
+#include "hevc_decoder/syntax/slice_segment_header_context.h"
+#include "hevc_decoder/syntax/slice_segment_context.h"
+
+class SliceSegmentHeaderContext : public ISliceSegmentHeaderContext
+{
+public:
+    SliceSegmentHeaderContext(ISliceSegmentContext* context, 
+                              const SliceSegmentSyntax* slice_segment_syntax)
+        : context_(context)
+        , slice_segment_syntax_(slice_segment_syntax)
+    {
+
+    }
+
+    virtual ~SliceSegmentHeaderContext()
+    {
+
+    }
+
+    virtual void SetPictureOrderCountByLSB(uint32_t lsb, uint32_t max_lsb)
+        override
+    {
+        context_->SetPictureOrderCountByLSB(lsb, max_lsb);
+    }
+
+    virtual PictureOrderCount GetPictureOrderCount() const override
+    {
+        return context_->GetPictureOrderCount();
+    }
+
+    virtual NalUnitType GetNalUnitType() const override
+    {
+        return slice_segment_syntax_->GetNalUnitType();
+    }
+
+    virtual uint8_t GetNuhLayerID() const override
+    {
+        return slice_segment_syntax_->GetNuhLayerID();
+    }
+
+private:
+    ISliceSegmentContext* context_;
+    const SliceSegmentSyntax* slice_segment_syntax_;
+
+};
 
 SliceSegmentSyntax::SliceSegmentSyntax(
-    NalUnitType nal_unit_type, uint8_t nal_layer_id,
-    const ParametersManager* parameters_manager,
-    IFrameSyntaxContext* frame_syntax_context,
-    ICodedVideoSequence* coded_video_sequence)
-    : frame_syntax_context_(frame_syntax_context)
-    , coded_video_sequence_(coded_video_sequence)
-    , parameters_manager_(parameters_manager)
+    NalUnitType nal_unit_type, uint8_t nuh_layer_id,
+    const ParametersManager* parameters_manager)
+    : parameters_manager_(parameters_manager)
     , nal_unit_type_(nal_unit_type)
-    , nal_layer_id_(nal_layer_id)
+    , nuh_layer_id_(nuh_layer_id)
 {
 
 }
@@ -46,11 +88,21 @@ uint32_t SliceSegmentSyntax::GetCABACStorageIndex() const
     return 0;
 }
 
-bool SliceSegmentSyntax::Parse(BitStream* bit_stream)
+bool SliceSegmentSyntax::Parse(BitStream* bit_stream, 
+                               ISliceSegmentContext* context)
 {
-    SliceSegmentHeader header(nal_unit_type_, nal_layer_id_, 
-                              parameters_manager_, frame_syntax_context_,
-                              coded_video_sequence_);
-    header.Parse(bit_stream);
+    SliceSegmentHeader header(parameters_manager_);
+    SliceSegmentHeaderContext header_context(context, this);
+    header.Parse(bit_stream, &header_context);
     return true;
+}
+
+NalUnitType SliceSegmentSyntax::GetNalUnitType() const
+{
+    return nal_unit_type_;
+}
+
+uint8_t SliceSegmentSyntax::GetNuhLayerID() const
+{
+    return nuh_layer_id_;
 }

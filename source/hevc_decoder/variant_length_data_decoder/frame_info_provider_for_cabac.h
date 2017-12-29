@@ -1,11 +1,14 @@
-﻿#ifndef _FRAME_SYNTAX_CONTEXT_H_
-#define _FRAME_SYNTAX_CONTEXT_H_
+﻿#ifndef _FRAME_INFO_PROVIDER_FOR_CABAC_H_
+#define _FRAME_INFO_PROVIDER_FOR_CABAC_H_
+
+#include <inttypes.h>
 
 struct Coordinate;
+class ISliceSegmentInfoProviderForCABAC;
 class ICodingTreeBlockContext;
-class ISliceSegmentContext;
+struct PictureOrderCount;
 
-class IFrameSyntaxContext
+class IFrameInfoProviderForCABAC
 {
 public:
     virtual uint32_t GetSliceAddressByRasterScanBlockIndex(uint32_t index) 
@@ -22,11 +25,11 @@ public:
     virtual const ICodingTreeBlockContext* GetCodingTreeBlockContext(
         const Coordinate& block) const = 0;
 
-    virtual const ISliceSegmentContext* GetIndependentSliceSegmentContext(
-        uint32_t slice_segment_address) const = 0;
-
     virtual bool SetPictureOrderCountByLSB(uint32_t lsb, uint32_t max_lsb) = 0;
     virtual const PictureOrderCount& GetPictureOrderCount() const = 0;
+
+    virtual const ISliceSegmentInfoProviderForCABAC* 
+        GetSliceSegmentInfoProviderForCABAC(uint32_t address) const = 0;
 };
 
 #endif

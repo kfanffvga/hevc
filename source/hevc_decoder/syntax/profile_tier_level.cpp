@@ -97,7 +97,7 @@ void ProfileTierLevel::ParseGeneralProfileInfo(BitStream* bit_stream)
             is_general_profile_compatibility[5] ||
             is_general_profile_compatibility[9])
         {
-            bool general_inbld_flag = bit_stream->ReadBool();
+            bool is_general_inbld = bit_stream->ReadBool();
         }
         else
         {
@@ -109,7 +109,7 @@ void ProfileTierLevel::ParseGeneralProfileInfo(BitStream* bit_stream)
 void ProfileTierLevel::ParseSubLayerInfo(BitStream* bit_stream, 
                                          int max_num_sub_layers)
 {
-    int max_num_sub_layers_minus1 = max_num_sub_layers;
+    int max_num_sub_layers_minus1 = max_num_sub_layers - 1;
     auto sub_layers_range = boost::extents[max_num_sub_layers_minus1];
     multi_array<bool, 1> has_sub_layer_profile_present(sub_layers_range);
     multi_array<bool, 1> has_sub_layer_level_present(sub_layers_range);

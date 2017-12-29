@@ -1,15 +1,35 @@
 ﻿#ifndef _CODED_VIDEO_SEQUENCE_H_
 #define _CODED_VIDEO_SEQUENCE_H_
 
-#include <stdint.h>
+#include <memory>
+#include <vector>
 
-struct PictureOrderCount;
+#include "hevc_decoder/syntax/frame_syntax_context.h"
 
-class ICodedVideoSequence
+class NalUnit;
+class DecodeProcessorManager;
+class ParametersManager;
+class FrameSyntax;
+
+class CodedVideoSequence : public IFrameSyntaxContext
 {
 public:
-    virtual uint32_t GetLayerID(uint32_t poc_value) const = 0;
-    virtual bool GetPreviewPictureOrderCount(PictureOrderCount* poc) const = 0;
+    CodedVideoSequence(DecodeProcessorManager* decode_processor_manager,
+                       ParametersManager* parameters_manager);
+    virtual ~CodedVideoSequence();
+
+    virtual uint32_t GetLayerID(uint32_t poc_value) const override;
+    virtual bool GetPreviewPictureOrderCount(PictureOrderCount* poc) const 
+        override;
+
+    void Flush();
+    bool PushNALOfSliceSegment(NalUnit* nal, bool is_idr_frame);
+
+private:
+    DecodeProcessorManager* decode_processor_manager_;
+    ParametersManager* parameters_manager_;
+    std::unique_ptr<FrameSyntax> frame_syntax_;
+    std::vector<std::pair<PictureOrderCount, uint32_t>> pocs_info_;
 };
 
 #endif

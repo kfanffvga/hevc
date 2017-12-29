@@ -14,6 +14,7 @@
     <ProjectGuid>{550B0A3C-7086-4F05-A851-ECF38C53D63F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>hevc_decoder_test</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

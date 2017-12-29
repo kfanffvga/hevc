@@ -110,6 +110,7 @@ void ShortTermReferencePictureSet::ParsePredictionReferencePOCs(
     uint32_t delta_pocs_count = 
         ref_negative_delta_pocs.size() + ref_positive_delta_pocs.size();
 
+    // Fix me: 不能使用vector<bool>
     vector<bool> can_use_delta;
     vector<bool> is_used_by_curr_pic;
     for (uint32_t i = 0; i <= delta_pocs_count; ++i)

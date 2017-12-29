@@ -160,7 +160,21 @@
     <ClInclude Include="syntax\coded_video_sequence.h">
       <Filter>syntax</Filter>
     </ClInclude>
-    <ClInclude Include="syntax\syntax_context.h">
+    <ClInclude Include="base\coding_tree_block_context.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="variant_length_data_decoder\frame_info_provider_for_cabac.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="variant_length_data_decoder\slice_segment_info_provider_for_cabac.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="base\frame_info_provider_for_frame_partition.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="syntax\slice_segment_header_context.h" />
+    <ClInclude Include="syntax\slice_segment_context.h" />
+    <ClInclude Include="syntax\frame_syntax_context.h">
       <Filter>syntax</Filter>
     </ClInclude>
   </ItemGroup>
@@ -285,6 +299,9 @@
       <Filter>syntax</Filter>
     </ClCompile>
     <ClCompile Include="syntax\prediction_weight_table.cpp">
+      <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="syntax\coded_video_sequence.cpp">
       <Filter>syntax</Filter>
     </ClCompile>
   </ItemGroup>
