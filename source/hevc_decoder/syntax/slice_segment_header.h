@@ -24,14 +24,14 @@ public:
     bool Parse(BitStream* bit_stream, ISliceSegmentHeaderContext* context);
 
 private:
-    struct LongTermReferencePictureOrderCountBaseInfo
+    struct LongTermReferencePictureOrderCountInfo
     {
         uint32_t picture_order_count_value; // 当前cvs里的长期参考帧的poc的值
         bool is_used_by_curr_pic_lt;
     };
 
-    typedef std::vector<LongTermReferencePictureOrderCountBaseInfo> 
-        LongTermRefPOCBaseInfoSet;
+    typedef std::vector<LongTermReferencePictureOrderCountInfo> 
+        LongTermRefPOCInfoSet;
 
     bool ParseIndependentSyntax(const PictureParameterSet* pps, 
                                 const SequenceParameterSet* sps,
@@ -41,12 +41,12 @@ private:
     bool ParseReferencePictureSet(
         const PictureParameterSet* pps, const SequenceParameterSet* sps, 
         BitStream* bit_stream, ISliceSegmentHeaderContext* context,
-        LongTermRefPOCBaseInfoSet* lt_ref_poc_base_infos);
+        LongTermRefPOCInfoSet* lt_ref_poc_infos);
 
     bool ParseReferenceDetailInfo(
         const PictureParameterSet* pps, const SequenceParameterSet* sps,
         SliceType slice_type, bool is_slice_temporal_mvp_enabled, 
-        const LongTermRefPOCBaseInfoSet& current_lt_ref_poc_base_infos,
+        const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
         BitStream* bit_stream, ISliceSegmentHeaderContext* context);
 
     bool ParseQuantizationParameterInfo(
@@ -62,12 +62,12 @@ private:
 
     uint32_t GetCurrentAvailableReferencePictureCount(
         const PictureParameterSet* pps, const SequenceParameterSet* sps,
-        const LongTermRefPOCBaseInfoSet& current_lt_ref_poc_base_infos);
+        const LongTermRefPOCInfoSet& current_lt_ref_poc_infos);
 
     bool ConstructReferencePOCList(
         const SequenceParameterSet* sps, ISliceSegmentHeaderContext* context,
         int short_term_ref_pic_set_idx, 
-        const LongTermRefPOCBaseInfoSet& current_lt_ref_poc_base_infos,
+        const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
         bool is_current_picture_ref_enabled, SliceType slice_type, 
         const ReferencePictureListsModification* ref_pic_list_modification,
         std::vector<int32_t>* negative_ref_pic_list,

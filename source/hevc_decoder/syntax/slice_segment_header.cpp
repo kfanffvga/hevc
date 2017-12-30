@@ -97,11 +97,12 @@ bool SliceSegmentHeader::ParseIndependentSyntax(
     if (pps->HasOutputFlagPresent())
         bool is_pic_output = bit_stream->ReadBool();
 
+    // 如果是单一色彩的话,则需要知道究竟是何种颜色
     if (sps->GetChromaArrayType() == YUV_MONO_CHROME)
         uint8_t colour_plane_id = bit_stream->Read<uint8_t>(2);
 
     bool is_slice_temporal_mvp_enabled = false;
-    LongTermRefPOCBaseInfoSet lt_ref_poc_base_infos;
+    LongTermRefPOCInfoSet lt_ref_poc_infos;
     if ((context->GetNalUnitType() != IDR_N_LP) && 
         (context->GetNalUnitType() != IDR_W_RADL))
     {
@@ -111,7 +112,7 @@ bool SliceSegmentHeader::ParseIndependentSyntax(
                                            sps->GetMaxLSBOfPicOrderCount());
 
         bool success = ParseReferencePictureSet(pps, sps, bit_stream, context,
-                                                &lt_ref_poc_base_infos);
+                                                &lt_ref_poc_infos);
         if (!success)
             return false;
 
@@ -132,7 +133,7 @@ bool SliceSegmentHeader::ParseIndependentSyntax(
     {
         bool success = ParseReferenceDetailInfo(pps, sps, slice_type, 
                                                 is_slice_temporal_mvp_enabled, 
-                                                lt_ref_poc_base_infos,
+                                                lt_ref_poc_infos,
                                                 bit_stream, context);
         if (!success)
             return false;
@@ -149,10 +150,10 @@ bool SliceSegmentHeader::ParseIndependentSyntax(
 bool SliceSegmentHeader::ParseReferencePictureSet(
     const PictureParameterSet* pps, const SequenceParameterSet* sps, 
     BitStream* bit_stream, ISliceSegmentHeaderContext* context,
-    LongTermRefPOCBaseInfoSet* lt_ref_poc_base_infos)
+    LongTermRefPOCInfoSet* lt_ref_poc_infos)
 {
-    assert(lt_ref_poc_base_infos);
-    if (!lt_ref_poc_base_infos)
+    assert(lt_ref_poc_infos);
+    if (!lt_ref_poc_infos)
         return false;
 
     bool has_short_term_ref_pic_set_sps = bit_stream->ReadBool();
@@ -171,7 +172,7 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
     {
         // -1代表使用当前slice_segment_header指定的参考poc
         // 假如short_term_reference_picture_set_count == 1 也就是说当前的st_ref没有
-        // 选择,因此,不需要指定short_term_ref_pic_set_idx_因为默认值为0
+        // 选择,因此,不需要指定short_term_ref_pic_set_idx_, 因为默认值为0
         short_term_ref_pic_set_idx_ = 0;
         if (short_term_rps_count > 1)
         {
@@ -196,19 +197,17 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
         // TODO: 可以只算一次,而不是每次读取slice_segment时候都要算
         uint32_t lt_idx_sps_bit_length = CeilLog2(lt_ref_lsb_poc_infos.size());
         
-        // lt_ref_lsb_poc_infos.size() == 0 则num_long_term_sps 也为0
-        uint32_t preview_delta_poc_msb_cycle_lt = 0;
-        uint32_t current_poc_value = context->GetPictureOrderCount().value;
+        PictureOrderCount current_poc = context->GetPictureOrderCount();
         auto get_lt_poc_value = 
-            [current_poc_value, sps](uint32_t delta_poc_msb_cycle_lt, 
-                                     uint32_t lsb) -> uint32_t
+            [current_poc, sps](uint32_t delta_poc_msb_cycle_lt, uint32_t lsb)
         {
             uint32_t lt_msb = 
                 delta_poc_msb_cycle_lt * sps->GetMaxLSBOfPicOrderCount();
-            uint32_t current_msb = current_poc_value - 
-                (current_poc_value & (sps->GetMaxLSBOfPicOrderCount() - 1));
-            return current_msb - lt_msb + lsb;
+            // 当前图片的msb的开始加上指定的lsb
+            return current_poc.msb - lt_msb + lsb;
         };
+        // lt_ref_lsb_poc_infos.size() == 0 则num_long_term_sps 也为0
+        uint32_t preview_delta_poc_msb_cycle_lt = 0;
         for (uint32_t i = 0; i < num_long_term_sps; ++i)
         {
             uint32_t lt_idx_sps = 0;
@@ -225,14 +224,14 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
 
             preview_delta_poc_msb_cycle_lt +=  delta_poc_msb_cycle_lt;
 
-            LongTermReferencePictureOrderCountBaseInfo info = { };
+            LongTermReferencePictureOrderCountInfo info = { };
             info.picture_order_count_value = get_lt_poc_value(
                 preview_delta_poc_msb_cycle_lt,
                 lt_ref_lsb_poc_infos[lt_idx_sps].lt_ref_pic_poc_lsb_sps);
 
             info.is_used_by_curr_pic_lt = 
                 lt_ref_lsb_poc_infos[lt_idx_sps].is_used_by_curr_pic_lt_sps_flag;
-            lt_ref_poc_base_infos->push_back(info);
+            lt_ref_poc_infos->push_back(info);
         }
 
         preview_delta_poc_msb_cycle_lt = 0;
@@ -247,11 +246,11 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
                 delta_poc_msb_cycle_lt = golomb_reader.ReadUnsignedValue();
 
             preview_delta_poc_msb_cycle_lt += delta_poc_msb_cycle_lt;
-            LongTermReferencePictureOrderCountBaseInfo info = { };
+            LongTermReferencePictureOrderCountInfo info = { };
             info.picture_order_count_value = get_lt_poc_value(
                 preview_delta_poc_msb_cycle_lt, poc_lsb_lt);
             info.is_used_by_curr_pic_lt = is_used_by_curr_pic_lt;
-            lt_ref_poc_base_infos->push_back(info);
+            lt_ref_poc_infos->push_back(info);
         }
     }
     return true;
@@ -260,7 +259,7 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
 bool SliceSegmentHeader::ParseReferenceDetailInfo(
     const PictureParameterSet* pps, const SequenceParameterSet* sps, 
     SliceType slice_type, bool is_slice_temporal_mvp_enabled, 
-    const LongTermRefPOCBaseInfoSet& current_lt_ref_poc_base_infos,
+    const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
     BitStream* bit_stream, ISliceSegmentHeaderContext* context)
 {
     bool is_num_ref_idx_active_override = bit_stream->ReadBool();
@@ -274,7 +273,7 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
             num_ref_idx_positive_active = golomb_reader.ReadUnsignedValue();
     }
     uint32_t reference_picture_count = GetCurrentAvailableReferencePictureCount(
-        pps, sps, current_lt_ref_poc_base_infos);
+        pps, sps, current_lt_ref_poc_infos);
 
     unique_ptr<ReferencePictureListsModification> ref_pic_list_modification;
     if (pps->HasListsModificationPresent() && (reference_picture_count > 1))
@@ -294,7 +293,7 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
 
     bool success = ConstructReferencePOCList(sps, context,
                                              short_term_ref_pic_set_idx_,
-                                             current_lt_ref_poc_base_infos, 
+                                             current_lt_ref_poc_infos,
                                              is_current_picture_ref_enabled,
                                              slice_type, 
                                              ref_pic_list_modification.get(),
@@ -345,7 +344,7 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
 
 uint32_t SliceSegmentHeader::GetCurrentAvailableReferencePictureCount(
     const PictureParameterSet* pps, const SequenceParameterSet* sps,
-    const LongTermRefPOCBaseInfoSet& current_lt_ref_poc_base_infos)
+    const LongTermRefPOCInfoSet& current_lt_ref_poc_infos)
 {
     assert(sps && pps);
     uint32_t reference_picture_count = 0;
@@ -381,7 +380,7 @@ uint32_t SliceSegmentHeader::GetCurrentAvailableReferencePictureCount(
                 get_short_term_reference_picture_count(st_ref_pic_set);
         }
     }
-    for (const auto& i : current_lt_ref_poc_base_infos)
+    for (const auto& i : current_lt_ref_poc_infos)
     {
         if (i.is_used_by_curr_pic_lt)
             ++reference_picture_count;
@@ -398,7 +397,7 @@ uint32_t SliceSegmentHeader::GetCurrentAvailableReferencePictureCount(
 bool SliceSegmentHeader::ConstructReferencePOCList(
     const SequenceParameterSet* sps, ISliceSegmentHeaderContext* context, 
     int short_term_ref_pic_set_idx,
-    const LongTermRefPOCBaseInfoSet& current_lt_ref_poc_base_infos,
+    const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
     bool is_current_picture_ref_enabled, SliceType slice_type, 
     const ReferencePictureListsModification* ref_pic_list_modification,
     vector<int32_t>* negative_ref_pic_list,
@@ -448,7 +447,7 @@ bool SliceSegmentHeader::ConstructReferencePOCList(
     }
     vector<uint32_t> poc_lt_curr;
     vector<uint32_t> poc_lt_foll;
-    for (const auto& i : current_lt_ref_poc_base_infos)
+    for (const auto& i : current_lt_ref_poc_infos)
     {
         if (i.is_used_by_curr_pic_lt)
             poc_lt_curr.push_back(i.picture_order_count_value);
@@ -479,7 +478,7 @@ bool SliceSegmentHeader::ConstructReferencePOCList(
 
         if (!ref_pic_list_resort_indices.empty())
         {
-            for (const auto& i : merge_cache_ref_list)
+            for (const auto& i : ref_pic_list_resort_indices)
                 ref_list->push_back(merge_cache_ref_list[i]);
         }
         else
