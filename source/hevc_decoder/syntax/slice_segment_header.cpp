@@ -278,11 +278,10 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
     unique_ptr<ReferencePictureListsModification> ref_pic_list_modification;
     if (pps->HasListsModificationPresent() && (reference_picture_count > 1))
     {
-        ref_pic_list_modification.reset(new ReferencePictureListsModification(
-            slice_type, num_ref_idx_negative_active, 
-            num_ref_idx_positive_active, CeilLog2(reference_picture_count)));
-
-        bool success = ref_pic_list_modification->Parse(bit_stream);
+        ref_pic_list_modification.reset(new ReferencePictureListsModification());
+        bool success = ref_pic_list_modification->Parse(
+            bit_stream, slice_type, num_ref_idx_negative_active,
+            num_ref_idx_positive_active, CeilLog2(reference_picture_count));
         if (!success)
             return false;
     }
