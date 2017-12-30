@@ -5,6 +5,7 @@
 #include "hevc_decoder/syntax/short_term_reference_picture_set_context.h"
 
 using std::vector;
+using boost::multi_array;
 
 // positive_delta_pocs_, negative_delta_pocs_的意义是说明短期参考帧的编号与当前解码帧
 // 的差值,按照标准里的描述, 两个数组代表的是不同的方向而已,如下图描述:
@@ -18,10 +19,8 @@ using std::vector;
 // 因此推导两个数组的值的时候,要么从前往后,要么从后往前
 
 ShortTermReferencePictureSet::ShortTermReferencePictureSet(
-    const ShortTermReferencePictureSetContext* context, 
     uint32_t current_rps_index)
-    : context_(context)
-    , positive_delta_pocs_()
+    : positive_delta_pocs_()
     , negative_delta_pocs_()
     , current_rps_index_(current_rps_index)
 {
@@ -33,9 +32,10 @@ ShortTermReferencePictureSet::~ShortTermReferencePictureSet()
 
 }
 
-bool ShortTermReferencePictureSet::Parse(BitStream* bit_stream)
+bool ShortTermReferencePictureSet::Parse(
+    BitStream* bit_stream, const IShortTermReferencePictureSetContext* context)
 {
-    if (!context_ || !bit_stream)
+    if (!context || !bit_stream)
         return false;
 
     bool is_inter_ref_pic_set_prediction = false;
@@ -44,7 +44,7 @@ bool ShortTermReferencePictureSet::Parse(BitStream* bit_stream)
 
     if (is_inter_ref_pic_set_prediction)
     {
-        ParsePredictionReferencePOCs(bit_stream);
+        ParsePredictionReferencePOCs(bit_stream, context);
         return true;
     }
 
@@ -84,11 +84,11 @@ const ShortTermReferencePictureSet::ReferenceDeltaPOCs&
 }
 
 void ShortTermReferencePictureSet::ParsePredictionReferencePOCs(
-    BitStream* bit_stream)
+    BitStream* bit_stream, const IShortTermReferencePictureSetContext* context)
 {
     uint32_t delta_idx = 0;
     GolombReader golomb_reader(bit_stream);
-    if (context_->GetShortTermReferencePictureSetCount() == current_rps_index_)
+    if (context->GetShortTermReferencePictureSetCount() == current_rps_index_)
         delta_idx = golomb_reader.ReadUnsignedValue();
 
     bool is_positive_delta_rps_sign = bit_stream->ReadBool();
@@ -99,7 +99,7 @@ void ShortTermReferencePictureSet::ParsePredictionReferencePOCs(
 
     uint32_t reference_rps_index = current_rps_index_ - delta_idx;
     const ShortTermReferencePictureSet* ref_short_term_reference_picture_set = 
-        context_->GetShortTermReferencePictureSet(reference_rps_index);
+        context->GetShortTermReferencePictureSet(reference_rps_index);
 
     const ReferenceDeltaPOCs ref_positive_delta_pocs = 
         ref_short_term_reference_picture_set->GetPositiveDeltaPOCs();
@@ -110,14 +110,13 @@ void ShortTermReferencePictureSet::ParsePredictionReferencePOCs(
     uint32_t delta_pocs_count = 
         ref_negative_delta_pocs.size() + ref_positive_delta_pocs.size();
 
-    // Fix me: 不能使用vector<bool>
-    vector<bool> can_use_delta;
-    vector<bool> is_used_by_curr_pic;
+    multi_array<bool, 1> can_use_delta(boost::extents[delta_pocs_count]);
+    multi_array<bool, 1> is_used_by_curr_pic(boost::extents[delta_pocs_count]);
     for (uint32_t i = 0; i <= delta_pocs_count; ++i)
     {
-        is_used_by_curr_pic.push_back(bit_stream->ReadBool());
-        can_use_delta.push_back(
-            is_used_by_curr_pic[i] ? bit_stream->ReadBool() : true);
+        is_used_by_curr_pic[i] = bit_stream->ReadBool();
+        can_use_delta[i] = 
+            is_used_by_curr_pic[i] ? bit_stream->ReadBool() : true;
     }
 
     // 整理并生成可用的delta_pocs
@@ -128,7 +127,8 @@ void ShortTermReferencePictureSet::ParsePredictionReferencePOCs(
 void ShortTermReferencePictureSet::DeriveDeltaPOCs(
     const ReferenceDeltaPOCs& ref_positive_delta_pocs, 
     const ReferenceDeltaPOCs& ref_negative_delta_pocs, int delta_rps_of_item, 
-    const vector<bool>& can_use_delta, const vector<bool>& is_used_by_curr_pic)
+    const multi_array<bool, 1>& can_use_delta, 
+    const multi_array<bool, 1>& is_used_by_curr_pic)
 {
     DeriveNegativeDeltaPOCs(ref_positive_delta_pocs, ref_negative_delta_pocs, 
                             delta_rps_of_item, can_use_delta, 
@@ -142,7 +142,8 @@ void ShortTermReferencePictureSet::DeriveDeltaPOCs(
 void ShortTermReferencePictureSet::DeriveNegativeDeltaPOCs(
     const ReferenceDeltaPOCs& ref_positive_delta_pocs, 
     const ReferenceDeltaPOCs& ref_negative_delta_pocs, int delta_rps_of_item, 
-    const vector<bool>& can_use_delta, const vector<bool>& is_used_by_curr_pic)
+    const multi_array<bool, 1>& can_use_delta, 
+    const multi_array<bool, 1>& is_used_by_curr_pic)
 {
     int ref_positive_delta_pocs_length =
         static_cast<int>(ref_positive_delta_pocs.size());
@@ -161,10 +162,12 @@ void ShortTermReferencePictureSet::DeriveNegativeDeltaPOCs(
         }
     }
     
-    if ((delta_rps_of_item < 0) && can_use_delta.back())
+    if ((delta_rps_of_item < 0) && 
+        can_use_delta[can_use_delta.num_elements() - 1])
     {
         negative_delta_pocs_.push_back(
-            {delta_rps_of_item, is_used_by_curr_pic.back()});
+            {delta_rps_of_item, 
+             is_used_by_curr_pic[is_used_by_curr_pic.num_elements() - 1]});
     }
 
     for (uint32_t i = 0; i < ref_negative_delta_pocs.size(); ++i)
@@ -184,7 +187,8 @@ void ShortTermReferencePictureSet::DeriveNegativeDeltaPOCs(
 void ShortTermReferencePictureSet::DerivePositiveDeltaPOCs(
     const ReferenceDeltaPOCs& ref_positive_delta_pocs, 
     const ReferenceDeltaPOCs& ref_negative_delta_pocs, int delta_rps_of_item, 
-    const vector<bool>& can_use_delta, const vector<bool>& is_used_by_curr_pic)
+    const multi_array<bool, 1>& can_use_delta, 
+    const multi_array<bool, 1>& is_used_by_curr_pic)
 {
     int ref_negative_delta_pocs_length = 
         static_cast<int>(ref_negative_delta_pocs.size());
@@ -200,10 +204,12 @@ void ShortTermReferencePictureSet::DerivePositiveDeltaPOCs(
                 {delta_poc_of_current_item, is_used_by_curr_pic[i]});
         }
     }
-    if ((delta_rps_of_item > 0) && can_use_delta.back())
+    if ((delta_rps_of_item > 0) && 
+        can_use_delta[can_use_delta.num_elements() - 1])
     {
         positive_delta_pocs_.push_back(
-            {delta_rps_of_item, is_used_by_curr_pic.back()});
+            {delta_rps_of_item, 
+             is_used_by_curr_pic[is_used_by_curr_pic.num_elements() - 1]});
     }
     for (uint32_t i = 0; i < ref_positive_delta_pocs.size(); ++i)
     {

@@ -18,6 +18,7 @@
 #include "hevc_decoder/syntax/sps_screen_content_coding_extension.h"
 #include "hevc_decoder/syntax/pps_range_extension.h"
 #include "hevc_decoder/syntax/slice_segment_header_context.h"
+#include "hevc_decoder/syntax/short_term_reference_picture_set_context_impl.h"
 
 using std::vector;
 using std::unique_ptr;
@@ -155,13 +156,14 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
         return false;
 
     bool has_short_term_ref_pic_set_sps = bit_stream->ReadBool();
-    uint32_t short_term_reference_picture_set_count =
-        sps->GetShortTermReferencePictureSetCount();
+    uint32_t short_term_rps_count =sps->GetShortTermReferencePictureSetCount();
     if (!has_short_term_ref_pic_set_sps)
     {
-        st_ref_pic_set_of_self_.reset(new ShortTermReferencePictureSet(
-            sps, short_term_reference_picture_set_count));
-        bool success = st_ref_pic_set_of_self_->Parse(bit_stream);
+        st_ref_pic_set_of_self_.reset(
+            new ShortTermReferencePictureSet(short_term_rps_count));
+        ShortTermReferencePictureSetContext short_term_rps_context(sps);
+        bool success = 
+            st_ref_pic_set_of_self_->Parse(bit_stream, &short_term_rps_context);
         if (!success)
             return false;
     }
@@ -171,10 +173,10 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
         // 假如short_term_reference_picture_set_count == 1 也就是说当前的st_ref没有
         // 选择,因此,不需要指定short_term_ref_pic_set_idx_因为默认值为0
         short_term_ref_pic_set_idx_ = 0;
-        if (short_term_reference_picture_set_count > 1)
+        if (short_term_rps_count > 1)
         {
             // TODO: 能够把此处的log2放到context里做
-            uint32_t bits = CeilLog2(short_term_reference_picture_set_count);
+            uint32_t bits = CeilLog2(short_term_rps_count);
             short_term_ref_pic_set_idx_ = bit_stream->Read<int>(bits);
         }
     }

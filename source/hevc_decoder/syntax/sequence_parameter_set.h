@@ -5,11 +5,10 @@
 #include <vector>
 #include <memory>
 
-#include "hevc_decoder/syntax/short_term_reference_picture_set_context.h"
-
 class GolombReader;
 class SPSRangeExtension;
 class SPSScreenContentCodingExtension;
+class ShortTermReferencePictureSet;
 class BitStream;
 
 struct LongTermReferenceLSBPictureOrderCountInfo
@@ -27,7 +26,7 @@ enum ChromaFormatType
     YUV_MONO_CHROME = 0xffff   // 此处可以认为chroma_array_type为0
 };
 
-class SequenceParameterSet : public ShortTermReferencePictureSetContext
+class SequenceParameterSet
 {
 public:
     SequenceParameterSet();
@@ -52,9 +51,9 @@ public:
     const SPSScreenContentCodingExtension* GetSPSScreenContentCodingExtension() 
         const;
 
-    virtual uint32_t GetShortTermReferencePictureSetCount() const override;
-    virtual const ShortTermReferencePictureSet*
-        GetShortTermReferencePictureSet(uint32_t index) const override;
+    uint32_t GetShortTermReferencePictureSetCount() const;
+    const ShortTermReferencePictureSet*
+        GetShortTermReferencePictureSet(uint32_t index) const;
 
 private:
     struct SubLayerOrderingInfo

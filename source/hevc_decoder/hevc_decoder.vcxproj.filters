@@ -177,6 +177,7 @@
     <ClInclude Include="syntax\frame_syntax_context.h">
       <Filter>syntax</Filter>
     </ClInclude>
+    <ClInclude Include="syntax\short_term_reference_picture_set_context_impl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />

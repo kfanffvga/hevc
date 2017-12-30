@@ -11,6 +11,7 @@
 #include "hevc_decoder/syntax/sps_multilayer_extension.h"
 #include "hevc_decoder/syntax/sps_3d_extension.h"
 #include "hevc_decoder/syntax/sps_screen_content_coding_extension.h"
+#include "hevc_decoder/syntax/short_term_reference_picture_set_context_impl.h"
 
 using std::vector;
 using std::unique_ptr;
@@ -190,11 +191,16 @@ bool SequenceParameterSet::ParseReferencePicturesInfo(
 {
     GolombReader golomb_reader(bit_stream);
     uint32_t num_short_term_ref_pic_sets = golomb_reader.ReadUnsignedValue();
+
+    ShortTermReferencePictureSetContext short_term_rps_context(this);
     for (uint32_t i = 0; i < num_short_term_ref_pic_sets; ++i)
     {
         unique_ptr<ShortTermReferencePictureSet> st_ref_pic_set(
-            new ShortTermReferencePictureSet(this, i));
-        bool success = st_ref_pic_set->Parse(bit_stream);
+            new ShortTermReferencePictureSet(i));
+
+        bool success = 
+            st_ref_pic_set->Parse(bit_stream, &short_term_rps_context);
+
         if (!success)
             return false;
 

@@ -5,13 +5,13 @@
 
 class ShortTermReferencePictureSet;
 
-class ShortTermReferencePictureSetContext
+class IShortTermReferencePictureSetContext
 {
-public: 
-    virtual ~ShortTermReferencePictureSetContext() { }
+public:     
     virtual uint32_t GetShortTermReferencePictureSetCount() const = 0;
     virtual const ShortTermReferencePictureSet*
         GetShortTermReferencePictureSet(uint32_t index) const = 0;
 
 };
+
 #endif
