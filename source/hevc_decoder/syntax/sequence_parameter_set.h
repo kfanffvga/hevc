@@ -47,8 +47,8 @@ public:
     ChromaFormatType GetChromaArrayType() const;
     uint32_t GetBitDepthChroma() const;
 
-    const SPSRangeExtension* GetSPSRangeExtension() const;
-    const SPSScreenContentCodingExtension* GetSPSScreenContentCodingExtension() 
+    const SPSRangeExtension& GetSPSRangeExtension() const;
+    const SPSScreenContentCodingExtension& GetSPSScreenContentCodingExtension() 
         const;
 
     uint32_t GetShortTermReferencePictureSetCount() const;

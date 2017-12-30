@@ -332,11 +332,9 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
             return false;
     }
     int32_t max_num_merge_cand = 5 - golomb_reader.ReadUnsignedValue();
-    const SPSScreenContentCodingExtension* sps_scc_extension =
+    const SPSScreenContentCodingExtension& sps_scc_extension =
         sps->GetSPSScreenContentCodingExtension();
-    // fix me : 按照context方式重构后,此处的指针判断可以不用
-    if (sps_scc_extension && 
-        (sps_scc_extension->GetMotionVectorResolutionControlIDC() == 2))
+    if (sps_scc_extension.GetMotionVectorResolutionControlIDC() == 2)
         bool is_use_integer_mv = bit_stream->ReadBool();
 
     return true;

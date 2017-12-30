@@ -327,9 +327,9 @@ ChromaFormatType SequenceParameterSet::GetChromaArrayType() const
     return chroma_array_type_;
 }
 
-const SPSRangeExtension* SequenceParameterSet::GetSPSRangeExtension() const
+const SPSRangeExtension& SequenceParameterSet::GetSPSRangeExtension() const
 {
-    return sps_range_extension_.get();
+    return *sps_range_extension_;
 }
 
 uint32_t SequenceParameterSet::GetBitDepthChroma() const
@@ -337,8 +337,8 @@ uint32_t SequenceParameterSet::GetBitDepthChroma() const
     return bit_depth_chroma_;
 }
 
-const SPSScreenContentCodingExtension* 
+const SPSScreenContentCodingExtension& 
     SequenceParameterSet::GetSPSScreenContentCodingExtension() const
 {
-    return sps_scc_extension_.get();
+    return *sps_scc_extension_;
 }

@@ -139,7 +139,7 @@ bool PredictionWeightTable::Parse(BitStream* bit_stream,
     int32_t luma_weight_denom = 1 << luma_log2_weight_denom;
     int32_t chroma_weight_demon = 1 << chroma_log2_weight_demon;
     int32_t wp_offset_half_range = 
-        sps_->GetSPSRangeExtension()->IsHighPrecisionOffsetsEnabled() ? 
+        sps_->GetSPSRangeExtension().IsHighPrecisionOffsetsEnabled() ? 
             (1 << (sps_->GetBitDepthChroma() - 1)) : (1 << 7);
 
     for (uint32_t i = 0; i < ref_poc_list.size(); ++i)
