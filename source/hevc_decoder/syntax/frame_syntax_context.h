@@ -8,7 +8,7 @@ struct PictureOrderCount;
 class IFrameSyntaxContext
 {
 public:
-    virtual uint32_t GetLayerID(uint32_t poc_value) const = 0;
+    virtual uint8_t GetLayerID(uint32_t poc_value) const = 0;
     virtual bool GetPreviewPictureOrderCount(PictureOrderCount* poc) const = 0;
 };
 

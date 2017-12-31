@@ -16,12 +16,82 @@
 #include "hevc_decoder/syntax/pps_screen_content_coding_extension.h"
 #include "hevc_decoder/syntax/reference_picture_lists_modification.h"
 #include "hevc_decoder/syntax/sps_screen_content_coding_extension.h"
+#include "hevc_decoder/syntax/sps_range_extension.h"
 #include "hevc_decoder/syntax/pps_range_extension.h"
 #include "hevc_decoder/syntax/slice_segment_header_context.h"
 #include "hevc_decoder/syntax/short_term_reference_picture_set_context_impl.h"
+#include "hevc_decoder/syntax/prediction_weight_table_context.h"
 
 using std::vector;
 using std::unique_ptr;
+
+class PredictionWeightTableContext : public IPredictionWeightTableContext
+{
+public:
+    PredictionWeightTableContext(
+        const SliceSegmentHeader* slice_segemnt_header, 
+        const SequenceParameterSet* sps,
+        const ISliceSegmentHeaderContext* slice_segment_header_context)
+        : slice_segment_header_(slice_segemnt_header)
+        , slice_segment_header_context_(slice_segment_header_context)
+        , sps_(sps)
+    {
+        assert(slice_segemnt_header);
+        assert(slice_segment_header_context);
+        assert(sps);
+    }
+
+    virtual~PredictionWeightTableContext()
+    {
+
+    }
+
+    virtual ChromaFormatType GetChromaFormatType() const override
+    {
+        return sps_->GetChromaFormatType();
+    }
+
+    virtual PictureOrderCount GetCurrentPictureOrderCount() const override
+    {
+        return slice_segment_header_context_->GetPictureOrderCount();
+    }
+
+    virtual uint8_t GetCurrentNuhLayerID() const override
+    {
+        return slice_segment_header_context_->GetNuhLayerID();
+    }
+
+    virtual uint8_t GetNuhLayerIDByPOCValue(uint32_t poc_value) const override
+    {
+        return slice_segment_header_context_->GetNuhLayerIDByPOCValue(poc_value);
+    }
+
+    virtual SliceType GetSliceType() const override
+    {
+        return slice_segment_header_->GetSliceType();
+    }
+
+    virtual const std::vector<int32_t>& GetNegativeRefPOCList() const override
+    {
+        return slice_segment_header_->GetNegativeRefPOCList();
+    }
+
+    virtual const std::vector<int32_t>& GetPositiveRefPOCList() const override
+    {
+        return slice_segment_header_->GetPositiveRefPOCList();
+    }
+
+    virtual uint32_t GetWPOffsetHalfRange() const override
+    {
+        return sps_->GetSPSRangeExtension().IsHighPrecisionOffsetsEnabled() ?
+            (1 << (sps_->GetBitDepthChroma() - 1)) : (1 << 7);
+    }
+
+private:
+    const SliceSegmentHeader* slice_segment_header_;
+    const ISliceSegmentHeaderContext* slice_segment_header_context_;
+    const SequenceParameterSet* sps_;
+};
 
 SliceSegmentHeader::SliceSegmentHeader(
     const ParametersManager* parameters_manager)
@@ -30,6 +100,7 @@ SliceSegmentHeader::SliceSegmentHeader(
     , short_term_ref_pic_set_idx_(-1)
     , negative_ref_poc_list_()
     , positive_ref_poc_list_()
+    , slice_type_(I_SLICE)
 {
 
 }
@@ -82,6 +153,21 @@ bool SliceSegmentHeader::Parse(BitStream* bit_stream,
     return ParseTileInfo(pps, bit_stream);
 }
 
+SliceType SliceSegmentHeader::GetSliceType() const
+{
+    return slice_type_;
+}
+
+const vector<int32_t>& SliceSegmentHeader::GetNegativeRefPOCList() const
+{
+    return negative_ref_poc_list_;
+}
+
+const vector<int32_t>& SliceSegmentHeader::GetPositiveRefPOCList() const
+{
+    return positive_ref_poc_list_;
+}
+
 bool SliceSegmentHeader::ParseIndependentSyntax(
     const PictureParameterSet* pps, const SequenceParameterSet* sps,
     BitStream* bit_stream, ISliceSegmentHeaderContext* context)
@@ -91,14 +177,13 @@ bool SliceSegmentHeader::ParseIndependentSyntax(
     bit_stream->SkipBits(pps->GetExtraSliceHeaderBitLength());
 
     GolombReader golomb_reader(bit_stream);
-    SliceType slice_type = 
-        static_cast<SliceType>(golomb_reader.ReadUnsignedValue());
+    slice_type_ = static_cast<SliceType>(golomb_reader.ReadUnsignedValue());
 
     if (pps->HasOutputFlagPresent())
         bool is_pic_output = bit_stream->ReadBool();
 
     // 如果是单一色彩的话,则需要知道究竟是何种颜色
-    if (sps->GetChromaArrayType() == YUV_MONO_CHROME)
+    if (sps->GetChromaFormatType() == YUV_MONO_CHROME)
         uint8_t colour_plane_id = bit_stream->Read<uint8_t>(2);
 
     bool is_slice_temporal_mvp_enabled = false;
@@ -125,13 +210,13 @@ bool SliceSegmentHeader::ParseIndependentSyntax(
     if (sps->IsSampleAdaptiveOffsetEnabled())
     {
         is_slice_sao_luma = bit_stream->ReadBool();
-        if ((sps->GetChromaArrayType() != MONO_CHROME) && 
-            (sps->GetChromaArrayType() != YUV_MONO_CHROME))
+        if ((sps->GetChromaFormatType() != MONO_CHROME) && 
+            (sps->GetChromaFormatType() != YUV_MONO_CHROME))
             is_slice_sao_chroma = bit_stream->ReadBool();
     }
-    if (slice_type != I_SLICE)
+    if (slice_type_ != I_SLICE)
     {
-        bool success = ParseReferenceDetailInfo(pps, sps, slice_type, 
+        bool success = ParseReferenceDetailInfo(pps, sps, 
                                                 is_slice_temporal_mvp_enabled, 
                                                 lt_ref_poc_infos,
                                                 bit_stream, context);
@@ -258,7 +343,7 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
 
 bool SliceSegmentHeader::ParseReferenceDetailInfo(
     const PictureParameterSet* pps, const SequenceParameterSet* sps, 
-    SliceType slice_type, bool is_slice_temporal_mvp_enabled, 
+    bool is_slice_temporal_mvp_enabled, 
     const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
     BitStream* bit_stream, ISliceSegmentHeaderContext* context)
 {
@@ -269,7 +354,7 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
     if (is_num_ref_idx_active_override)
     {
         num_ref_idx_negative_active = golomb_reader.ReadUnsignedValue();
-        if (B_SLICE == slice_type)
+        if (B_SLICE == slice_type_)
             num_ref_idx_positive_active = golomb_reader.ReadUnsignedValue();
     }
     uint32_t reference_picture_count = GetCurrentAvailableReferencePictureCount(
@@ -280,7 +365,7 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
     {
         ref_pic_list_modification.reset(new ReferencePictureListsModification());
         bool success = ref_pic_list_modification->Parse(
-            bit_stream, slice_type, num_ref_idx_negative_active,
+            bit_stream, slice_type_, num_ref_idx_negative_active,
             num_ref_idx_positive_active, CeilLog2(reference_picture_count));
         if (!success)
             return false;
@@ -292,16 +377,15 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
 
     bool success = ConstructReferencePOCList(sps, context,
                                              short_term_ref_pic_set_idx_,
-                                             current_lt_ref_poc_infos,
                                              is_current_picture_ref_enabled,
-                                             slice_type, 
+                                             current_lt_ref_poc_infos,
                                              ref_pic_list_modification.get(),
                                              &negative_ref_poc_list_, 
                                              &positive_ref_poc_list_);
     if (!success)
         return false;
 
-    if (B_SLICE == slice_type)
+    if (B_SLICE == slice_type_)
         bool is_mvd_positive_zero = bit_stream->ReadBool();
 
     if (pps->HasCABACInitPresent())
@@ -310,23 +394,21 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
     if (is_slice_temporal_mvp_enabled)
     {
         bool is_collocated_from_negative = true;
-        if (B_SLICE == slice_type)
+        if (B_SLICE == slice_type_)
             is_collocated_from_negative = bit_stream->ReadBool();
 
         if ((is_collocated_from_negative && (num_ref_idx_negative_active > 0)) ||
             (!is_collocated_from_negative && (num_ref_idx_positive_active > 0)))
             uint32_t collocated_ref_idx = golomb_reader.ReadUnsignedValue();
     }
-    if ((pps->HasWeightedPred() && (P_SLICE == slice_type)) ||
-        (pps->HasWeightedBipred() && (B_SLICE == slice_type)))
+    if ((pps->HasWeightedPred() && (P_SLICE == slice_type_)) ||
+        (pps->HasWeightedBipred() && (B_SLICE == slice_type_)))
     {
-        // Fix Me : nullptr
-        PredictionWeightTable prediction_weight_table(
-            sps->GetChromaArrayType(), sps, 
-            context->GetPictureOrderCount(), context->GetNuhLayerID(), 
-            slice_type, negative_ref_poc_list_, positive_ref_poc_list_, 
-            nullptr);
-        success = prediction_weight_table.Parse(bit_stream);
+        PredictionWeightTable prediction_weight_table;
+        PredictionWeightTableContext prediction_weight_table_context(this, sps, 
+                                                                     context);
+        success = prediction_weight_table.Parse(
+            bit_stream, &prediction_weight_table_context);
         if (!success)
             return false;
     }
@@ -393,9 +475,8 @@ uint32_t SliceSegmentHeader::GetCurrentAvailableReferencePictureCount(
 
 bool SliceSegmentHeader::ConstructReferencePOCList(
     const SequenceParameterSet* sps, ISliceSegmentHeaderContext* context, 
-    int short_term_ref_pic_set_idx,
+    int short_term_ref_pic_set_idx, bool is_current_picture_ref_enabled,
     const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
-    bool is_current_picture_ref_enabled, SliceType slice_type, 
     const ReferencePictureListsModification* ref_pic_list_modification,
     vector<int32_t>* negative_ref_pic_list,
     vector<int32_t>* positive_ref_pic_list)
@@ -488,7 +569,7 @@ bool SliceSegmentHeader::ConstructReferencePOCList(
                            is_current_picture_ref_enabled, current_poc_value,
                            ref_pic_list_modification->GetListEntryOfNegative(),
                            negative_ref_pic_list);
-    if (B_SLICE == slice_type)
+    if (B_SLICE == slice_type_)
     {
         general_reference_list(
             poc_st_curr_after, poc_st_curr_before, poc_lt_curr, 

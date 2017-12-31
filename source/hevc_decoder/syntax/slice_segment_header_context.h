@@ -12,6 +12,7 @@ public:
     virtual PictureOrderCount GetPictureOrderCount() const = 0;
     virtual NalUnitType GetNalUnitType() const = 0;
     virtual uint8_t GetNuhLayerID() const = 0;
+    virtual uint8_t GetNuhLayerIDByPOCValue(uint32_t poc_value) const = 0;
 };
 
 #endif

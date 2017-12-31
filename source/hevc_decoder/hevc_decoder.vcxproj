@@ -107,6 +107,7 @@
     <ClInclude Include="syntax\pps_range_extension.h" />
     <ClInclude Include="syntax\pps_screen_content_coding_extension.h" />
     <ClInclude Include="syntax\prediction_weight_table.h" />
+    <ClInclude Include="syntax\prediction_weight_table_context.h" />
     <ClInclude Include="syntax\profile_tier_level.h" />
     <ClInclude Include="syntax\reference_picture_lists_modification.h" />
     <ClInclude Include="syntax\scaling_list_data.h" />

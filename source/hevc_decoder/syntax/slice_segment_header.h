@@ -23,6 +23,10 @@ public:
     
     bool Parse(BitStream* bit_stream, ISliceSegmentHeaderContext* context);
 
+    SliceType GetSliceType() const;
+    const std::vector<int32_t>& GetNegativeRefPOCList() const;
+    const std::vector<int32_t>& GetPositiveRefPOCList() const;
+
 private:
     struct LongTermReferencePictureOrderCountInfo
     {
@@ -45,7 +49,7 @@ private:
 
     bool ParseReferenceDetailInfo(
         const PictureParameterSet* pps, const SequenceParameterSet* sps,
-        SliceType slice_type, bool is_slice_temporal_mvp_enabled, 
+        bool is_slice_temporal_mvp_enabled, 
         const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
         BitStream* bit_stream, ISliceSegmentHeaderContext* context);
 
@@ -66,9 +70,8 @@ private:
 
     bool ConstructReferencePOCList(
         const SequenceParameterSet* sps, ISliceSegmentHeaderContext* context,
-        int short_term_ref_pic_set_idx, 
+        int short_term_ref_pic_set_idx, bool is_current_picture_ref_enabled,
         const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
-        bool is_current_picture_ref_enabled, SliceType slice_type, 
         const ReferencePictureListsModification* ref_pic_list_modification,
         std::vector<int32_t>* negative_ref_pic_list,
         std::vector<int32_t>* positive_ref_pic_list);
@@ -80,6 +83,7 @@ private:
 
     std::vector<int32_t> negative_ref_poc_list_;
     std::vector<int32_t> positive_ref_poc_list_;
+    SliceType slice_type_;
 };
 
 #endif

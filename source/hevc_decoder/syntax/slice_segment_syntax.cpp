@@ -8,9 +8,9 @@
 class SliceSegmentHeaderContext : public ISliceSegmentHeaderContext
 {
 public:
-    SliceSegmentHeaderContext(ISliceSegmentContext* context, 
+    SliceSegmentHeaderContext(ISliceSegmentContext* slice_segment_context, 
                               const SliceSegmentSyntax* slice_segment_syntax)
-        : context_(context)
+        : slice_segment_context_(slice_segment_context)
         , slice_segment_syntax_(slice_segment_syntax)
     {
 
@@ -24,12 +24,12 @@ public:
     virtual void SetPictureOrderCountByLSB(uint32_t lsb, uint32_t max_lsb)
         override
     {
-        context_->SetPictureOrderCountByLSB(lsb, max_lsb);
+        slice_segment_context_->SetPictureOrderCountByLSB(lsb, max_lsb);
     }
 
     virtual PictureOrderCount GetPictureOrderCount() const override
     {
-        return context_->GetPictureOrderCount();
+        return slice_segment_context_->GetPictureOrderCount();
     }
 
     virtual NalUnitType GetNalUnitType() const override
@@ -42,8 +42,13 @@ public:
         return slice_segment_syntax_->GetNuhLayerID();
     }
 
+    virtual uint8_t GetNuhLayerIDByPOCValue(uint32_t poc_value) const override
+    {
+        return slice_segment_context_->GetNuhLayerIDByPOCValue(poc_value);
+    }
+
 private:
-    ISliceSegmentContext* context_;
+    ISliceSegmentContext* slice_segment_context_;
     const SliceSegmentSyntax* slice_segment_syntax_;
 
 };

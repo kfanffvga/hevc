@@ -10,20 +10,12 @@ class SPSRangeExtension;
 class SPSScreenContentCodingExtension;
 class ShortTermReferencePictureSet;
 class BitStream;
+enum ChromaFormatType;
 
 struct LongTermReferenceLSBPictureOrderCountInfo
 {
     uint32_t lt_ref_pic_poc_lsb_sps;
     bool is_used_by_curr_pic_lt_sps_flag;
-};
-
-enum ChromaFormatType
-{
-    MONO_CHROME = 0,
-    YUV_420 = 1,
-    YUV_422 = 2,
-    YUV_444 = 3,
-    YUV_MONO_CHROME = 0xffff   // 此处可以认为chroma_array_type为0
 };
 
 class SequenceParameterSet
@@ -44,7 +36,7 @@ public:
 
     bool IsTemporalMVPEnabled() const;
     bool IsSampleAdaptiveOffsetEnabled() const;
-    ChromaFormatType GetChromaArrayType() const;
+    ChromaFormatType GetChromaFormatType() const;
     uint32_t GetBitDepthChroma() const;
 
     const SPSRangeExtension& GetSPSRangeExtension() const;

@@ -18,7 +18,7 @@ public:
                        ParametersManager* parameters_manager);
     virtual ~CodedVideoSequence();
 
-    virtual uint32_t GetLayerID(uint32_t poc_value) const override;
+    virtual uint8_t GetLayerID(uint32_t poc_value) const override;
     virtual bool GetPreviewPictureOrderCount(PictureOrderCount* poc) const 
         override;
 
@@ -29,7 +29,7 @@ private:
     DecodeProcessorManager* decode_processor_manager_;
     ParametersManager* parameters_manager_;
     std::unique_ptr<FrameSyntax> frame_syntax_;
-    std::vector<std::pair<PictureOrderCount, uint32_t>> pocs_info_;
+    std::vector<std::pair<PictureOrderCount, uint8_t>> pocs_info_;
 };
 
 #endif

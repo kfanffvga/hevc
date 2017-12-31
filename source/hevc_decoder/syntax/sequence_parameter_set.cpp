@@ -3,6 +3,7 @@
 #include "hevc_decoder/base/stream/bit_stream.h"
 #include "hevc_decoder/base/stream/golomb_reader.h"
 #include "hevc_decoder/base/math.h"
+#include "hevc_decoder/base/basic_types.h"
 #include "hevc_decoder/syntax/profile_tier_level.h"
 #include "hevc_decoder/syntax/scaling_list_data.h"
 #include "hevc_decoder/syntax/short_term_reference_picture_set.h"
@@ -322,7 +323,7 @@ bool SequenceParameterSet::IsSampleAdaptiveOffsetEnabled() const
     return is_sample_adaptive_offset_enabled_;
 }
 
-ChromaFormatType SequenceParameterSet::GetChromaArrayType() const
+ChromaFormatType SequenceParameterSet::GetChromaFormatType() const
 {
     return chroma_array_type_;
 }

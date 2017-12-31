@@ -16,8 +16,10 @@ using std::find_if;
 class SliceSegmentContext : public ISliceSegmentContext
 {
 public:
-    SliceSegmentContext(FrameSyntax* frame_syntax)
+    SliceSegmentContext(FrameSyntax* frame_syntax, 
+                        const IFrameSyntaxContext* frame_context)
         : frame_syntax_(frame_syntax)
+        , frame_context_(frame_context)
     {
         assert(frame_syntax);
     }
@@ -38,8 +40,14 @@ public:
         return frame_syntax_->GetPictureOrderCount();
     }
 
+    virtual uint8_t GetNuhLayerIDByPOCValue(uint32_t poc_value) const override
+    {
+        return frame_context_->GetLayerID(poc_value);
+    }
+
 private:
     FrameSyntax* frame_syntax_;
+    const IFrameSyntaxContext* frame_context_;
 
 };
 
@@ -58,10 +66,10 @@ CodedVideoSequence::~CodedVideoSequence()
 
 }
 
-uint32_t CodedVideoSequence::GetLayerID(uint32_t poc_value) const
+uint8_t CodedVideoSequence::GetLayerID(uint32_t poc_value) const
 {
     auto searchor =
-        [poc_value](const pair<PictureOrderCount, uint32_t>& poc) -> bool
+        [poc_value](const pair<PictureOrderCount, uint8_t>& poc) -> bool
     {
         return poc.first.value == poc_value;
     };
@@ -110,7 +118,7 @@ bool CodedVideoSequence::PushNALOfSliceSegment(NalUnit* nal, bool is_idr_frame)
     unique_ptr<SliceSegmentSyntax> slice_segment_syntax(
         new SliceSegmentSyntax(nal->GetNalUnitType(), nal->GetNuhLayerID(), 
                                parameters_manager_));
-    SliceSegmentContext slice_segment_context(frame_syntax_.get());
+    SliceSegmentContext slice_segment_context(frame_syntax_.get(), this);
     bool success = slice_segment_syntax->Parse(nal->GetBitSteam(),
                                                &slice_segment_context);
     if (!success)

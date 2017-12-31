@@ -10,6 +10,16 @@ enum SliceType
     I_SLICE = 2
 };
 
+enum ChromaFormatType
+{
+    MONO_CHROME = 0,
+    YUV_420 = 1,
+    YUV_422 = 2,
+    YUV_444 = 3,
+    YUV_MONO_CHROME = 0xffff   // 此处可以认为chroma_array_type为0
+};
+
+
 struct Coordinate
 {
     uint32_t x;
