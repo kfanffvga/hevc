@@ -1,6 +1,7 @@
 ﻿#include "hevc_decoder/syntax/slice_segment_syntax.h"
 
 #include "hevc_decoder/base/basic_types.h"
+#include "hevc_decoder/base/stream/bit_stream.h"
 #include "hevc_decoder/syntax/slice_segment_header.h"
 #include "hevc_decoder/syntax/slice_segment_header_context.h"
 #include "hevc_decoder/syntax/slice_segment_context.h"
@@ -98,7 +99,12 @@ bool SliceSegmentSyntax::Parse(BitStream* bit_stream,
 {
     SliceSegmentHeader header(parameters_manager_);
     SliceSegmentHeaderContext header_context(context, this);
-    header.Parse(bit_stream, &header_context);
+    bool success = header.Parse(bit_stream, &header_context);
+    if (!success)
+        return false;
+
+    bit_stream->ByteAlign();
+
     return true;
 }
 

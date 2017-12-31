@@ -86,6 +86,13 @@ void BitStream::SkipBits(uint32_t bits)
     }
 }
 
+
+void BitStream::ByteAlign()
+{
+    current_pos_ptr_ += (byte_inner_sequence_ > 0) ? 1 : 0;
+    byte_inner_sequence_ = 0;
+}
+
 bool BitStream::IsEof()
 {
     return (current_pos_ptr_ == end_ptr_) && (7 == byte_inner_sequence_);

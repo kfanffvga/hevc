@@ -40,6 +40,7 @@ public:
     int GetBytePosition();
     int GetBitPosition();
     void SkipBits(uint32_t bits);
+    void ByteAlign();
 
     bool IsEof();
 
