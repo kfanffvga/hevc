@@ -55,15 +55,16 @@ bool ShortTermReferencePictureSet::Parse(
 
     for (uint32_t i = 0; i < num_negative_pics; ++i)
     {
-        uint32_t delta_poc_s0 = golomb_reader.ReadUnsignedValue();
+        uint32_t delta_poc_s0 = golomb_reader.ReadUnsignedValue() + 1;
         bool is_used_by_curr_pic_s0 = bit_stream->ReadBool();
+        // 因为是向前参考,所以此处要负号
         negative_delta_pocs_.push_back(
-            {static_cast<int>(delta_poc_s0), is_used_by_curr_pic_s0});
+            {-static_cast<int>(delta_poc_s0), is_used_by_curr_pic_s0});
     }
 
     for (uint32_t i = 0; i < num_positive_pics; ++i)
     {
-        uint32_t delta_poc_s1 = golomb_reader.ReadUnsignedValue();
+        uint32_t delta_poc_s1 = golomb_reader.ReadUnsignedValue() + 1;
         bool is_used_by_curr_pic_s1 = bit_stream->ReadBool();
         positive_delta_pocs_.push_back(
             {static_cast<int>(delta_poc_s1), is_used_by_curr_pic_s1});

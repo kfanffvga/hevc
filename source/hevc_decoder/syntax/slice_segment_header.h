@@ -72,7 +72,7 @@ private:
         const SequenceParameterSet* sps, ISliceSegmentHeaderContext* context,
         int short_term_ref_pic_set_idx, bool is_current_picture_ref_enabled,
         const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
-        const ReferencePictureListsModification* ref_pic_list_modification,
+        const ReferencePictureListsModification& ref_pic_list_modification,
         std::vector<int32_t>* negative_ref_pic_list,
         std::vector<int32_t>* positive_ref_pic_list);
 

@@ -360,11 +360,10 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
     uint32_t reference_picture_count = GetCurrentAvailableReferencePictureCount(
         pps, sps, current_lt_ref_poc_infos);
 
-    unique_ptr<ReferencePictureListsModification> ref_pic_list_modification;
+    ReferencePictureListsModification ref_pic_list_modification;
     if (pps->HasListsModificationPresent() && (reference_picture_count > 1))
     {
-        ref_pic_list_modification.reset(new ReferencePictureListsModification());
-        bool success = ref_pic_list_modification->Parse(
+        bool success = ref_pic_list_modification.Parse(
             bit_stream, slice_type_, num_ref_idx_negative_active,
             num_ref_idx_positive_active, CeilLog2(reference_picture_count));
         if (!success)
@@ -379,7 +378,7 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
                                              short_term_ref_pic_set_idx_,
                                              is_current_picture_ref_enabled,
                                              current_lt_ref_poc_infos,
-                                             ref_pic_list_modification.get(),
+                                             ref_pic_list_modification,
                                              &negative_ref_poc_list_, 
                                              &positive_ref_poc_list_);
     if (!success)
@@ -477,7 +476,7 @@ bool SliceSegmentHeader::ConstructReferencePOCList(
     const SequenceParameterSet* sps, ISliceSegmentHeaderContext* context, 
     int short_term_ref_pic_set_idx, bool is_current_picture_ref_enabled,
     const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
-    const ReferencePictureListsModification* ref_pic_list_modification,
+    const ReferencePictureListsModification& ref_pic_list_modification,
     vector<int32_t>* negative_ref_pic_list,
     vector<int32_t>* positive_ref_pic_list)
 {
@@ -567,14 +566,14 @@ bool SliceSegmentHeader::ConstructReferencePOCList(
     
     general_reference_list(poc_st_curr_before, poc_st_curr_after, poc_lt_curr, 
                            is_current_picture_ref_enabled, current_poc_value,
-                           ref_pic_list_modification->GetListEntryOfNegative(),
+                           ref_pic_list_modification.GetListEntryOfNegative(),
                            negative_ref_pic_list);
     if (B_SLICE == slice_type_)
     {
         general_reference_list(
             poc_st_curr_after, poc_st_curr_before, poc_lt_curr, 
             is_current_picture_ref_enabled, current_poc_value,
-            ref_pic_list_modification->GetListEntryOfPositive(),
+            ref_pic_list_modification.GetListEntryOfPositive(),
             positive_ref_pic_list);
     }
     return true;
