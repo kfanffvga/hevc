@@ -137,9 +137,6 @@
     <ClInclude Include="syntax\sub_layer_hrd_parameters.h">
       <Filter>syntax</Filter>
     </ClInclude>
-    <ClInclude Include="base\frame_partition.h">
-      <Filter>base</Filter>
-    </ClInclude>
     <ClInclude Include="predictors\predictor_manager.h">
       <Filter>predictors</Filter>
     </ClInclude>
@@ -179,6 +176,14 @@
     </ClInclude>
     <ClInclude Include="syntax\short_term_reference_picture_set_context_impl.h" />
     <ClInclude Include="syntax\prediction_weight_table_context.h" />
+    <ClInclude Include="syntax\slice_segment_data.h" />
+    <ClInclude Include="partitions\frame_partition.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="partitions\frame_partition_manager.h" />
+    <ClInclude Include="partitions\frame_partition_creator_info_provider.h" />
+    <ClInclude Include="partitions\frame_partition_creator_info_provider_impl.h" />
+    <ClInclude Include="base\tile_info.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -286,9 +291,6 @@
     <ClCompile Include="syntax\video_parameter_set.cpp">
       <Filter>syntax</Filter>
     </ClCompile>
-    <ClCompile Include="base\frame_partition.cpp">
-      <Filter>base</Filter>
-    </ClCompile>
     <ClCompile Include="predictors\predictor_manager.cpp">
       <Filter>predictors</Filter>
     </ClCompile>
@@ -306,5 +308,12 @@
     <ClCompile Include="syntax\coded_video_sequence.cpp">
       <Filter>syntax</Filter>
     </ClCompile>
+    <ClCompile Include="syntax\slice_segment_data.cpp" />
+    <ClCompile Include="partitions\frame_partition.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="partitions\frame_partition_manager.cpp" />
+    <ClCompile Include="partitions\frame_partition_creator_info_provider_impl.cpp" />
+    <ClCompile Include="base\tile_info.cpp" />
   </ItemGroup>
 </Project>

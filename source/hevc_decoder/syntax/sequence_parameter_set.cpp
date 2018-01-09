@@ -28,9 +28,13 @@ SequenceParameterSet::SequenceParameterSet()
     , is_sample_adaptive_offset_enabled_(false)
     , chroma_array_type_(MONO_CHROME)
     , max_lsb_of_pic_order_count_(1 << 4)
+    , pic_width_in_luma_samples_(0)
+    , pic_height_in_luma_samples_(0)
     , sps_range_extension_(new SPSRangeExtension())
     , sps_scc_extension_(new SPSScreenContentCodingExtension())
     , bit_depth_chroma_(0)
+    , ctb_log2_size_y_(0)
+    , log2_min_luma_transform_block_size_(0)
 {
 
 }
@@ -63,8 +67,8 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
             chroma_array_type_ = YUV_MONO_CHROME;
     }
 
-    uint32_t pic_width_in_luma_samples = golomb_reader.ReadUnsignedValue();
-    uint32_t pic_height_in_luma_samples = golomb_reader.ReadUnsignedValue();
+    pic_width_in_luma_samples_ = golomb_reader.ReadUnsignedValue();
+    pic_height_in_luma_samples_ = golomb_reader.ReadUnsignedValue();
 
     bool is_conformance_window = bit_stream->ReadBool();
     if (is_conformance_window)
@@ -89,17 +93,16 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
     uint32_t log2_diff_max_min_luma_coding_block_size = 
         golomb_reader.ReadUnsignedValue();
 
-    uint32_t ctb_log2_size_y = log2_min_luma_coding_block_size + 
+    ctb_log2_size_y_ = log2_min_luma_coding_block_size + 
         log2_diff_max_min_luma_coding_block_size;
     uint32_t pic_width_in_ctb_y =
-        UpAlignRightShift(pic_width_in_luma_samples, ctb_log2_size_y);
+        UpAlignRightShift(pic_width_in_luma_samples_, ctb_log2_size_y_);
     uint32_t pic_height_in_ctb_y =
-        UpAlignRightShift(pic_height_in_luma_samples, ctb_log2_size_y);
+        UpAlignRightShift(pic_height_in_luma_samples_, ctb_log2_size_y_);
     uint32_t pic_size_in_ctb = pic_width_in_ctb_y * pic_height_in_ctb_y;
     slice_segment_address_bit_length_ = CeilLog2(pic_size_in_ctb);
 
-    uint32_t log2_min_luma_transform_block_size = 
-        golomb_reader.ReadUnsignedValue() + 2;
+    log2_min_luma_transform_block_size_ = golomb_reader.ReadUnsignedValue() + 2;
     uint32_t log2_diff_max_min_luma_transform_block_size = 
         golomb_reader.ReadUnsignedValue();
 
@@ -147,7 +150,27 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
         if (!success)
             return false;
     }
-    return ParseExtensionInfo(bit_stream, ctb_log2_size_y, chroma_format_idc);
+    return ParseExtensionInfo(bit_stream, ctb_log2_size_y_, chroma_format_idc);
+}
+
+uint32_t SequenceParameterSet::GetPicWidthInLumaSamples() const
+{
+    return pic_width_in_luma_samples_;
+}
+
+uint32_t SequenceParameterSet::GetPicHeightInLumaSamples() const
+{
+    return pic_height_in_luma_samples_;
+}
+
+uint32_t SequenceParameterSet::GetCTBLog2SizeY() const
+{
+    return ctb_log2_size_y_;
+}
+
+uint32_t SequenceParameterSet::GetLog2MinLumaTransformBlockSize() const
+{
+    return log2_min_luma_transform_block_size_;
 }
 
 uint32_t SequenceParameterSet::GetSequenceParameterSetID()

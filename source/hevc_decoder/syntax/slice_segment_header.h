@@ -5,6 +5,8 @@
 #include <vector>
 #include <memory>
 
+#include "hevc_decoder/base/tile_info.h"
+
 class ParametersManager;
 class PictureParameterSet;
 class SequenceParameterSet;
@@ -14,6 +16,7 @@ class ISliceSegmentHeaderContext;
 enum NalUnitType;
 enum SliceType;
 class BitStream;
+class TileInfo;
 
 class SliceSegmentHeader
 {
@@ -23,6 +26,12 @@ public:
     
     bool Parse(BitStream* bit_stream, ISliceSegmentHeaderContext* context);
 
+    bool IsFirstSliceSegmentInPic() const;
+    uint32_t GetWidth() const;
+    uint32_t GetHeight() const;
+    const TileInfo& GetTileInfo() const;
+    uint32_t GetCTBLog2SizeY() const;
+    uint32_t GetMinTBLog2SizeY() const;
     SliceType GetSliceType() const;
     const std::vector<int32_t>& GetNegativeRefPOCList() const;
     const std::vector<int32_t>& GetPositiveRefPOCList() const;
@@ -81,6 +90,13 @@ private:
     std::unique_ptr<ShortTermReferencePictureSet> st_ref_pic_set_of_self_;     
     int short_term_ref_pic_set_idx_; // fix me: 不需要的成员变量
 
+    uint32_t width_; // fix me: 重构parameter set 后删除
+    uint32_t height_;
+    TileInfo tile_info_;
+    uint32_t ctb_log2_size_y_;
+    uint32_t min_tb_log2_size_y_;
+
+    bool is_first_slice_segment_in_pic_;
     std::vector<int32_t> negative_ref_poc_list_;
     std::vector<int32_t> positive_ref_poc_list_;
     SliceType slice_type_;

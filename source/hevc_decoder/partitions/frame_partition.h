@@ -9,21 +9,15 @@
 
 #include "hevc_decoder/base/basic_types.h"
 
-class FrameInfoProviderForFramePartition;
+class IFrameInfoProviderForFramePartition;
+class IFramePartitionCreatorInfoProvider;
 
 class FramePartition
 {
 public:
-    FramePartition(uint32_t frame_width, uint32_t frame_height);
     ~FramePartition();
 
-    bool InitOnUniformSpacing(uint32_t num_tile_cols, uint32_t num_tile_rows,
-                              uint32_t ctb_log2_size_y, uint32_t min_tb_log2_size_y);
-
-    bool Init(const std::vector<uint32_t>& tile_cols_width_in_ctb, 
-              const std::vector<uint32_t>& tile_rows_height_in_ctb, 
-              uint32_t ctb_log2_size_y, uint32_t min_tb_log2_size_y);
-
+    const IFramePartitionCreatorInfoProvider* GetCreationInfoProvider();
     uint32_t RasterScanToTileScan(uint32_t index);
     uint32_t GetTileIndex(const Coordinate& block);
     bool IsTheFirstCTBInTile(const Coordinate& block);
@@ -32,9 +26,16 @@ public:
     // 并且当前块为邻居块的后面的可可用块
     bool IsZScanOrderNeighbouringBlockAvailable(
         const Coordinate& current_block, const Coordinate& neighbouring_block,
-        const FrameInfoProviderForFramePartition* frame_info_provider);
+        const IFrameInfoProviderForFramePartition* frame_info_provider);
 
 private:
+    friend class FramePartitionManager;
+
+    FramePartition();
+
+    bool Init(
+        const std::unique_ptr<IFramePartitionCreatorInfoProvider>& provider);
+
     struct CodedTreeBlockPositionInfo
     {
         Coordinate block_coordinate;
@@ -214,11 +215,8 @@ private:
     void InitTransformBlockPartition(uint32_t ctb_log2_size_y, 
                                      uint32_t min_tb_log2_size_y);
             
-    uint32_t frame_width_;
-    uint32_t frame_height_;
-    uint32_t ctb_log2_size_y_;
-    uint32_t min_tb_log2_size_y_;
     bool initialzed_;
+    std::unique_ptr<IFramePartitionCreatorInfoProvider> provider_;
     CodedTreeBlockPartitionContainer tile_and_raster_partition_info_;
     TransformBlockPartitionCantainer transform_block_partition_info_;
 

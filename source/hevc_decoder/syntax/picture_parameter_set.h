@@ -8,6 +8,7 @@
 class BitStream;
 class PPSScreenContentCodingExtension;
 class PPSRangeExtension;
+class TileInfo;
 
 class PictureParameterSet
 {
@@ -23,27 +24,20 @@ public:
     uint8_t GetExtraSliceHeaderBitLength() const;
     bool HasOutputFlagPresent() const;
     bool HasListsModificationPresent() const;
-    const PPSScreenContentCodingExtension* GetPPSSccExtension() const;
+    const PPSScreenContentCodingExtension& GetPPSSccExtension() const;
     bool HasCABACInitPresent() const;
     bool HasWeightedPred() const;
     bool HasWeightedBipred() const;
     bool HasPPSSliceChromaQPOffsetPresent() const;
-    const PPSRangeExtension* GetPPSRangeExtension() const;
+    const PPSRangeExtension& GetPPSRangeExtension() const;
     bool IsDeblockingFilterOverrideEnabled() const;
     bool IsPPSLoopFilterAcrossSliceEnabled() const;
     bool IsDeblockingFilterDisabled() const;
     bool IsTilesEnabled() const;
     bool IsEntropyCodingSyncEnabled() const;
+    const TileInfo& GetTileInfo() const;
 
 private:
-    struct TileInfo
-    {
-        bool is_uniform_spacing;
-        std::vector<uint32_t> column_width;
-        std::vector<uint32_t> row_height;
-        bool loop_filter_across_tiles_enabled;
-    };
-
     struct DeblockingFilterControlInfo
     {
         bool is_deblocking_filter_override_enabled;
@@ -73,6 +67,7 @@ private:
     bool is_pps_loop_filter_across_slices_enabled_;
     bool is_tiles_enabled_;
     bool is_entropy_coding_sync_enabled_;
+    std::unique_ptr<TileInfo> tile_info_;
 
 };
 #endif

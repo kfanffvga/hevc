@@ -7,6 +7,7 @@
 #include "hevc_decoder/syntax/coded_video_sequence.h"
 #include "hevc_decoder/decode_processor_manager.h"
 #include "hevc_decoder/frame_sequence_arranger.h"
+#include "hevc_decoder/partitions/frame_partition_manager.h"
 
 using std::unique_ptr;
 using std::list;
@@ -14,12 +15,14 @@ using std::list;
 HEVCDecoder::HEVCDecoder()
     : parameters_manager_(new ParametersManager())
     , frame_sequence_arranger_(new FrameSequenceArranger())
+    , frame_partition_manager_(new FramePartitionManager())
     , decode_processor_manager_(
         new DecodeProcessorManager(parameters_manager_.get(), 
                                    frame_sequence_arranger_.get()))
     , coded_video_sequence_(
         new CodedVideoSequence(decode_processor_manager_.get(), 
-                               parameters_manager_.get()))
+                               parameters_manager_.get(),
+                               frame_partition_manager_.get()))
     , syntax_dispatcher_(
         new SyntaxDispatcher(parameters_manager_.get(), 
                              coded_video_sequence_.get()))

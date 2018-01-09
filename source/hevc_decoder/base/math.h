@@ -34,4 +34,12 @@ inline uint32_t UpAlignRightShift(uint32_t value, uint32_t shift_bits)
     return static_cast<uint32_t>(-(-static_cast<int64_t>(value) >> shift_bits));
 }
 
+inline uint32_t UpAlignDiv(uint32_t dividend, uint32_t divisor)
+{
+    if (0 == divisor)
+        return 0;
+
+    return (dividend + divisor - 1) / divisor;
+}
+
 #endif

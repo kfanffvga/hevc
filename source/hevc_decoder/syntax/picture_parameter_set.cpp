@@ -1,5 +1,10 @@
 ﻿#include "hevc_decoder/syntax/picture_parameter_set.h"
 
+#include <algorithm>
+#include <vector>
+
+#include "hevc_decoder/base/math.h"
+#include "hevc_decoder/base/tile_info.h"
 #include "hevc_decoder/base/stream/bit_stream.h"
 #include "hevc_decoder/base/stream/golomb_reader.h"
 #include "hevc_decoder/syntax/scaling_list_data.h"
@@ -7,6 +12,9 @@
 #include "hevc_decoder/syntax/pps_multilayer_extension.h"
 #include "hevc_decoder/syntax/pps_3d_extension.h"
 #include "hevc_decoder/syntax/pps_screen_content_coding_extension.h"
+
+using std::numeric_limits;
+using std::vector;
 
 PictureParameterSet::PictureParameterSet()
     : pps_pic_parameter_set_id_(0)
@@ -25,6 +33,7 @@ PictureParameterSet::PictureParameterSet()
     , is_pps_loop_filter_across_slices_enabled_(false)
     , is_tiles_enabled_(false)
     , is_entropy_coding_sync_enabled_(false)
+    , tile_info_(new TileInfo())
 {
     memset(&deblocking_filter_control_info_, 0, 
            sizeof(deblocking_filter_control_info_));
@@ -101,22 +110,31 @@ void PictureParameterSet::ParseTileInfo(BitStream* bit_stream)
     GolombReader golomb_reader(bit_stream);
     uint32_t num_tile_columns_minus1 = golomb_reader.ReadUnsignedValue();
     uint32_t num_tile_rows_minus1 = golomb_reader.ReadUnsignedValue();
-    TileInfo tile_info = {};
-    tile_info.is_uniform_spacing = bit_stream->ReadBool();
-    if (!tile_info.is_uniform_spacing)
+    bool is_uniform_spacing = bit_stream->ReadBool();
+    if (is_uniform_spacing)
     {
+        // 由于最后一个边界就是帧大小,因此,此处为了减少字节,最后一个边界不需进行压缩,
+        vector<uint32_t> column_width;
         for (uint32_t i = 0; i < num_tile_columns_minus1; ++i)
         {
             uint32_t single_width = golomb_reader.ReadUnsignedValue() + 1;
-            tile_info.column_width.push_back(single_width);
+            column_width.push_back(single_width);
         }
-
+        
+        vector<uint32_t> row_height;
         for (uint32_t i = 0; i < num_tile_rows_minus1; ++i)
         {
             uint32_t single_height = golomb_reader.ReadUnsignedValue() + 1;
-            tile_info.row_height.push_back(single_height);
+            row_height.push_back(single_height);
         }
-        tile_info.loop_filter_across_tiles_enabled = bit_stream->ReadBool();
+        bool is_loop_filter_across_tiles_enabled = bit_stream->ReadBool();
+        tile_info_.reset(new TileInfo(column_width, row_height, 
+                                      is_loop_filter_across_tiles_enabled));
+    }
+    else
+    {
+        tile_info_.reset(new TileInfo(num_tile_columns_minus1 + 1, 
+                                      num_tile_rows_minus1 + 1, true));
     }
 }
 
@@ -200,10 +218,10 @@ bool PictureParameterSet::HasListsModificationPresent() const
     return has_lists_modification_present_;
 }
 
-const PPSScreenContentCodingExtension* PictureParameterSet::GetPPSSccExtension()
+const PPSScreenContentCodingExtension& PictureParameterSet::GetPPSSccExtension()
     const
 {
-    return pps_scc_extension_.get();
+    return *pps_scc_extension_;
 }
 
 bool PictureParameterSet::HasCABACInitPresent() const
@@ -226,9 +244,9 @@ bool PictureParameterSet::HasPPSSliceChromaQPOffsetPresent() const
     return has_pps_slice_chroma_qp_offsets_present_;
 }
 
-const PPSRangeExtension* PictureParameterSet::GetPPSRangeExtension() const
+const PPSRangeExtension& PictureParameterSet::GetPPSRangeExtension() const
 {
-    return pps_range_extension_.get();
+    return *pps_range_extension_;
 }
 
 bool PictureParameterSet::IsDeblockingFilterOverrideEnabled() const
@@ -254,4 +272,9 @@ bool PictureParameterSet::IsTilesEnabled() const
 bool PictureParameterSet::IsEntropyCodingSyncEnabled() const
 {
     return is_entropy_coding_sync_enabled_;
+}
+
+const TileInfo& PictureParameterSet::GetTileInfo() const
+{
+    return *tile_info_;
 }

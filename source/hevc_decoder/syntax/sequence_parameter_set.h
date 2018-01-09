@@ -26,6 +26,12 @@ public:
 
     bool Parse(BitStream* bit_stream);
 
+    uint32_t GetPicWidthInLumaSamples() const;
+    uint32_t GetPicHeightInLumaSamples() const;
+    
+    uint32_t GetCTBLog2SizeY() const;
+    uint32_t GetLog2MinLumaTransformBlockSize() const;
+
     uint32_t GetSequenceParameterSetID();
     uint32_t GetSliceSegmentAddressBitLength() const;
     uint32_t GetPicOrderCountLSBBitLength() const;
@@ -76,9 +82,13 @@ private:
     bool is_sample_adaptive_offset_enabled_;
     ChromaFormatType chroma_array_type_;
     uint32_t max_lsb_of_pic_order_count_;
+    uint32_t pic_width_in_luma_samples_;
+    uint32_t pic_height_in_luma_samples_;
     std::unique_ptr<SPSRangeExtension> sps_range_extension_;
     std::unique_ptr<SPSScreenContentCodingExtension> sps_scc_extension_;
     uint32_t bit_depth_chroma_;
+    uint32_t ctb_log2_size_y_;
+    uint32_t log2_min_luma_transform_block_size_;
 };
 
 #endif

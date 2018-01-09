@@ -5,6 +5,7 @@
 #include "hevc_decoder/base/stream/bit_stream.h"
 #include "hevc_decoder/base/stream/golomb_reader.h"
 #include "hevc_decoder/base/math.h"
+#include "hevc_decoder/base/tile_info.h"
 #include "hevc_decoder/base/basic_types.h"
 #include "hevc_decoder/syntax/nal_unit_types.h"
 #include "hevc_decoder/syntax/picture_parameter_set.h"
@@ -98,6 +99,12 @@ SliceSegmentHeader::SliceSegmentHeader(
     : parameters_manager_(parameters_manager)
     , st_ref_pic_set_of_self_()
     , short_term_ref_pic_set_idx_(-1)
+    , width_(0)
+    , height_(0)
+    , tile_info_()
+    , ctb_log2_size_y_(0)
+    , min_tb_log2_size_y_(0)
+    , is_first_slice_segment_in_pic_(false)
     , negative_ref_poc_list_()
     , positive_ref_poc_list_()
     , slice_type_(I_SLICE)
@@ -116,7 +123,7 @@ bool SliceSegmentHeader::Parse(BitStream* bit_stream,
     if (!bit_stream || !context)
         return false;
 
-    bool is_first_slice_segment_in_pic = bit_stream->ReadBool();
+    is_first_slice_segment_in_pic_ = bit_stream->ReadBool();
     if ((context->GetNalUnitType() >= BLA_W_LP) && 
         (context->GetNalUnitType() <= RSV_IRAP_VCL23))
         bool is_no_output_of_prior_pics = bit_stream->ReadBool();
@@ -134,8 +141,14 @@ bool SliceSegmentHeader::Parse(BitStream* bit_stream,
     if (!sps)
         return false;
 
+    width_ = sps->GetPicWidthInLumaSamples();
+    height_ = sps->GetPicHeightInLumaSamples();
+    tile_info_ = pps->GetTileInfo();
+    ctb_log2_size_y_ = sps->GetCTBLog2SizeY();
+    min_tb_log2_size_y_ = sps->GetLog2MinLumaTransformBlockSize();
+
     bool is_dependent_slice_segment = false;
-    if (!is_first_slice_segment_in_pic)
+    if (!is_first_slice_segment_in_pic_)
     {
         if (pps->IsDependentSliceSegmentEnabled())
             is_dependent_slice_segment = bit_stream->ReadBool();
@@ -151,6 +164,36 @@ bool SliceSegmentHeader::Parse(BitStream* bit_stream,
     }
 
     return ParseTileInfo(pps, bit_stream);
+}
+
+bool SliceSegmentHeader::IsFirstSliceSegmentInPic() const
+{
+    return is_first_slice_segment_in_pic_;
+}
+
+uint32_t SliceSegmentHeader::GetWidth() const
+{
+    return width_;
+}
+
+uint32_t SliceSegmentHeader::GetHeight() const
+{
+    return height_;
+}
+
+const TileInfo& SliceSegmentHeader::GetTileInfo() const
+{
+    return tile_info_;
+}
+
+uint32_t SliceSegmentHeader::GetCTBLog2SizeY() const
+{
+    return ctb_log2_size_y_;
+}
+
+uint32_t SliceSegmentHeader::GetMinTBLog2SizeY() const
+{
+    return min_tb_log2_size_y_;
 }
 
 SliceType SliceSegmentHeader::GetSliceType() const
@@ -369,10 +412,8 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
         if (!success)
             return false;
     }
-    const PPSScreenContentCodingExtension* pps_scc_extension =
-        pps->GetPPSSccExtension();
-    bool is_current_picture_ref_enabled = pps_scc_extension ? 
-        pps_scc_extension->IsPPSCurrentPictureReferenceEnabled() : false;
+    bool is_current_picture_ref_enabled = 
+        pps->GetPPSSccExtension().IsPPSCurrentPictureReferenceEnabled();
 
     bool success = ConstructReferencePOCList(sps, context,
                                              short_term_ref_pic_set_idx_,
@@ -463,12 +504,8 @@ uint32_t SliceSegmentHeader::GetCurrentAvailableReferencePictureCount(
         if (i.is_used_by_curr_pic_lt)
             ++reference_picture_count;
     }
-    const PPSScreenContentCodingExtension* pps_scc_extension = 
-        pps->GetPPSSccExtension();
-    if (!pps_scc_extension)
-        return reference_picture_count;
-
-    return pps_scc_extension->IsPPSCurrentPictureReferenceEnabled() ?
+    
+    return pps->GetPPSSccExtension().IsPPSCurrentPictureReferenceEnabled() ?
         reference_picture_count + 1 : reference_picture_count;
 }
 
@@ -593,17 +630,13 @@ bool SliceSegmentHeader::ParseQuantizationParameterInfo(
         int32_t slice_cb_qp_offset = golomb_reader.ReadSignedValue();
         int32_t slice_cr_qp_offset = golomb_reader.ReadSignedValue();
     }
-    const PPSScreenContentCodingExtension* pps_scc_extension = 
-        pps->GetPPSSccExtension();
-    if (pps_scc_extension && pps_scc_extension->HasPPSSliceActQPOffsetsPresent())
+    if (pps->GetPPSSccExtension().HasPPSSliceActQPOffsetsPresent())
     {
         int32_t slice_act_y_qp_offset = golomb_reader.ReadSignedValue();
         int32_t slice_act_cb_qp_offset = golomb_reader.ReadSignedValue();
         int32_t slice_act_cr_qp_offset = golomb_reader.ReadSignedValue();
     }
-    const PPSRangeExtension* pps_range_extension = pps->GetPPSRangeExtension();
-    if (pps_range_extension && 
-        pps_range_extension->IsChromaQPOffsetListEnabled())
+    if (pps->GetPPSRangeExtension().IsChromaQPOffsetListEnabled())
         bool cu_chroma_qp_offset_enabled = bit_stream->ReadBool();
 
     return true;

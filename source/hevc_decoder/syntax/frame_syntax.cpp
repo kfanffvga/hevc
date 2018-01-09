@@ -5,10 +5,14 @@
 #include "hevc_decoder/syntax/coded_video_sequence.h"
 
 using std::unique_ptr;
+using std::shared_ptr;
+using std::vector;
 
 FrameSyntax::FrameSyntax(IFrameSyntaxContext* frame_syntax_context)
-    : picture_order_count_()
+    : slices_()
+    , picture_order_count_()
     , frame_syntax_context_(frame_syntax_context)
+    , frame_partition_()
 {
 
 }
@@ -67,6 +71,11 @@ bool FrameSyntax::AddSliceSegment(unique_ptr<SliceSegmentSyntax> slice_segment)
     return true;
 }
 
+bool FrameSyntax::HasFramePartition() const
+{
+    return !!frame_partition_;
+}
+
 bool FrameSyntax::SetPictureOrderCountByLSB(uint32_t lsb, uint32_t max_lsb)
 {
     PictureOrderCount preview_poc;
@@ -80,6 +89,12 @@ bool FrameSyntax::SetPictureOrderCountByLSB(uint32_t lsb, uint32_t max_lsb)
                                                               false, max_lsb, 
                                                               lsb);
     return true;
+}
+
+void FrameSyntax::SetFramePartition(
+    const shared_ptr<FramePartition>& frame_partition)
+{
+    frame_partition_ = frame_partition;
 }
 
 const PictureOrderCount& FrameSyntax::GetPictureOrderCount() const

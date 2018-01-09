@@ -80,7 +80,8 @@
     <ClInclude Include="base\basic_types.h" />
     <ClInclude Include="base\coding_tree_block_context.h" />
     <ClInclude Include="base\frame_info_provider_for_frame_partition.h" />
-    <ClInclude Include="base\frame_partition.h" />
+    <ClInclude Include="base\tile_info.h" />
+    <ClInclude Include="partitions\frame_partition.h" />
     <ClInclude Include="base\growing_buffer.h" />
     <ClInclude Include="base\math.h" />
     <ClInclude Include="base\stream\bit_stream.h" />
@@ -90,6 +91,9 @@
     <ClInclude Include="frame_sequence_arranger.h" />
     <ClInclude Include="hevc_decoder.h" />
     <ClInclude Include="hevc_decoder_def.h" />
+    <ClInclude Include="partitions\frame_partition_creator_info_provider.h" />
+    <ClInclude Include="partitions\frame_partition_creator_info_provider_impl.h" />
+    <ClInclude Include="partitions\frame_partition_manager.h" />
     <ClInclude Include="predictors\predictor_manager.h" />
     <ClInclude Include="syntax\colour_mapping_octants.h" />
     <ClInclude Include="syntax\colour_mapping_table.h" />
@@ -116,6 +120,7 @@
     <ClInclude Include="syntax\short_term_reference_picture_set_context.h" />
     <ClInclude Include="syntax\short_term_reference_picture_set_context_impl.h" />
     <ClInclude Include="syntax\slice_segment_context.h" />
+    <ClInclude Include="syntax\slice_segment_data.h" />
     <ClInclude Include="syntax\slice_segment_header.h" />
     <ClInclude Include="syntax\slice_segment_header_context.h" />
     <ClInclude Include="syntax\slice_segment_syntax.h" />
@@ -138,13 +143,16 @@
     <ClInclude Include="variant_length_data_decoder\slice_segment_info_provider_for_cabac.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="base\frame_partition.cpp" />
+    <ClCompile Include="base\tile_info.cpp" />
+    <ClCompile Include="partitions\frame_partition.cpp" />
     <ClCompile Include="base\stream\bit_stream.cpp" />
     <ClCompile Include="base\stream\golomb_reader.cpp" />
     <ClCompile Include="decode_processor_manager.cpp" />
     <ClCompile Include="frame.cpp" />
     <ClCompile Include="frame_sequence_arranger.cpp" />
     <ClCompile Include="hevc_decoder.cpp" />
+    <ClCompile Include="partitions\frame_partition_creator_info_provider_impl.cpp" />
+    <ClCompile Include="partitions\frame_partition_manager.cpp" />
     <ClCompile Include="predictors\predictor_manager.cpp" />
     <ClCompile Include="syntax\coded_video_sequence.cpp" />
     <ClCompile Include="syntax\colour_mapping_octants.cpp" />
@@ -166,6 +174,7 @@
     <ClCompile Include="syntax\scaling_list_data.cpp" />
     <ClCompile Include="syntax\sequence_parameter_set.cpp" />
     <ClCompile Include="syntax\short_term_reference_picture_set.cpp" />
+    <ClCompile Include="syntax\slice_segment_data.cpp" />
     <ClCompile Include="syntax\slice_segment_header.cpp" />
     <ClCompile Include="syntax\slice_segment_syntax.cpp" />
     <ClCompile Include="syntax\slice_syntax.cpp" />

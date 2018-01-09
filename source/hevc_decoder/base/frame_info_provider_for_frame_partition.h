@@ -3,7 +3,7 @@
 
 #include <inttypes.h>
 
-class FrameInfoProviderForFramePartition
+class IFrameInfoProviderForFramePartition
 {
 public:
     virtual uint32_t GetSliceAddressByRasterScanBlockIndex(uint32_t index) 

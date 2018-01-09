@@ -6,22 +6,32 @@
 #include "hevc_decoder/syntax/frame_syntax.h"
 #include "hevc_decoder/syntax/slice_segment_syntax.h"
 #include "hevc_decoder/base/stream/bit_stream.h"
+#include "hevc_decoder/base/tile_info.h"
 #include "hevc_decoder/syntax/nal_unit.h"
 #include "hevc_decoder/syntax/slice_segment_context.h"
+#include "hevc_decoder/partitions/frame_partition_creator_info_provider_impl.h"
+#include "hevc_decoder/partitions/frame_partition_manager.h"
+#include "hevc_decoder/syntax/slice_segment_header.h"
 
 using std::pair;
 using std::make_pair;
+using std::unique_ptr;
+using std::shared_ptr;
 using std::find_if;
 
 class SliceSegmentContext : public ISliceSegmentContext
 {
 public:
     SliceSegmentContext(FrameSyntax* frame_syntax, 
-                        const IFrameSyntaxContext* frame_context)
+                        const IFrameSyntaxContext* frame_context,
+                        FramePartitionManager* frame_partition_manager)
         : frame_syntax_(frame_syntax)
         , frame_context_(frame_context)
+        , frame_partition_manager_(frame_partition_manager)
     {
         assert(frame_syntax);
+        assert(frame_context);
+        assert(frame_partition_manager);
     }
 
     virtual ~SliceSegmentContext()
@@ -45,18 +55,57 @@ public:
         return frame_context_->GetLayerID(poc_value);
     }
 
+    virtual bool OnSliceSegmentHeaderParsed(const SliceSegmentHeader& header) 
+        override
+    {
+        if (!header.IsFirstSliceSegmentInPic())
+            return frame_syntax_->HasFramePartition();
+
+        FramePartitionCreatorInfoProviderImpl* provider_impl =
+            new FramePartitionCreatorInfoProviderImpl(header.GetWidth(),
+                                                      header.GetHeight());
+
+        unique_ptr<IFramePartitionCreatorInfoProvider> provider(provider_impl);
+        bool success = false;
+        const TileInfo& tile_info = header.GetTileInfo();
+        if (tile_info.IsUniformSpacing())
+        {
+            success = provider_impl->Init(tile_info.GetNumTileColumns(),
+                                          tile_info.GetNumTileRows(), 
+                                          header.GetCTBLog2SizeY(), 
+                                          header.GetMinTBLog2SizeY());
+        }
+        else
+        {
+            success = provider_impl->Init(tile_info.GetColumnWidth(),
+                                          tile_info.GetRowHeight(),
+                                          header.GetCTBLog2SizeY(),
+                                          header.GetMinTBLog2SizeY());
+        }
+        if (!success)
+            return false;
+
+        frame_syntax_->SetFramePartition(
+            frame_partition_manager_->Get(provider));
+        return true;
+    }
+
 private:
     FrameSyntax* frame_syntax_;
     const IFrameSyntaxContext* frame_context_;
+    FramePartitionManager* frame_partition_manager_;
 
 };
 
 CodedVideoSequence::CodedVideoSequence(
     DecodeProcessorManager* decode_processor_manager,
-    ParametersManager* parameters_manager)
+    ParametersManager* parameters_manager, 
+    FramePartitionManager* frame_partition_manager)
     : decode_processor_manager_(decode_processor_manager)
     , parameters_manager_(parameters_manager)
+    , frame_partition_manager_(frame_partition_manager)
     , frame_syntax_()
+    , pocs_info_()
 {
 
 }
@@ -118,7 +167,8 @@ bool CodedVideoSequence::PushNALOfSliceSegment(NalUnit* nal, bool is_idr_frame)
     unique_ptr<SliceSegmentSyntax> slice_segment_syntax(
         new SliceSegmentSyntax(nal->GetNalUnitType(), nal->GetNuhLayerID(), 
                                parameters_manager_));
-    SliceSegmentContext slice_segment_context(frame_syntax_.get(), this);
+    SliceSegmentContext slice_segment_context(frame_syntax_.get(), this, 
+                                              frame_partition_manager_);
     bool success = slice_segment_syntax->Parse(nal->GetBitSteam(),
                                                &slice_segment_context);
     if (!success)

@@ -12,9 +12,10 @@ class SliceSyntax;
 class IFrameSyntaxContext;
 class SliceSegmentSyntax;
 class ISliceSegmentInfoProviderForCABAC;
+class FramePartition;
 
 class FrameSyntax : public IFrameInfoProviderForCABAC
-                  , public FrameInfoProviderForFramePartition
+                  , public IFrameInfoProviderForFramePartition
 {
 public:
     static PictureOrderCount CalcPictureOrderCount(uint32_t previous_msb, 
@@ -27,6 +28,8 @@ public:
     virtual ~FrameSyntax();
 
     bool AddSliceSegment(std::unique_ptr<SliceSegmentSyntax> slice_segment);
+    bool HasFramePartition() const;
+
     virtual const PictureOrderCount& GetPictureOrderCount() const override;
 
 private:
@@ -54,9 +57,12 @@ private:
         GetSliceSegmentInfoProviderForCABAC(uint32_t address) const override;
 
     bool SetPictureOrderCountByLSB(uint32_t lsb, uint32_t max_lsb);
+    void SetFramePartition(
+        const std::shared_ptr<FramePartition>& frame_partition);
 
     std::vector<std::unique_ptr<SliceSyntax>> slices_;
     PictureOrderCount picture_order_count_;
     IFrameSyntaxContext* frame_syntax_context_;
+    std::shared_ptr<FramePartition> frame_partition_;
 };
 #endif
