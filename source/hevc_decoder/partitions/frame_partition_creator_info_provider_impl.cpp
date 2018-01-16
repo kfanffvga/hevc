@@ -37,6 +37,24 @@ bool FramePartitionCreatorInfoProviderImpl::Init(
     tile_cols_width_in_ctb_ = tile_cols_width_in_ctb;
     ctb_log2_size_y_ = ctb_log2_size_y;
     min_tb_log2_size_y_ = min_tb_log2_size_y;
+
+    uint32_t width_in_ctb = UpAlignRightShift(width_, ctb_log2_size_y);
+    tile_cols_width_in_ctb_.resize(tile_cols_width_in_ctb.size());
+    for (uint32_t i = 0; i < tile_cols_width_in_ctb_.size() - 1; ++i)
+    {
+        tile_cols_width_in_ctb_[i] = tile_cols_width_in_ctb[i];
+        width_in_ctb -= tile_cols_width_in_ctb[i];
+    }
+    tile_cols_width_in_ctb_[tile_cols_width_in_ctb_.size() - 1] = width_in_ctb;
+
+    uint32_t height_in_ctb = UpAlignRightShift(height_, ctb_log2_size_y);
+    tile_rows_height_in_ctb_.resize(tile_rows_height_in_ctb.size());
+    for (uint32_t i = 0; i < tile_rows_height_in_ctb_.size() - 1; ++i)
+    {
+        tile_rows_height_in_ctb_[i] = tile_rows_height_in_ctb[i];
+        height_in_ctb -= tile_rows_height_in_ctb[i];
+    }
+    tile_rows_height_in_ctb_[tile_rows_height_in_ctb_.size() - 1] = height_in_ctb;
     return true;
 }
 
@@ -51,18 +69,24 @@ bool FramePartitionCreatorInfoProviderImpl::Init(uint32_t num_tile_cols,
     if ((0 == ctb_log2_size_y) || (0 == min_tb_log2_size_y))
         return false;
 
-    uint32_t tile_width_in_ctb = 
-        UpAlignDiv(UpAlignRightShift(width_, ctb_log2_size_y), num_tile_cols);
+    uint32_t width_in_ctb = UpAlignRightShift(width_, ctb_log2_size_y);
+    uint32_t tile_width_in_ctb = UpAlignDiv(width_in_ctb, num_tile_cols);
     tile_cols_width_in_ctb_.resize(num_tile_cols);
-    for (auto& i : tile_cols_width_in_ctb_)
-        i = tile_width_in_ctb;
+    for (uint32_t i = 0; i < num_tile_cols - 1; ++i)
+        tile_cols_width_in_ctb_[i] = tile_width_in_ctb;
 
-    uint32_t tile_height_in_ctb = 
-        UpAlignDiv(UpAlignRightShift(height_, ctb_log2_size_y), num_tile_rows);
+    tile_cols_width_in_ctb_[num_tile_cols - 1] = 
+        width_in_ctb - tile_width_in_ctb * (num_tile_cols - 1);
+
+    uint32_t height_in_ctb = UpAlignRightShift(height_, ctb_log2_size_y);
+    uint32_t tile_height_in_ctb = UpAlignDiv(height_in_ctb, num_tile_rows);
     tile_rows_height_in_ctb_.resize(num_tile_rows);
-    for (auto& i : tile_rows_height_in_ctb_)
-        i = tile_height_in_ctb;
+    for (uint32_t i = 0; i < num_tile_rows - 1; ++i)
+        tile_rows_height_in_ctb_[i] = tile_height_in_ctb;
 
+    tile_rows_height_in_ctb_[num_tile_rows - 1] = 
+        height_in_ctb - tile_height_in_ctb * (num_tile_rows - 1);
+        
     ctb_log2_size_y_ = ctb_log2_size_y;
     min_tb_log2_size_y_ = min_tb_log2_size_y;
     return true;

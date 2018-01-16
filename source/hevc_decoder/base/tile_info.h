@@ -1,7 +1,7 @@
 ﻿#ifndef _TILE_INFO_H_
 #define _TILE_INFO_H_
 
-#include <inttypes.h>
+#include <stdint.h>
 #include <vector>
 
 class TileInfo
@@ -24,7 +24,7 @@ public:
     bool IsLoopFilterAcrossTilesEnabled() const;
 
     // 当调用以下函数的时候,由于此时还不知道帧大小,因此,此处的最后边界是uint32_t的最大值
-    // 在使用的时候要把其改为帧大小
+    // 并且column_width是相对大小
     const std::vector<uint32_t>& GetColumnWidth() const;
     const std::vector<uint32_t>& GetRowHeight() const;
     
