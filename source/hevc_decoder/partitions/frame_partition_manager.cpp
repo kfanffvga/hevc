@@ -4,7 +4,6 @@
 #include "hevc_decoder/partitions/frame_partition_creator_info_provider.h"
 #include "hevc_decoder/partitions/frame_partition_creator_info_provider_impl.h"
 
-using std::unique_ptr;
 using std::shared_ptr;
 
 FramePartitionManager::FramePartitionManager()
@@ -18,7 +17,7 @@ FramePartitionManager::~FramePartitionManager()
 }
 
 shared_ptr<FramePartition> FramePartitionManager::Get(
-    const unique_ptr<IFramePartitionCreatorInfoProvider>& provider)
+    const shared_ptr<IFramePartitionCreatorInfoProvider>& provider)
 {
     if (!provider)
         return shared_ptr<FramePartition>();
@@ -30,7 +29,7 @@ shared_ptr<FramePartition> FramePartitionManager::Get(
             return i;
     }
     shared_ptr<FramePartition> partition(new FramePartition());
-    if (!partition->Init(move(provider)))
+    if (!partition->Init(provider))
         return shared_ptr<FramePartition>();
 
     frame_partitions_.push_back(partition);

@@ -5,11 +5,11 @@
 #include "hevc_decoder/partitions/frame_partition_creator_info_provider.h"
 
 using std::vector;
-using std::unique_ptr;
+using std::move;
+using std::shared_ptr;
 
 FramePartition::FramePartition()
-    : initialzed_(false)
-    , provider_()
+    : provider_()
     , tile_and_raster_partition_info_()
     , transform_block_partition_info_()
 {
@@ -24,11 +24,11 @@ FramePartition::~FramePartition()
 const IFramePartitionCreatorInfoProvider* 
     FramePartition::GetCreationInfoProvider()
 {
-    return initialzed_ ? provider_.get() : nullptr;
+    return provider_.get();
 }
 
 bool FramePartition::Init(
-     const unique_ptr<IFramePartitionCreatorInfoProvider>& provider)
+     const shared_ptr<IFramePartitionCreatorInfoProvider>& provider)
 {
     if (!provider)
         return false;
@@ -40,6 +40,8 @@ bool FramePartition::Init(
     if (!provider->GetCTBLog2SizeY() || !provider->GetMinTBLog2SizeY()) 
         return false;
 
+    tile_and_raster_partition_info_.clear();
+    transform_block_partition_info_.clear();
     uint32_t ctb_log2_size_y = provider->GetCTBLog2SizeY();
     vector<uint32_t> absolute_tile_width;
     uint32_t base = 0;
@@ -65,15 +67,9 @@ bool FramePartition::Init(
     {
         for (const auto& tile_end_x : absolute_tile_width)
         {
-            uint32_t end_x = tile_end_x == provider->GetWidth() ?
-                UpAlign(tile_end_x, ctb_log2_size_y) : tile_end_x;
-
-            uint32_t end_y = tile_end_y == provider->GetHeight() ?
-                UpAlign(tile_end_y, ctb_log2_size_y) : tile_end_y;
-
-            InitSingleTilePartition(tile_begin_x, tile_begin_y, end_x, end_y, 
-                                    tile_index, ctb_log2_size_y, ctbs_per_row,
-                                    &tile_scan_index);
+            InitSingleTilePartition(tile_begin_x, tile_begin_y, tile_end_x, 
+                                    tile_end_y, tile_index, ctb_log2_size_y, 
+                                    ctbs_per_row, &tile_scan_index);
 
             tile_begin_x = tile_end_x;
             tile_begin_y = tile_end_y;
@@ -81,8 +77,12 @@ bool FramePartition::Init(
         }
     }
 
-    InitTransformBlockPartition(provider->GetMinTBLog2SizeY(), ctb_log2_size_y);
-    initialzed_ = true;
+    bool success = InitTransformBlockPartition(ctb_log2_size_y, 
+                                               provider->GetMinTBLog2SizeY());
+    if (!success)
+        return false;
+
+    provider_ = provider;
     return true;
 }
 
@@ -117,25 +117,27 @@ bool FramePartition::Init(
      }
  }
 
- void FramePartition::InitTransformBlockPartition(uint32_t ctb_log2_size_y, 
+ bool FramePartition::InitTransformBlockPartition(uint32_t ctb_log2_size_y, 
                                                   uint32_t min_tb_log2_size_y)
  {
      // Fix Me 对齐问题,此处没考虑
      if (ctb_log2_size_y < min_tb_log2_size_y)
-         return;
+         return false;
 
-     auto& tile_scan_values = 
-         tile_and_raster_partition_info_.get<FramePartition::TileScanIndex>();
+     auto& raster_scan_values = 
+         tile_and_raster_partition_info_.get<FramePartition::RasterScanIndex>();
      uint32_t log2_min_tbs_per_ctb = ctb_log2_size_y - min_tb_log2_size_y;
      uint32_t ctb_width_in_min_tbs = 1 << log2_min_tbs_per_ctb;
-     for (const auto& i : tile_scan_values)
+     uint32_t tbs_per_ctb = 1 << (log2_min_tbs_per_ctb << 1);
+     for (const auto& ctb : raster_scan_values)
      {
-         uint32_t tb_index = i.block_tile_scan_index << log2_min_tbs_per_ctb;
+         uint32_t base_tb_index = ctb.block_raster_scan_index * tbs_per_ctb; 
          for (uint32_t x = 0; x < ctb_width_in_min_tbs; ++x)
          {
              for (uint32_t y = 0; y < ctb_width_in_min_tbs; ++y)
              {
                  uint32_t tb_index_of_current_ctb = 0;
+                 // 位交错算法
                  for (uint32_t j = 0; j < log2_min_tbs_per_ctb; ++j)
                  {
                      uint32_t v = 1 << j;
@@ -145,25 +147,23 @@ bool FramePartition::Init(
                      tb_index_of_current_ctb |= 
                          ((((y & v) << 1) | (x & v)) << j);
                  }
-                 tb_index += tb_index_of_current_ctb;
+                 tb_index_of_current_ctb += base_tb_index;
 
                  TransformBlockPositionInfo info = 
                  {
                      {x << min_tb_log2_size_y, y << min_tb_log2_size_y},
-                     tb_index, i.block_raster_scan_index, 
-                     i.block_tile_scan_index, i.tile_index
+                     tb_index_of_current_ctb, ctb.block_raster_scan_index, 
+                     ctb.block_tile_scan_index, ctb.tile_index
                  };
                  transform_block_partition_info_.insert(info);
              }
          }
      }
+     return true;
  }
 
  uint32_t FramePartition::RasterScanToTileScan(uint32_t index)
  {
-    if (!initialzed_)
-        return false;
-
     auto& raster_scan_values = 
         tile_and_raster_partition_info_.get<FramePartition::RasterScanIndex>();
      
@@ -179,7 +179,7 @@ bool FramePartition::Init(
      const Coordinate& current_block, const Coordinate& neighbouring_block,
      const IFrameInfoProviderForFramePartition* frame_info_provider)
  {
-    if (!initialzed_ || !frame_info_provider)
+    if (!frame_info_provider)
         return false;
 
     if ((current_block.x > provider_->GetWidth()) || 
@@ -228,9 +228,6 @@ bool FramePartition::Init(
 
  uint32_t FramePartition::GetTileIndex(const Coordinate& block)
  {
-     if (!initialzed_)
-         return 0;
-
      auto& coordinate_values = 
          tile_and_raster_partition_info_.get<CoordinateKey>();
 
@@ -243,9 +240,6 @@ bool FramePartition::Init(
 
  bool FramePartition::IsTheFirstCTBInTile(const Coordinate& block)
  {
-     if (!initialzed_)
-         return false;
-
      auto& coordinate_values = 
          tile_and_raster_partition_info_.get<CoordinateKey>();
      auto block_info = coordinate_values.find(block);

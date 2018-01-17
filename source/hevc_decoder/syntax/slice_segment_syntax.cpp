@@ -103,6 +103,10 @@ bool SliceSegmentSyntax::Parse(BitStream* bit_stream,
     if (!success)
         return false;
 
+    success = context->OnSliceSegmentHeaderParsed(header);
+    if (!success)
+        return false;
+
     bit_stream->ByteAlign();
 
     return true;

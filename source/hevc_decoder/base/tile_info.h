@@ -23,7 +23,7 @@ public:
     uint32_t GetNumTileRows() const;
     bool IsLoopFilterAcrossTilesEnabled() const;
 
-    // 当调用以下函数的时候,由于此时还不知道帧大小,因此,此处的最后边界是uint32_t的最大值
+    // 当调用以下函数的时候,由于此时还不知道帧大小,因此,此处的最后tile是uint32_t的最大值
     // 并且column_width是相对大小
     const std::vector<uint32_t>& GetColumnWidth() const;
     const std::vector<uint32_t>& GetRowHeight() const;

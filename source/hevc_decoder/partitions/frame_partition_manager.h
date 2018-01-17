@@ -15,7 +15,7 @@ public:
     ~FramePartitionManager();
 
     std::shared_ptr<FramePartition> Get(
-        const std::unique_ptr<IFramePartitionCreatorInfoProvider>& provider);
+        const std::shared_ptr<IFramePartitionCreatorInfoProvider>& provider);
 
 private:
     std::list<std::shared_ptr<FramePartition>> frame_partitions_;

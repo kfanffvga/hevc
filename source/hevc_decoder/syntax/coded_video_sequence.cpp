@@ -65,7 +65,7 @@ public:
             new FramePartitionCreatorInfoProviderImpl(header.GetWidth(),
                                                       header.GetHeight());
 
-        unique_ptr<IFramePartitionCreatorInfoProvider> provider(provider_impl);
+        shared_ptr<IFramePartitionCreatorInfoProvider> provider(provider_impl);
         bool success = false;
         const TileInfo& tile_info = header.GetTileInfo();
         if (tile_info.IsUniformSpacing())

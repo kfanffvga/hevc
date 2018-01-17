@@ -34,7 +34,7 @@ private:
     FramePartition();
 
     bool Init(
-        const std::unique_ptr<IFramePartitionCreatorInfoProvider>& provider);
+        const std::shared_ptr<IFramePartitionCreatorInfoProvider>& provider);
 
     struct CodedTreeBlockPositionInfo
     {
@@ -212,11 +212,10 @@ private:
                                  uint32_t tile_index, uint32_t ctb_log2_size_y, 
                                  uint32_t ctbs_per_row, uint32_t* tile_scan_index);
 
-    void InitTransformBlockPartition(uint32_t ctb_log2_size_y, 
+    bool InitTransformBlockPartition(uint32_t ctb_log2_size_y, 
                                      uint32_t min_tb_log2_size_y);
             
-    bool initialzed_;
-    std::unique_ptr<IFramePartitionCreatorInfoProvider> provider_;
+    std::shared_ptr<IFramePartitionCreatorInfoProvider> provider_;
     CodedTreeBlockPartitionContainer tile_and_raster_partition_info_;
     TransformBlockPartitionCantainer transform_block_partition_info_;
 

@@ -36,7 +36,7 @@ public:
             return false;
 
         return 
-            this->GetTileRowsHeightInCTB() != provider.GetTileRowsHeightInCTB();
+            this->GetTileRowsHeightInCTB() == provider.GetTileRowsHeightInCTB();
     }
 };
 
