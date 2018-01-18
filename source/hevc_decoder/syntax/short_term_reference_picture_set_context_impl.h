@@ -8,7 +8,8 @@ class ShortTermReferencePictureSetContext :
     public IShortTermReferencePictureSetContext
 {
 public:
-    ShortTermReferencePictureSetContext(const SequenceParameterSet* sps)
+    ShortTermReferencePictureSetContext(
+        const std::shared_ptr<SequenceParameterSet>& sps)
         : sps_(sps)
     {
 
@@ -31,7 +32,7 @@ public:
     }
 
 private:
-    const SequenceParameterSet* sps_;
+    const std::shared_ptr<SequenceParameterSet> sps_;
 };
 
 #endif

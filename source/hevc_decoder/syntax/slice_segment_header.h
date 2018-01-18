@@ -18,6 +18,12 @@ enum SliceType;
 class BitStream;
 class TileInfo;
 
+// 由于sps与pps在此处是parse的时候得到，如得不到，整个解码过程就结束了，
+// 并且parse函数均是在一开始时候调用，因此，在以后函数的使用的时候，
+// 为了代码的速度与阅读的流畅性，不进行相关的sps与pps的指针的判断，
+// 如调用者在调用parse之前就去调用相关的有访问到sps与pps的函数产生的问题，
+// 由调用者进行保证
+
 class SliceSegmentHeader
 {
 public:
@@ -46,40 +52,32 @@ private:
     typedef std::vector<LongTermReferencePictureOrderCountInfo> 
         LongTermRefPOCInfoSet;
 
-    bool ParseIndependentSyntax(const PictureParameterSet* pps, 
-                                const SequenceParameterSet* sps,
-                                BitStream* bit_stream,
+    bool ParseIndependentSyntax(BitStream* bit_stream,
                                 ISliceSegmentHeaderContext* context);
 
     bool ParseReferencePictureSet(
-        const PictureParameterSet* pps, const SequenceParameterSet* sps, 
         BitStream* bit_stream, ISliceSegmentHeaderContext* context,
         LongTermRefPOCInfoSet* lt_ref_poc_infos);
 
     bool ParseReferenceDetailInfo(
-        const PictureParameterSet* pps, const SequenceParameterSet* sps,
         bool is_slice_temporal_mvp_enabled, 
         const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
         BitStream* bit_stream, ISliceSegmentHeaderContext* context);
 
-    bool ParseQuantizationParameterInfo(
-        const PictureParameterSet* pps, const SequenceParameterSet* sps,
-        BitStream* bit_stream);
+    bool ParseQuantizationParameterInfo(BitStream* bit_stream);
 
-    bool ParseReconstructPictureInfo(const PictureParameterSet* pps,
-                                     bool is_slice_sao_luma, 
+    bool ParseReconstructPictureInfo(bool is_slice_sao_luma, 
                                      bool is_slice_sao_chroma,
                                      BitStream* bit_stream);
 
-    bool ParseTileInfo(const PictureParameterSet* pps, BitStream* bit_stream);
+    bool ParseTileInfo(BitStream* bit_stream);
 
     uint32_t GetCurrentAvailableReferencePictureCount(
-        const PictureParameterSet* pps, const SequenceParameterSet* sps,
         const LongTermRefPOCInfoSet& current_lt_ref_poc_infos);
 
     bool ConstructReferencePOCList(
-        const SequenceParameterSet* sps, ISliceSegmentHeaderContext* context,
-        int short_term_ref_pic_set_idx, bool is_current_picture_ref_enabled,
+        ISliceSegmentHeaderContext* context, int short_term_ref_pic_set_idx, 
+        bool is_current_picture_ref_enabled,
         const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
         const ReferencePictureListsModification& ref_pic_list_modification,
         std::vector<int32_t>* negative_ref_pic_list,
@@ -87,7 +85,9 @@ private:
 
     const ParametersManager* parameters_manager_;
 
-    std::unique_ptr<ShortTermReferencePictureSet> st_ref_pic_set_of_self_;     
+    std::unique_ptr<ShortTermReferencePictureSet> st_ref_pic_set_of_self_;
+    std::shared_ptr<PictureParameterSet> pps_;
+    std::shared_ptr<SequenceParameterSet> sps_;
     int short_term_ref_pic_set_idx_; // fix me: 不需要的成员变量
 
     uint32_t width_; // fix me: 重构parameter set 后删除

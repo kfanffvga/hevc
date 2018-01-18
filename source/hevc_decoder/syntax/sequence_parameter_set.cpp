@@ -216,7 +216,8 @@ bool SequenceParameterSet::ParseReferencePicturesInfo(
     GolombReader golomb_reader(bit_stream);
     uint32_t num_short_term_ref_pic_sets = golomb_reader.ReadUnsignedValue();
 
-    ShortTermReferencePictureSetContext short_term_rps_context(this);
+    ShortTermReferencePictureSetContext short_term_rps_context(
+        shared_from_this());
     for (uint32_t i = 0; i < num_short_term_ref_pic_sets; ++i)
     {
         unique_ptr<ShortTermReferencePictureSet> st_ref_pic_set(

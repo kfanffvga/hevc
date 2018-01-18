@@ -4,7 +4,7 @@
 #include "hevc_decoder/syntax/picture_parameter_set.h"
 #include "hevc_decoder/syntax/sequence_parameter_set.h"
 
-using std::unique_ptr;
+using std::shared_ptr;
 using std::make_pair;
 
 ParametersManager::ParametersManager()
@@ -19,7 +19,7 @@ ParametersManager::~ParametersManager()
 
 }
 
-bool ParametersManager::AddVideoParameterSet(unique_ptr<VideoParameterSet> vps)
+bool ParametersManager::AddVideoParameterSet(shared_ptr<VideoParameterSet> vps)
 {
     if (GetVideoParameterSet(vps->GetVideoParameterSetID()))
         return false;
@@ -28,15 +28,15 @@ bool ParametersManager::AddVideoParameterSet(unique_ptr<VideoParameterSet> vps)
     return true;
 }
 
-const VideoParameterSet* ParametersManager::GetVideoParameterSet(
+shared_ptr<VideoParameterSet> ParametersManager::GetVideoParameterSet(
     uint8_t vps_id) const
 {
     auto r = vpss_.find(vps_id);
-    return vpss_.end() == r ? nullptr : r->second.get();
+    return vpss_.end() == r ? shared_ptr<VideoParameterSet>() : r->second;
 }
 
 bool ParametersManager::AddPictureParameterSet(
-    unique_ptr<PictureParameterSet> pps)
+    shared_ptr<PictureParameterSet> pps)
 {
     if (GetPictureParameterSet(pps->GetPictureParameterSetID()))
         return false;
@@ -45,15 +45,15 @@ bool ParametersManager::AddPictureParameterSet(
     return true;
 }
 
-const PictureParameterSet* ParametersManager::GetPictureParameterSet(
+shared_ptr<PictureParameterSet> ParametersManager::GetPictureParameterSet(
     uint32_t pps_id) const
 {
     auto r = ppss_.find(pps_id);
-    return ppss_.end() == r ? nullptr : r->second.get();
+    return ppss_.end() == r ? shared_ptr<PictureParameterSet>() : r->second;
 }
 
 bool ParametersManager::AddSequenceParameterSet(
-    unique_ptr<SequenceParameterSet> sps)
+    shared_ptr<SequenceParameterSet> sps)
 {
     if (GetSequenceParameterSet(sps->GetSequenceParameterSetID()))
         return false;
@@ -62,10 +62,10 @@ bool ParametersManager::AddSequenceParameterSet(
     return true;
 }
 
-const SequenceParameterSet* ParametersManager::GetSequenceParameterSet(
+shared_ptr<SequenceParameterSet> ParametersManager::GetSequenceParameterSet(
     uint32_t sps_id) const
 {
     auto r = spss_.find(sps_id);
-    return spss_.end() == r ? nullptr : r->second.get();
+    return spss_.end() == r ? shared_ptr<SequenceParameterSet>() : r->second;
 }
 

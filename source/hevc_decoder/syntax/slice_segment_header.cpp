@@ -24,6 +24,7 @@
 #include "hevc_decoder/syntax/prediction_weight_table_context.h"
 
 using std::vector;
+using std::shared_ptr;
 using std::unique_ptr;
 
 class PredictionWeightTableContext : public IPredictionWeightTableContext
@@ -31,7 +32,7 @@ class PredictionWeightTableContext : public IPredictionWeightTableContext
 public:
     PredictionWeightTableContext(
         const SliceSegmentHeader* slice_segemnt_header, 
-        const SequenceParameterSet* sps,
+        const shared_ptr<SequenceParameterSet> sps,
         const ISliceSegmentHeaderContext* slice_segment_header_context)
         : slice_segment_header_(slice_segemnt_header)
         , slice_segment_header_context_(slice_segment_header_context)
@@ -91,13 +92,15 @@ public:
 private:
     const SliceSegmentHeader* slice_segment_header_;
     const ISliceSegmentHeaderContext* slice_segment_header_context_;
-    const SequenceParameterSet* sps_;
+    const shared_ptr<SequenceParameterSet> sps_;
 };
 
 SliceSegmentHeader::SliceSegmentHeader(
     const ParametersManager* parameters_manager)
     : parameters_manager_(parameters_manager)
     , st_ref_pic_set_of_self_()
+    , pps_()
+    , sps_()
     , short_term_ref_pic_set_idx_(-1)
     , width_(0)
     , height_(0)
@@ -130,40 +133,34 @@ bool SliceSegmentHeader::Parse(BitStream* bit_stream,
 
     GolombReader golomb_reader(bit_stream);
     uint32_t slice_pic_parameter_set_id = golomb_reader.ReadUnsignedValue();
-    const PictureParameterSet* pps = 
-        parameters_manager_->GetPictureParameterSet(slice_pic_parameter_set_id);
-    if (!pps)
+
+    pps_ = parameters_manager_->GetPictureParameterSet(
+        slice_pic_parameter_set_id);
+    if (!pps_)
         return false;
 
-    const SequenceParameterSet* sps = 
-        parameters_manager_->GetSequenceParameterSet(
-            pps->GetAssociateSequenceParameterSetID());
-    if (!sps)
+    sps_ = parameters_manager_->GetSequenceParameterSet(
+            pps_->GetAssociateSequenceParameterSetID());
+    if (!sps_)
         return false;
-
-    width_ = sps->GetPicWidthInLumaSamples();
-    height_ = sps->GetPicHeightInLumaSamples();
-    tile_info_ = pps->GetTileInfo();
-    ctb_log2_size_y_ = sps->GetCTBLog2SizeY();
-    min_tb_log2_size_y_ = sps->GetLog2MinLumaTransformBlockSize();
 
     bool is_dependent_slice_segment = false;
     if (!is_first_slice_segment_in_pic_)
     {
-        if (pps->IsDependentSliceSegmentEnabled())
+        if (pps_->IsDependentSliceSegmentEnabled())
             is_dependent_slice_segment = bit_stream->ReadBool();
 
         uint32_t slice_segment_address = 
-            bit_stream->Read<uint32_t>(sps->GetSliceSegmentAddressBitLength());
+            bit_stream->Read<uint32_t>(sps_->GetSliceSegmentAddressBitLength());
     }
     if (!is_dependent_slice_segment)
     {
-        bool success = ParseIndependentSyntax(pps, sps, bit_stream, context);
+        bool success = ParseIndependentSyntax(bit_stream, context);
         if (!success)
             return false;
     }
 
-    return ParseTileInfo(pps, bit_stream);
+    return ParseTileInfo(bit_stream);
 }
 
 bool SliceSegmentHeader::IsFirstSliceSegmentInPic() const
@@ -212,21 +209,20 @@ const vector<int32_t>& SliceSegmentHeader::GetPositiveRefPOCList() const
 }
 
 bool SliceSegmentHeader::ParseIndependentSyntax(
-    const PictureParameterSet* pps, const SequenceParameterSet* sps,
     BitStream* bit_stream, ISliceSegmentHeaderContext* context)
 {
     assert(bit_stream);
 
-    bit_stream->SkipBits(pps->GetExtraSliceHeaderBitLength());
+    bit_stream->SkipBits(pps_->GetExtraSliceHeaderBitLength());
 
     GolombReader golomb_reader(bit_stream);
     slice_type_ = static_cast<SliceType>(golomb_reader.ReadUnsignedValue());
 
-    if (pps->HasOutputFlagPresent())
+    if (pps_->HasOutputFlagPresent())
         bool is_pic_output = bit_stream->ReadBool();
 
     // 如果是单一色彩的话,则需要知道究竟是何种颜色
-    if (sps->GetChromaFormatType() == YUV_MONO_CHROME)
+    if (sps_->GetChromaFormatType() == YUV_MONO_CHROME)
         uint8_t colour_plane_id = bit_stream->Read<uint8_t>(2);
 
     bool is_slice_temporal_mvp_enabled = false;
@@ -235,48 +231,46 @@ bool SliceSegmentHeader::ParseIndependentSyntax(
         (context->GetNalUnitType() != IDR_W_RADL))
     {
         uint8_t slice_pic_order_cnt_lsb =
-            bit_stream->Read<uint8_t>(sps->GetPicOrderCountLSBBitLength());
+            bit_stream->Read<uint8_t>(sps_->GetPicOrderCountLSBBitLength());
         context->SetPictureOrderCountByLSB(slice_pic_order_cnt_lsb, 
-                                           sps->GetMaxLSBOfPicOrderCount());
+                                           sps_->GetMaxLSBOfPicOrderCount());
 
-        bool success = ParseReferencePictureSet(pps, sps, bit_stream, context,
+        bool success = ParseReferencePictureSet(bit_stream, context,
                                                 &lt_ref_poc_infos);
         if (!success)
             return false;
 
-        if (sps->IsTemporalMVPEnabled())
+        if (sps_->IsTemporalMVPEnabled())
             is_slice_temporal_mvp_enabled = bit_stream->ReadBool();
     }
 
     bool is_slice_sao_luma = false;
     bool is_slice_sao_chroma = false;
-    if (sps->IsSampleAdaptiveOffsetEnabled())
+    if (sps_->IsSampleAdaptiveOffsetEnabled())
     {
         is_slice_sao_luma = bit_stream->ReadBool();
-        if ((sps->GetChromaFormatType() != MONO_CHROME) && 
-            (sps->GetChromaFormatType() != YUV_MONO_CHROME))
+        if ((sps_->GetChromaFormatType() != MONO_CHROME) && 
+            (sps_->GetChromaFormatType() != YUV_MONO_CHROME))
             is_slice_sao_chroma = bit_stream->ReadBool();
     }
     if (slice_type_ != I_SLICE)
     {
-        bool success = ParseReferenceDetailInfo(pps, sps, 
-                                                is_slice_temporal_mvp_enabled, 
+        bool success = ParseReferenceDetailInfo(is_slice_temporal_mvp_enabled, 
                                                 lt_ref_poc_infos,
                                                 bit_stream, context);
         if (!success)
             return false;
     }
-    bool success = ParseQuantizationParameterInfo(pps, sps, bit_stream);
+    bool success = ParseQuantizationParameterInfo(bit_stream);
     if (!success)
         return false;
 
-    success = ParseReconstructPictureInfo(pps, is_slice_sao_luma, 
-                                          is_slice_sao_chroma, bit_stream);
+    success = ParseReconstructPictureInfo(is_slice_sao_luma, is_slice_sao_chroma, 
+                                          bit_stream);
     return success;
 }
 
 bool SliceSegmentHeader::ParseReferencePictureSet(
-    const PictureParameterSet* pps, const SequenceParameterSet* sps, 
     BitStream* bit_stream, ISliceSegmentHeaderContext* context,
     LongTermRefPOCInfoSet* lt_ref_poc_infos)
 {
@@ -285,12 +279,12 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
         return false;
 
     bool has_short_term_ref_pic_set_sps = bit_stream->ReadBool();
-    uint32_t short_term_rps_count =sps->GetShortTermReferencePictureSetCount();
+    uint32_t short_term_rps_count =sps_->GetShortTermReferencePictureSetCount();
     if (!has_short_term_ref_pic_set_sps)
     {
         st_ref_pic_set_of_self_.reset(
             new ShortTermReferencePictureSet(short_term_rps_count));
-        ShortTermReferencePictureSetContext short_term_rps_context(sps);
+        ShortTermReferencePictureSetContext short_term_rps_context(sps_);
         bool success = 
             st_ref_pic_set_of_self_->Parse(bit_stream, &short_term_rps_context);
         if (!success)
@@ -310,11 +304,11 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
         }
     }
 
-    if (sps->HasLongTermReferencePicturesPresent())
+    if (sps_->HasLongTermReferencePicturesPresent())
     {
         const vector<LongTermReferenceLSBPictureOrderCountInfo>& 
             lt_ref_lsb_poc_infos = 
-                sps->GetLongTermReferencePictureOrderCountInfos();
+                sps_->GetLongTermReferencePictureOrderCountInfos();
 
         uint32_t num_long_term_sps = 0;
         GolombReader golomb_reader(bit_stream);
@@ -327,10 +321,10 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
         
         PictureOrderCount current_poc = context->GetPictureOrderCount();
         auto get_lt_poc_value = 
-            [current_poc, sps](uint32_t delta_poc_msb_cycle_lt, uint32_t lsb)
+            [current_poc, this](uint32_t delta_poc_msb_cycle_lt, uint32_t lsb)
         {
             uint32_t lt_msb = 
-                delta_poc_msb_cycle_lt * sps->GetMaxLSBOfPicOrderCount();
+                delta_poc_msb_cycle_lt * this->sps_->GetMaxLSBOfPicOrderCount();
             // 当前图片的msb的开始加上指定的lsb
             return current_poc.msb - lt_msb + lsb;
         };
@@ -366,7 +360,7 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
         for (uint32_t i = 0; i < num_long_term_pics; ++i)
         {
             uint32_t poc_lsb_lt = 
-                bit_stream->Read<uint32_t>(sps->GetPicOrderCountLSBBitLength());
+                bit_stream->Read<uint32_t>(sps_->GetPicOrderCountLSBBitLength());
             bool is_used_by_curr_pic_lt = bit_stream->ReadBool();
             bool has_delta_poc_msb_present = bit_stream->ReadBool();
             uint32_t delta_poc_msb_cycle_lt = 0;
@@ -385,7 +379,6 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
 }
 
 bool SliceSegmentHeader::ParseReferenceDetailInfo(
-    const PictureParameterSet* pps, const SequenceParameterSet* sps, 
     bool is_slice_temporal_mvp_enabled, 
     const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
     BitStream* bit_stream, ISliceSegmentHeaderContext* context)
@@ -400,11 +393,11 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
         if (B_SLICE == slice_type_)
             num_ref_idx_positive_active = golomb_reader.ReadUnsignedValue();
     }
-    uint32_t reference_picture_count = GetCurrentAvailableReferencePictureCount(
-        pps, sps, current_lt_ref_poc_infos);
+    uint32_t reference_picture_count = 
+        GetCurrentAvailableReferencePictureCount(current_lt_ref_poc_infos);
 
     ReferencePictureListsModification ref_pic_list_modification;
-    if (pps->HasListsModificationPresent() && (reference_picture_count > 1))
+    if (pps_->HasListsModificationPresent() && (reference_picture_count > 1))
     {
         bool success = ref_pic_list_modification.Parse(
             bit_stream, slice_type_, num_ref_idx_negative_active,
@@ -413,9 +406,9 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
             return false;
     }
     bool is_current_picture_ref_enabled = 
-        pps->GetPPSSccExtension().IsPPSCurrentPictureReferenceEnabled();
+        pps_->GetPPSSccExtension().IsPPSCurrentPictureReferenceEnabled();
 
-    bool success = ConstructReferencePOCList(sps, context,
+    bool success = ConstructReferencePOCList(context, 
                                              short_term_ref_pic_set_idx_,
                                              is_current_picture_ref_enabled,
                                              current_lt_ref_poc_infos,
@@ -428,7 +421,7 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
     if (B_SLICE == slice_type_)
         bool is_mvd_positive_zero = bit_stream->ReadBool();
 
-    if (pps->HasCABACInitPresent())
+    if (pps_->HasCABACInitPresent())
         bool is_need_cabac_init = bit_stream->ReadBool();
 
     if (is_slice_temporal_mvp_enabled)
@@ -441,11 +434,11 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
             (!is_collocated_from_negative && (num_ref_idx_positive_active > 0)))
             uint32_t collocated_ref_idx = golomb_reader.ReadUnsignedValue();
     }
-    if ((pps->HasWeightedPred() && (P_SLICE == slice_type_)) ||
-        (pps->HasWeightedBipred() && (B_SLICE == slice_type_)))
+    if ((pps_->HasWeightedPred() && (P_SLICE == slice_type_)) ||
+        (pps_->HasWeightedBipred() && (B_SLICE == slice_type_)))
     {
         PredictionWeightTable prediction_weight_table;
-        PredictionWeightTableContext prediction_weight_table_context(this, sps, 
+        PredictionWeightTableContext prediction_weight_table_context(this, sps_, 
                                                                      context);
         success = prediction_weight_table.Parse(
             bit_stream, &prediction_weight_table_context);
@@ -454,7 +447,7 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
     }
     int32_t max_num_merge_cand = 5 - golomb_reader.ReadUnsignedValue();
     const SPSScreenContentCodingExtension& sps_scc_extension =
-        sps->GetSPSScreenContentCodingExtension();
+        sps_->GetSPSScreenContentCodingExtension();
     if (sps_scc_extension.GetMotionVectorResolutionControlIDC() == 2)
         bool is_use_integer_mv = bit_stream->ReadBool();
 
@@ -462,10 +455,8 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
 }
 
 uint32_t SliceSegmentHeader::GetCurrentAvailableReferencePictureCount(
-    const PictureParameterSet* pps, const SequenceParameterSet* sps,
     const LongTermRefPOCInfoSet& current_lt_ref_poc_infos)
 {
-    assert(sps && pps);
     uint32_t reference_picture_count = 0;
     auto get_short_term_reference_picture_count = 
         [](const ShortTermReferencePictureSet* st_ref_pic_set) -> uint32_t
@@ -492,7 +483,7 @@ uint32_t SliceSegmentHeader::GetCurrentAvailableReferencePictureCount(
     else if (short_term_ref_pic_set_idx_ >= 0)
     {
         const ShortTermReferencePictureSet* st_ref_pic_set = 
-            sps->GetShortTermReferencePictureSet(short_term_ref_pic_set_idx_);
+            sps_->GetShortTermReferencePictureSet(short_term_ref_pic_set_idx_);
         if (st_ref_pic_set)
         {
             reference_picture_count = 
@@ -505,13 +496,13 @@ uint32_t SliceSegmentHeader::GetCurrentAvailableReferencePictureCount(
             ++reference_picture_count;
     }
     
-    return pps->GetPPSSccExtension().IsPPSCurrentPictureReferenceEnabled() ?
+    return pps_->GetPPSSccExtension().IsPPSCurrentPictureReferenceEnabled() ?
         reference_picture_count + 1 : reference_picture_count;
 }
 
 bool SliceSegmentHeader::ConstructReferencePOCList(
-    const SequenceParameterSet* sps, ISliceSegmentHeaderContext* context, 
-    int short_term_ref_pic_set_idx, bool is_current_picture_ref_enabled,
+    ISliceSegmentHeaderContext* context, int short_term_ref_pic_set_idx, 
+    bool is_current_picture_ref_enabled,
     const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
     const ReferencePictureListsModification& ref_pic_list_modification,
     vector<int32_t>* negative_ref_pic_list,
@@ -525,7 +516,7 @@ bool SliceSegmentHeader::ConstructReferencePOCList(
     else
     {
         st_ref_pic_set = 
-            sps->GetShortTermReferencePictureSet(short_term_ref_pic_set_idx);
+            sps_->GetShortTermReferencePictureSet(short_term_ref_pic_set_idx);
     }
     assert(st_ref_pic_set);
     if (!st_ref_pic_set)
@@ -617,7 +608,6 @@ bool SliceSegmentHeader::ConstructReferencePOCList(
 }
 
 bool SliceSegmentHeader::ParseQuantizationParameterInfo(
-    const PictureParameterSet* pps, const SequenceParameterSet* sps,
     BitStream* bit_stream)
 {
     if (!bit_stream)
@@ -625,35 +615,34 @@ bool SliceSegmentHeader::ParseQuantizationParameterInfo(
 
     GolombReader golomb_reader(bit_stream);
     int32_t slice_qp_delta = golomb_reader.ReadSignedValue();
-    if (pps->HasPPSSliceChromaQPOffsetPresent())
+    if (pps_->HasPPSSliceChromaQPOffsetPresent())
     {
         int32_t slice_cb_qp_offset = golomb_reader.ReadSignedValue();
         int32_t slice_cr_qp_offset = golomb_reader.ReadSignedValue();
     }
-    if (pps->GetPPSSccExtension().HasPPSSliceActQPOffsetsPresent())
+    if (pps_->GetPPSSccExtension().HasPPSSliceActQPOffsetsPresent())
     {
         int32_t slice_act_y_qp_offset = golomb_reader.ReadSignedValue();
         int32_t slice_act_cb_qp_offset = golomb_reader.ReadSignedValue();
         int32_t slice_act_cr_qp_offset = golomb_reader.ReadSignedValue();
     }
-    if (pps->GetPPSRangeExtension().IsChromaQPOffsetListEnabled())
+    if (pps_->GetPPSRangeExtension().IsChromaQPOffsetListEnabled())
         bool cu_chroma_qp_offset_enabled = bit_stream->ReadBool();
 
     return true;
 }
 
 bool SliceSegmentHeader::ParseReconstructPictureInfo(
-    const PictureParameterSet* pps, bool is_slice_sao_luma, 
-    bool is_slice_sao_chroma, BitStream* bit_stream)
+    bool is_slice_sao_luma, bool is_slice_sao_chroma, BitStream* bit_stream)
 {
     if (!bit_stream)
         return false;
 
     bool is_deblocking_filter_override = false;
-    if (pps->IsDeblockingFilterOverrideEnabled())
+    if (pps_->IsDeblockingFilterOverrideEnabled())
         is_deblocking_filter_override = bit_stream->ReadBool();
 
-    bool is_slice_deblocking_filter_disabled = pps->IsDeblockingFilterDisabled();
+    bool is_slice_deblocking_filter_disabled = pps_->IsDeblockingFilterDisabled();
     if (is_deblocking_filter_override)
     {
         is_slice_deblocking_filter_disabled = bit_stream->ReadBool();
@@ -664,7 +653,7 @@ bool SliceSegmentHeader::ParseReconstructPictureInfo(
             int32_t slice_tc_offset = golomb_reader.ReadSignedValue() * 2;
         }
     }
-    if (pps->IsPPSLoopFilterAcrossSliceEnabled() && 
+    if (pps_->IsPPSLoopFilterAcrossSliceEnabled() && 
         (is_slice_sao_luma || is_slice_sao_chroma || 
         !is_slice_deblocking_filter_disabled))
         bool is_slice_loop_filter_across_slice_enabled = bit_stream->ReadBool();
@@ -672,13 +661,12 @@ bool SliceSegmentHeader::ParseReconstructPictureInfo(
     return true;
 }
 
-bool SliceSegmentHeader::ParseTileInfo(const PictureParameterSet* pps, 
-                                       BitStream* bit_stream)
+bool SliceSegmentHeader::ParseTileInfo(BitStream* bit_stream)
 {
     if (!bit_stream)
         return false;
 
-    if (pps->IsTilesEnabled() || pps->IsEntropyCodingSyncEnabled())
+    if (pps_->IsTilesEnabled() || pps_->IsEntropyCodingSyncEnabled())
     {
         GolombReader golomb_reader(bit_stream);
         uint32_t num_entry_point_offsets = golomb_reader.ReadUnsignedValue();

@@ -18,7 +18,8 @@ struct LongTermReferenceLSBPictureOrderCountInfo
     bool is_used_by_curr_pic_lt_sps_flag;
 };
 
-class SequenceParameterSet
+class SequenceParameterSet : 
+    public std::enable_shared_from_this<SequenceParameterSet>
 {
 public:
     SequenceParameterSet();
