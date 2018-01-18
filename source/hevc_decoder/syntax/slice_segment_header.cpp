@@ -98,15 +98,8 @@ private:
 SliceSegmentHeader::SliceSegmentHeader(
     const ParametersManager* parameters_manager)
     : parameters_manager_(parameters_manager)
-    , st_ref_pic_set_of_self_()
     , pps_()
     , sps_()
-    , short_term_ref_pic_set_idx_(-1)
-    , width_(0)
-    , height_(0)
-    , tile_info_()
-    , ctb_log2_size_y_(0)
-    , min_tb_log2_size_y_(0)
     , is_first_slice_segment_in_pic_(false)
     , negative_ref_poc_list_()
     , positive_ref_poc_list_()
@@ -170,27 +163,27 @@ bool SliceSegmentHeader::IsFirstSliceSegmentInPic() const
 
 uint32_t SliceSegmentHeader::GetWidth() const
 {
-    return width_;
+    return sps_->GetPicWidthInLumaSamples();
 }
 
 uint32_t SliceSegmentHeader::GetHeight() const
 {
-    return height_;
+    return sps_->GetPicHeightInLumaSamples();
 }
 
 const TileInfo& SliceSegmentHeader::GetTileInfo() const
 {
-    return tile_info_;
+    return pps_->GetTileInfo();
 }
 
 uint32_t SliceSegmentHeader::GetCTBLog2SizeY() const
 {
-    return ctb_log2_size_y_;
+    return sps_->GetCTBLog2SizeY();
 }
 
 uint32_t SliceSegmentHeader::GetMinTBLog2SizeY() const
 {
-    return min_tb_log2_size_y_;
+    return sps_->GetLog2MinLumaTransformBlockSize();
 }
 
 SliceType SliceSegmentHeader::GetSliceType() const
@@ -226,7 +219,10 @@ bool SliceSegmentHeader::ParseIndependentSyntax(
         uint8_t colour_plane_id = bit_stream->Read<uint8_t>(2);
 
     bool is_slice_temporal_mvp_enabled = false;
-    LongTermRefPOCInfoSet lt_ref_poc_infos;
+    LongTermRefPOCInfoSet long_term_ref_poc_infos;
+    ShortTermReferencePictureSet short_term_ref_poc_infos(
+        sps_->GetShortTermReferencePictureSetCount());
+
     if ((context->GetNalUnitType() != IDR_N_LP) && 
         (context->GetNalUnitType() != IDR_W_RADL))
     {
@@ -236,7 +232,8 @@ bool SliceSegmentHeader::ParseIndependentSyntax(
                                            sps_->GetMaxLSBOfPicOrderCount());
 
         bool success = ParseReferencePictureSet(bit_stream, context,
-                                                &lt_ref_poc_infos);
+                                                &long_term_ref_poc_infos, 
+                                                &short_term_ref_poc_infos);
         if (!success)
             return false;
 
@@ -256,7 +253,8 @@ bool SliceSegmentHeader::ParseIndependentSyntax(
     if (slice_type_ != I_SLICE)
     {
         bool success = ParseReferenceDetailInfo(is_slice_temporal_mvp_enabled, 
-                                                lt_ref_poc_infos,
+                                                short_term_ref_poc_infos,
+                                                long_term_ref_poc_infos,
                                                 bit_stream, context);
         if (!success)
             return false;
@@ -272,35 +270,35 @@ bool SliceSegmentHeader::ParseIndependentSyntax(
 
 bool SliceSegmentHeader::ParseReferencePictureSet(
     BitStream* bit_stream, ISliceSegmentHeaderContext* context,
-    LongTermRefPOCInfoSet* lt_ref_poc_infos)
+    LongTermRefPOCInfoSet* long_term_ref_poc_infos, 
+    ShortTermReferencePictureSet* short_term_ref_poc_infos)
 {
-    assert(lt_ref_poc_infos);
-    if (!lt_ref_poc_infos)
+    assert(long_term_ref_poc_infos);
+    assert(short_term_ref_poc_infos);
+    if (!long_term_ref_poc_infos || !short_term_ref_poc_infos)
         return false;
 
     bool has_short_term_ref_pic_set_sps = bit_stream->ReadBool();
-    uint32_t short_term_rps_count =sps_->GetShortTermReferencePictureSetCount();
+
     if (!has_short_term_ref_pic_set_sps)
     {
-        st_ref_pic_set_of_self_.reset(
-            new ShortTermReferencePictureSet(short_term_rps_count));
         ShortTermReferencePictureSetContext short_term_rps_context(sps_);
         bool success = 
-            st_ref_pic_set_of_self_->Parse(bit_stream, &short_term_rps_context);
+            short_term_ref_poc_infos->Parse(bit_stream, &short_term_rps_context);
         if (!success)
             return false;
     }
     else 
     {
-        // -1代表使用当前slice_segment_header指定的参考poc
-        // 假如short_term_reference_picture_set_count == 1 也就是说当前的st_ref没有
-        // 选择,因此,不需要指定short_term_ref_pic_set_idx_, 因为默认值为0
-        short_term_ref_pic_set_idx_ = 0;
+        uint32_t short_term_rps_count = 
+            sps_->GetShortTermReferencePictureSetCount();
         if (short_term_rps_count > 1)
         {
             // TODO: 能够把此处的log2放到context里做
             uint32_t bits = CeilLog2(short_term_rps_count);
-            short_term_ref_pic_set_idx_ = bit_stream->Read<int>(bits);
+            uint32_t short_term_ref_pic_set_idx = bit_stream->Read<int>(bits);
+            *short_term_ref_poc_infos = *sps_->GetShortTermReferencePictureSet(
+                short_term_ref_pic_set_idx);
         }
     }
 
@@ -353,7 +351,7 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
 
             info.is_used_by_curr_pic_lt = 
                 lt_ref_lsb_poc_infos[lt_idx_sps].is_used_by_curr_pic_lt_sps_flag;
-            lt_ref_poc_infos->push_back(info);
+            long_term_ref_poc_infos->push_back(info);
         }
 
         preview_delta_poc_msb_cycle_lt = 0;
@@ -372,7 +370,7 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
             info.picture_order_count_value = get_lt_poc_value(
                 preview_delta_poc_msb_cycle_lt, poc_lsb_lt);
             info.is_used_by_curr_pic_lt = is_used_by_curr_pic_lt;
-            lt_ref_poc_infos->push_back(info);
+            long_term_ref_poc_infos->push_back(info);
         }
     }
     return true;
@@ -380,7 +378,8 @@ bool SliceSegmentHeader::ParseReferencePictureSet(
 
 bool SliceSegmentHeader::ParseReferenceDetailInfo(
     bool is_slice_temporal_mvp_enabled, 
-    const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
+    const ShortTermReferencePictureSet& short_term_ref_poc_infos,
+    const LongTermRefPOCInfoSet& long_term_ref_poc_infos,
     BitStream* bit_stream, ISliceSegmentHeaderContext* context)
 {
     bool is_num_ref_idx_active_override = bit_stream->ReadBool();
@@ -394,7 +393,8 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
             num_ref_idx_positive_active = golomb_reader.ReadUnsignedValue();
     }
     uint32_t reference_picture_count = 
-        GetCurrentAvailableReferencePictureCount(current_lt_ref_poc_infos);
+        GetCurrentAvailableReferencePictureCount(short_term_ref_poc_infos, 
+                                                 long_term_ref_poc_infos);
 
     ReferencePictureListsModification ref_pic_list_modification;
     if (pps_->HasListsModificationPresent() && (reference_picture_count > 1))
@@ -409,9 +409,9 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
         pps_->GetPPSSccExtension().IsPPSCurrentPictureReferenceEnabled();
 
     bool success = ConstructReferencePOCList(context, 
-                                             short_term_ref_pic_set_idx_,
                                              is_current_picture_ref_enabled,
-                                             current_lt_ref_poc_infos,
+                                             short_term_ref_poc_infos,
+                                             long_term_ref_poc_infos,
                                              ref_pic_list_modification,
                                              &negative_ref_poc_list_, 
                                              &positive_ref_poc_list_);
@@ -455,42 +455,22 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
 }
 
 uint32_t SliceSegmentHeader::GetCurrentAvailableReferencePictureCount(
-    const LongTermRefPOCInfoSet& current_lt_ref_poc_infos)
+    const ShortTermReferencePictureSet& short_term_ref_poc_infos,
+    const LongTermRefPOCInfoSet& long_term_ref_poc_infos)
 {
     uint32_t reference_picture_count = 0;
-    auto get_short_term_reference_picture_count = 
-        [](const ShortTermReferencePictureSet* st_ref_pic_set) -> uint32_t
+    for (const auto& i : short_term_ref_poc_infos.GetNegativeDeltaPOCs())
     {
-        uint32_t count = 0;
-        for (const auto& i : st_ref_pic_set->GetNegativeDeltaPOCs())
-        {
-            if (i.can_use_for_current_decode_picture)
-                ++count;
-        }   
+        if (i.can_use_for_current_decode_picture)
+            ++reference_picture_count;
+    }
+    for (const auto& i : short_term_ref_poc_infos.GetPositiveDeltaPOCs())
+    {
+        if (i.can_use_for_current_decode_picture)
+            ++reference_picture_count;
+    }
 
-        for (const auto& i : st_ref_pic_set->GetPositiveDeltaPOCs())
-        {
-            if (i.can_use_for_current_decode_picture)
-                ++count;
-        }
-        return count;
-    };
-    if (st_ref_pic_set_of_self_)
-    {
-        reference_picture_count = get_short_term_reference_picture_count(
-            st_ref_pic_set_of_self_.get());
-    }
-    else if (short_term_ref_pic_set_idx_ >= 0)
-    {
-        const ShortTermReferencePictureSet* st_ref_pic_set = 
-            sps_->GetShortTermReferencePictureSet(short_term_ref_pic_set_idx_);
-        if (st_ref_pic_set)
-        {
-            reference_picture_count = 
-                get_short_term_reference_picture_count(st_ref_pic_set);
-        }
-    }
-    for (const auto& i : current_lt_ref_poc_infos)
+    for (const auto& i : long_term_ref_poc_infos)
     {
         if (i.is_used_by_curr_pic_lt)
             ++reference_picture_count;
@@ -501,34 +481,19 @@ uint32_t SliceSegmentHeader::GetCurrentAvailableReferencePictureCount(
 }
 
 bool SliceSegmentHeader::ConstructReferencePOCList(
-    ISliceSegmentHeaderContext* context, int short_term_ref_pic_set_idx, 
-    bool is_current_picture_ref_enabled,
+    ISliceSegmentHeaderContext* context, bool is_current_picture_ref_enabled,
+    const ShortTermReferencePictureSet& short_term_ref_poc_infos,
     const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
     const ReferencePictureListsModification& ref_pic_list_modification,
     vector<int32_t>* negative_ref_pic_list,
     vector<int32_t>* positive_ref_pic_list)
 {
-    const ShortTermReferencePictureSet* st_ref_pic_set = nullptr;
-    if (short_term_ref_pic_set_idx < 0)
-    {
-        st_ref_pic_set = st_ref_pic_set_of_self_.get();
-    }
-    else
-    {
-        st_ref_pic_set = 
-            sps_->GetShortTermReferencePictureSet(short_term_ref_pic_set_idx);
-    }
-    assert(st_ref_pic_set);
-    if (!st_ref_pic_set)
-        return false;
-
     uint32_t current_poc_value = context->GetPictureOrderCount().value;
 
     // 暂时性还不清楚会不会产生负数,但由于poc都是正数,按照文档定义一致性的原则,认为这里也是
     // 正数
     vector<uint32_t> poc_st_curr_before;
-    vector<uint32_t> poc_st_foll;
-    for (const auto& i : st_ref_pic_set->GetNegativeDeltaPOCs())
+    for (const auto& i : short_term_ref_poc_infos.GetNegativeDeltaPOCs())
     {
         // 相对位置转绝对位置
         uint32_t ref_poc_value = static_cast<uint32_t>(
@@ -536,28 +501,21 @@ bool SliceSegmentHeader::ConstructReferencePOCList(
 
         if (i.can_use_for_current_decode_picture)
             poc_st_curr_before.push_back(ref_poc_value);
-        else
-            poc_st_foll.push_back(ref_poc_value);
     }
     vector<uint32_t> poc_st_curr_after;
-    for (const auto& i : st_ref_pic_set->GetPositiveDeltaPOCs())
+    for (const auto& i : short_term_ref_poc_infos.GetPositiveDeltaPOCs())
     {
         uint32_t ref_poc_value = static_cast<uint32_t>(
             i.delta_poc_of_current_decode_picture + current_poc_value);
 
         if (i.can_use_for_current_decode_picture)
             poc_st_curr_after.push_back(ref_poc_value);
-        else
-            poc_st_foll.push_back(ref_poc_value);
     }
     vector<uint32_t> poc_lt_curr;
-    vector<uint32_t> poc_lt_foll;
     for (const auto& i : current_lt_ref_poc_infos)
     {
         if (i.is_used_by_curr_pic_lt)
             poc_lt_curr.push_back(i.picture_order_count_value);
-        else
-            poc_lt_foll.push_back(i.picture_order_count_value);
     }
 
     //fix me: 假如以后证实是正整数,则修改此处

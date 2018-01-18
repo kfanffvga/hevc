@@ -72,6 +72,13 @@ bool ShortTermReferencePictureSet::Parse(
     return true;
 }
 
+void ShortTermReferencePictureSet::operator=(
+    const ShortTermReferencePictureSet& st_ref_pic_set)
+{
+    negative_delta_pocs_ = st_ref_pic_set.GetNegativeDeltaPOCs();
+    positive_delta_pocs_ = st_ref_pic_set.GetPositiveDeltaPOCs();
+}
+
 const ShortTermReferencePictureSet::ReferenceDeltaPOCs& 
     ShortTermReferencePictureSet::GetPositiveDeltaPOCs() const
 {

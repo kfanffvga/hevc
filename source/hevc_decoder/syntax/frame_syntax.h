@@ -14,6 +14,10 @@ class SliceSegmentSyntax;
 class ISliceSegmentInfoProviderForCABAC;
 class FramePartition;
 
+// 每个帧应该都是独立可以解码的，因此，后面所有的预测器，转换器，去方块化器等所需要的信息，
+// 均能在FrameSyntax 中获取，不管这些信息是怎么得到的，都应该在FrameSyntax传入到下一阶段
+// 之前准备好
+
 class FrameSyntax : public IFrameInfoProviderForCABAC
                   , public IFrameInfoProviderForFramePartition
 {

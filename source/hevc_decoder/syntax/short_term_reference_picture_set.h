@@ -27,6 +27,8 @@ public:
     bool Parse(BitStream* bit_stream, 
                const IShortTermReferencePictureSetContext* context);
 
+    void operator = (const ShortTermReferencePictureSet& st_ref_pic_set);
+
     const ReferenceDeltaPOCs& GetPositiveDeltaPOCs() const;
 
     const ReferenceDeltaPOCs& GetNegativeDeltaPOCs() const;

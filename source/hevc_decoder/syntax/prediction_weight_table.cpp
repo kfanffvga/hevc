@@ -12,6 +12,8 @@ using boost::multi_array;
 using std::vector;
 using std::array;
 
+// 真正加出来的weight是分子，分母其实就是只有一个，offset是预测像素×权重与实际像素之间的差值
+
 PredictionWeightTable::PredictionWeightTable()
 {
 

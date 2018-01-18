@@ -57,11 +57,13 @@ private:
 
     bool ParseReferencePictureSet(
         BitStream* bit_stream, ISliceSegmentHeaderContext* context,
-        LongTermRefPOCInfoSet* lt_ref_poc_infos);
+        LongTermRefPOCInfoSet* long_term_ref_poc_infos, 
+        ShortTermReferencePictureSet* short_term_ref_poc_infos);
 
     bool ParseReferenceDetailInfo(
         bool is_slice_temporal_mvp_enabled, 
-        const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
+        const ShortTermReferencePictureSet& short_term_ref_poc_infos,
+        const LongTermRefPOCInfoSet& long_term_ref_poc_infos,
         BitStream* bit_stream, ISliceSegmentHeaderContext* context);
 
     bool ParseQuantizationParameterInfo(BitStream* bit_stream);
@@ -73,28 +75,20 @@ private:
     bool ParseTileInfo(BitStream* bit_stream);
 
     uint32_t GetCurrentAvailableReferencePictureCount(
-        const LongTermRefPOCInfoSet& current_lt_ref_poc_infos);
+        const ShortTermReferencePictureSet& short_term_ref_poc_infos,
+        const LongTermRefPOCInfoSet& long_term_ref_poc_infos);
 
     bool ConstructReferencePOCList(
-        ISliceSegmentHeaderContext* context, int short_term_ref_pic_set_idx, 
-        bool is_current_picture_ref_enabled,
-        const LongTermRefPOCInfoSet& current_lt_ref_poc_infos,
+        ISliceSegmentHeaderContext* context, bool is_current_picture_ref_enabled,
+        const ShortTermReferencePictureSet& short_term_ref_poc_infos,
+        const LongTermRefPOCInfoSet& long_term_ref_poc_infos,
         const ReferencePictureListsModification& ref_pic_list_modification,
         std::vector<int32_t>* negative_ref_pic_list,
         std::vector<int32_t>* positive_ref_pic_list);
 
     const ParametersManager* parameters_manager_;
-
-    std::unique_ptr<ShortTermReferencePictureSet> st_ref_pic_set_of_self_;
     std::shared_ptr<PictureParameterSet> pps_;
     std::shared_ptr<SequenceParameterSet> sps_;
-    int short_term_ref_pic_set_idx_; // fix me: 不需要的成员变量
-
-    uint32_t width_; // fix me: 重构parameter set 后删除
-    uint32_t height_;
-    TileInfo tile_info_;
-    uint32_t ctb_log2_size_y_;
-    uint32_t min_tb_log2_size_y_;
 
     bool is_first_slice_segment_in_pic_;
     std::vector<int32_t> negative_ref_poc_list_;
