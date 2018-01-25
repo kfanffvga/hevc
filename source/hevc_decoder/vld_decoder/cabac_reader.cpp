@@ -1,12 +1,12 @@
-﻿#include "hevc_decoder/variant_length_data_decoder/cabac_reader.h"
+﻿#include "hevc_decoder/vld_decoder/cabac_reader.h"
 
 #include <cassert>
 
-#include "hevc_decoder/variant_length_data_decoder/frame_info_provider_for_cabac.h"
-#include "hevc_decoder/variant_length_data_decoder/slice_segment_info_provider_for_cabac.h"
+#include "hevc_decoder/vld_decoder/frame_info_provider_for_cabac.h"
+#include "hevc_decoder/vld_decoder/slice_segment_info_provider_for_cabac.h"
 #include "hevc_decoder/base/stream/bit_stream.h"
 #include "hevc_decoder/base/coding_tree_block_context.h"
-#include "hevc_decoder/variant_length_data_decoder/cabac_context_storage.h"
+#include "hevc_decoder/vld_decoder/cabac_context_storage.h"
 
 namespace
 {
@@ -199,7 +199,8 @@ uint8_t CABACReader::ReadTerminateBit()
     return 0;
 }
 
-uint8_t CABACReader::ReadNormalBit(SyntaxElementName syntax_name, uint32_t ctxidx)
+uint8_t CABACReader::ReadNormalBit(SyntaxElementName syntax_name, 
+                                   uint32_t ctxidx)
 {
     uint32_t q = (current_range_ >> 6) & 3;
     ContextItem& context_item = context_.syntax_context[syntax_name][ctxidx];

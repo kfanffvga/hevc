@@ -134,13 +134,13 @@
     <ClInclude Include="syntax\syntax_dispatcher.h" />
     <ClInclude Include="syntax\video_parameter_set.h" />
     <ClInclude Include="syntax\video_usability_infomation_parameters.h" />
-    <ClInclude Include="variant_length_data_decoder\cabac_context_storage.h" />
-    <ClInclude Include="variant_length_data_decoder\cabac_context_types.h" />
-    <ClInclude Include="variant_length_data_decoder\cabac_reader.h" />
-    <ClInclude Include="variant_length_data_decoder\frame_info_provider_for_cabac.h" />
-    <ClInclude Include="variant_length_data_decoder\common_cabac_syntax_reader.h" />
-    <ClInclude Include="variant_length_data_decoder\end_of_slice_segment_flag_reader.h" />
-    <ClInclude Include="variant_length_data_decoder\slice_segment_info_provider_for_cabac.h" />
+    <ClInclude Include="vld_decoder\cabac_context_storage.h" />
+    <ClInclude Include="vld_decoder\cabac_context_types.h" />
+    <ClInclude Include="vld_decoder\cabac_reader.h" />
+    <ClInclude Include="vld_decoder\frame_info_provider_for_cabac.h" />
+    <ClInclude Include="vld_decoder\common_cabac_syntax_reader.h" />
+    <ClInclude Include="vld_decoder\end_of_slice_segment_flag_reader.h" />
+    <ClInclude Include="vld_decoder\slice_segment_info_provider_for_cabac.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\tile_info.cpp" />
@@ -186,10 +186,10 @@
     <ClCompile Include="syntax\syntax_dispatcher.cpp" />
     <ClCompile Include="syntax\video_parameter_set.cpp" />
     <ClCompile Include="syntax\video_usability_infomation_parameters.cpp" />
-    <ClCompile Include="variant_length_data_decoder\cabac_context_storage.cpp" />
-    <ClCompile Include="variant_length_data_decoder\cabac_reader.cpp" />
-    <ClCompile Include="variant_length_data_decoder\common_cabac_syntax_reader.cpp" />
-    <ClCompile Include="variant_length_data_decoder\end_of_slice_segment_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\cabac_context_storage.cpp" />
+    <ClCompile Include="vld_decoder\cabac_reader.cpp" />
+    <ClCompile Include="vld_decoder\common_cabac_syntax_reader.cpp" />
+    <ClCompile Include="vld_decoder\end_of_slice_segment_flag_reader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -5,7 +5,7 @@
 #include <functional>
 #include <stdint.h>
 
-#include "hevc_decoder/variant_length_data_decoder/cabac_context_types.h"
+#include "hevc_decoder/vld_decoder/cabac_context_types.h"
 
 class CABACReader;
 

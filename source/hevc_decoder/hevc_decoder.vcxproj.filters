@@ -39,18 +39,6 @@
     <ClInclude Include="base\stream\golomb_reader.h">
       <Filter>base\stream</Filter>
     </ClInclude>
-    <ClInclude Include="variant_length_data_decoder\cabac_context_storage.h">
-      <Filter>variant_length_data_decoder</Filter>
-    </ClInclude>
-    <ClInclude Include="variant_length_data_decoder\cabac_context_types.h">
-      <Filter>variant_length_data_decoder</Filter>
-    </ClInclude>
-    <ClInclude Include="variant_length_data_decoder\cabac_reader.h">
-      <Filter>variant_length_data_decoder</Filter>
-    </ClInclude>
-    <ClInclude Include="variant_length_data_decoder\common_cabac_syntax_reader.h">
-      <Filter>variant_length_data_decoder</Filter>
-    </ClInclude>
     <ClInclude Include="syntax\frame_syntax.h">
       <Filter>syntax</Filter>
     </ClInclude>
@@ -65,9 +53,6 @@
     </ClInclude>
     <ClInclude Include="syntax\video_parameter_set.h">
       <Filter>syntax</Filter>
-    </ClInclude>
-    <ClInclude Include="variant_length_data_decoder\end_of_slice_segment_flag_reader.h">
-      <Filter>variant_length_data_decoder</Filter>
     </ClInclude>
     <ClInclude Include="syntax\profile_tier_level.h" />
     <ClInclude Include="syntax\video_parameter_set.h" />
@@ -160,12 +145,6 @@
     <ClInclude Include="base\coding_tree_block_context.h">
       <Filter>base</Filter>
     </ClInclude>
-    <ClInclude Include="variant_length_data_decoder\frame_info_provider_for_cabac.h">
-      <Filter>variant_length_data_decoder</Filter>
-    </ClInclude>
-    <ClInclude Include="variant_length_data_decoder\slice_segment_info_provider_for_cabac.h">
-      <Filter>variant_length_data_decoder</Filter>
-    </ClInclude>
     <ClInclude Include="base\frame_info_provider_for_frame_partition.h">
       <Filter>base</Filter>
     </ClInclude>
@@ -184,6 +163,27 @@
     <ClInclude Include="partitions\frame_partition_creator_info_provider.h" />
     <ClInclude Include="partitions\frame_partition_creator_info_provider_impl.h" />
     <ClInclude Include="base\tile_info.h" />
+    <ClInclude Include="vld_decoder\cabac_context_storage.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\cabac_context_types.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\cabac_reader.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\common_cabac_syntax_reader.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\end_of_slice_segment_flag_reader.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\frame_info_provider_for_cabac.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\slice_segment_info_provider_for_cabac.h">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -200,12 +200,6 @@
     <ClCompile Include="base\stream\golomb_reader.cpp">
       <Filter>base\stream</Filter>
     </ClCompile>
-    <ClCompile Include="variant_length_data_decoder\cabac_context_storage.cpp">
-      <Filter>variant_length_data_decoder</Filter>
-    </ClCompile>
-    <ClCompile Include="variant_length_data_decoder\cabac_reader.cpp">
-      <Filter>variant_length_data_decoder</Filter>
-    </ClCompile>
     <ClCompile Include="syntax\frame_syntax.cpp">
       <Filter>syntax</Filter>
     </ClCompile>
@@ -217,12 +211,6 @@
     </ClCompile>
     <ClCompile Include="syntax\slice_syntax.cpp">
       <Filter>syntax</Filter>
-    </ClCompile>
-    <ClCompile Include="variant_length_data_decoder\common_cabac_syntax_reader.cpp">
-      <Filter>variant_length_data_decoder</Filter>
-    </ClCompile>
-    <ClCompile Include="variant_length_data_decoder\end_of_slice_segment_flag_reader.cpp">
-      <Filter>variant_length_data_decoder</Filter>
     </ClCompile>
     <ClCompile Include="syntax\profile_tier_level.cpp" />
     <ClCompile Include="syntax\video_parameter_set.cpp">
@@ -315,5 +303,17 @@
     <ClCompile Include="partitions\frame_partition_manager.cpp" />
     <ClCompile Include="partitions\frame_partition_creator_info_provider_impl.cpp" />
     <ClCompile Include="base\tile_info.cpp" />
+    <ClCompile Include="vld_decoder\cabac_context_storage.cpp">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\cabac_reader.cpp">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\common_cabac_syntax_reader.cpp">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\end_of_slice_segment_flag_reader.cpp">
+      <Filter>variant_length_data_decoder</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

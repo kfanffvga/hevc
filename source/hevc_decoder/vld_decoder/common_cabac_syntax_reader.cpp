@@ -1,6 +1,6 @@
-﻿#include "hevc_decoder/variant_length_data_decoder/common_cabac_syntax_reader.h"
+﻿#include "hevc_decoder/vld_decoder/common_cabac_syntax_reader.h"
 
-#include "hevc_decoder/variant_length_data_decoder/cabac_reader.h"
+#include "hevc_decoder/vld_decoder/cabac_reader.h"
 
 using std::bind;
 

@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "hevc_decoder/base/basic_types.h"
-#include "hevc_decoder/variant_length_data_decoder/frame_info_provider_for_cabac.h"
+#include "hevc_decoder/vld_decoder/frame_info_provider_for_cabac.h"
 #include "hevc_decoder/base/frame_info_provider_for_frame_partition.h"
 
 class SliceSyntax;

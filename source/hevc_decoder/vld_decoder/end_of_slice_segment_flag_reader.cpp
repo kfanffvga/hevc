@@ -1,4 +1,4 @@
-﻿#include "hevc_decoder/variant_length_data_decoder/end_of_slice_segment_flag_reader.h"
+﻿#include "hevc_decoder/vld_decoder/end_of_slice_segment_flag_reader.h"
 
 #include <cassert>
 

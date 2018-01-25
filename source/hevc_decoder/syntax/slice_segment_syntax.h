@@ -1,7 +1,7 @@
 ﻿#ifndef _SLICE_SEGMENT_SYNTAX_H_
 #define _SLICE_SEGMENT_SYNTAX_H_
 
-#include "hevc_decoder/variant_length_data_decoder/slice_segment_info_provider_for_cabac.h"
+#include "hevc_decoder/vld_decoder/slice_segment_info_provider_for_cabac.h"
 
 class ISliceSegmentContext;
 class ParametersManager;
