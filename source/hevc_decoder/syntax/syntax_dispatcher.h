@@ -10,6 +10,7 @@
 class NalUnit;
 class ParametersManager;
 class CodedVideoSequence;
+class CABACContextStorage;
 
 class SyntaxDispatcher
 {
@@ -24,7 +25,6 @@ public:
 private:
     ParametersManager* parameters_manager_;
     CodedVideoSequence* coded_video_sequence_;
-
 };
 
 #endif

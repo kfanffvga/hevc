@@ -10,12 +10,11 @@ class BitStream;
 class ReferencePictureListsModification
 {
 public:
-    ReferencePictureListsModification();
+    ReferencePictureListsModification(uint32_t num_ref_idx_negative_active, 
+                                      uint32_t num_ref_idx_positive_active);
     ~ReferencePictureListsModification();
 
     bool Parse(BitStream* bit_stream, SliceType slice_type,
-               uint32_t num_ref_idx_negative_active, 
-               uint32_t num_ref_idx_positive_active,
                uint32_t reference_idx_bit_length);
 
     const std::vector<uint32_t>& GetListEntryOfNegative() const;

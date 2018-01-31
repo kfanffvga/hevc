@@ -36,6 +36,8 @@ public:
     bool IsTilesEnabled() const;
     bool IsEntropyCodingSyncEnabled() const;
     const TileInfo& GetTileInfo() const;
+    uint32_t GetNumRefIdxNegativeDefaultActive() const;
+    uint32_t GetNumRefIdxPositiveDefaultActive() const;
 
 private:
     struct DeblockingFilterControlInfo
@@ -68,6 +70,8 @@ private:
     bool is_tiles_enabled_;
     bool is_entropy_coding_sync_enabled_;
     std::unique_ptr<TileInfo> tile_info_;
+    uint32_t num_ref_idx_negative_default_active_;
+    uint32_t num_ref_idx_positive_default_active_;
 
 };
 #endif

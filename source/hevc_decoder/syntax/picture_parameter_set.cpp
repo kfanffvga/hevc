@@ -34,6 +34,8 @@ PictureParameterSet::PictureParameterSet()
     , is_tiles_enabled_(false)
     , is_entropy_coding_sync_enabled_(false)
     , tile_info_(new TileInfo())
+    , num_ref_idx_negative_default_active_(0)
+    , num_ref_idx_positive_default_active_(0)
 {
     memset(&deblocking_filter_control_info_, 0, 
            sizeof(deblocking_filter_control_info_));
@@ -58,9 +60,9 @@ bool PictureParameterSet::Parse(BitStream* bit_stream)
     bool is_sign_data_hiding_enabled = bit_stream->ReadBool();
     has_cabac_init_present_ = bit_stream->ReadBool();
 
-    uint32_t num_ref_idx_l0_default_active = 
+    uint32_t num_ref_idx_negative_default_active_ = 
         golomb_reader.ReadUnsignedValue() + 1;
-    uint32_t num_ref_idx_l1_default_active = 
+    uint32_t num_ref_idx_positive_default_active_ = 
         golomb_reader.ReadUnsignedValue() + 1;
 
     int init_qp = golomb_reader.ReadSignedValue() + 26;
@@ -277,4 +279,14 @@ bool PictureParameterSet::IsEntropyCodingSyncEnabled() const
 const TileInfo& PictureParameterSet::GetTileInfo() const
 {
     return *tile_info_;
+}
+
+uint32_t PictureParameterSet::GetNumRefIdxNegativeDefaultActive() const
+{
+    return num_ref_idx_negative_default_active_;
+}
+
+uint32_t PictureParameterSet::GetNumRefIdxPositiveDefaultActive() const
+{
+    return num_ref_idx_positive_default_active_;
 }

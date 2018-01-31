@@ -10,6 +10,7 @@
 #include "hevc_decoder/syntax/sequence_parameter_set.h"
 
 using std::unique_ptr;
+using std::shared_ptr;
 using std::move;
 using std::make_pair;
 using std::pair;
@@ -37,7 +38,7 @@ bool SyntaxDispatcher::CreateSyntaxAndDispatch(unique_ptr<NalUnit> nal_unit)
     {
         case NalUnitType::VPS_NUT:
         {
-            unique_ptr<VideoParameterSet> vps(new VideoParameterSet());
+            shared_ptr<VideoParameterSet> vps(new VideoParameterSet());
             bool success = vps->Parse(nal_unit->GetBitSteam());
             if (success)
                 success = parameters_manager_->AddVideoParameterSet(move(vps));
@@ -47,7 +48,7 @@ bool SyntaxDispatcher::CreateSyntaxAndDispatch(unique_ptr<NalUnit> nal_unit)
 
         case NalUnitType::PPS_NUT:
         {
-            unique_ptr<PictureParameterSet> pps(new PictureParameterSet());
+            shared_ptr<PictureParameterSet> pps(new PictureParameterSet());
             bool success = pps->Parse(nal_unit->GetBitSteam());
             if (success)
                 success = parameters_manager_->AddPictureParameterSet(move(pps));
@@ -57,12 +58,12 @@ bool SyntaxDispatcher::CreateSyntaxAndDispatch(unique_ptr<NalUnit> nal_unit)
 
         case NalUnitType::SPS_NUT:
         {
-            unique_ptr<SequenceParameterSet> sps(new SequenceParameterSet());
+            shared_ptr<SequenceParameterSet> sps(new SequenceParameterSet());
             bool success = sps->Parse(nal_unit->GetBitSteam());
             if (success)
             {
                 success =
-                    parameters_manager_->AddSequenceParameterSet(move(sps));
+                    parameters_manager_->AddSequenceParameterSet(sps);
             }
             return success;
         }

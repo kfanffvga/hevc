@@ -384,24 +384,26 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
 {
     bool is_num_ref_idx_active_override = bit_stream->ReadBool();
     GolombReader golomb_reader(bit_stream);
-    uint32_t num_ref_idx_negative_active = 0;
-    uint32_t num_ref_idx_positive_active = 0;
+    uint32_t num_ref_idx_negative_active = 
+        pps_->GetNumRefIdxNegativeDefaultActive();
+    uint32_t num_ref_idx_positive_active = 
+        pps_->GetNumRefIdxPositiveDefaultActive();
     if (is_num_ref_idx_active_override)
     {
-        num_ref_idx_negative_active = golomb_reader.ReadUnsignedValue();
+        num_ref_idx_negative_active = golomb_reader.ReadUnsignedValue() + 1;
         if (B_SLICE == slice_type_)
-            num_ref_idx_positive_active = golomb_reader.ReadUnsignedValue();
+            num_ref_idx_positive_active = golomb_reader.ReadUnsignedValue() + 1;
     }
     uint32_t reference_picture_count = 
         GetCurrentAvailableReferencePictureCount(short_term_ref_poc_infos, 
                                                  long_term_ref_poc_infos);
 
-    ReferencePictureListsModification ref_pic_list_modification;
+    ReferencePictureListsModification ref_pic_list_modification(
+        num_ref_idx_negative_active, num_ref_idx_positive_active);
     if (pps_->HasListsModificationPresent() && (reference_picture_count > 1))
     {
         bool success = ref_pic_list_modification.Parse(
-            bit_stream, slice_type_, num_ref_idx_negative_active,
-            num_ref_idx_positive_active, CeilLog2(reference_picture_count));
+            bit_stream, slice_type_, CeilLog2(reference_picture_count));
         if (!success)
             return false;
     }
