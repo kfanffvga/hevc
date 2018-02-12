@@ -15,7 +15,6 @@
 
 using std::pair;
 using std::make_pair;
-using std::unique_ptr;
 using std::shared_ptr;
 using std::find_if;
 
@@ -24,7 +23,8 @@ class SliceSegmentContext : public ISliceSegmentContext
 public:
     SliceSegmentContext(FrameSyntax* frame_syntax, 
                         const IFrameSyntaxContext* frame_context,
-                        FramePartitionManager* frame_partition_manager)
+                        FramePartitionManager* frame_partition_manager,
+                        CABACContextStorage* cabac_context_storage)
         : frame_syntax_(frame_syntax)
         , frame_context_(frame_context)
         , frame_partition_manager_(frame_partition_manager)
@@ -90,20 +90,52 @@ public:
         return true;
     }
 
+    virtual shared_ptr<FramePartition> GetFramePartition() override
+    {
+        return frame_syntax_->GetFramePartition();
+    }
+
+    virtual CABACContextStorage* GetCABACContextStorage() override
+    {
+        return cabac_context_storage_;
+    }
+
+    virtual bool GetSliceSegmentAddressByTileScanIndex(
+        uint32_t tile_scan_index, uint32_t* slice_segment_address)
+    {
+        return frame_syntax_->GetSliceSegmentAddressByTileScanIndex(
+            tile_scan_index, slice_segment_address);
+    }
+
+    virtual uint32_t GetFirstCTUIndexOfTileScan() override
+    {
+        return frame_syntax_->GetContainCTUCountByTileScan() - 1;
+    }
+
+    virtual uint32_t GetCABACContextIndexInLastParsedSliceSegment() 
+        override
+    {
+        return 
+            frame_syntax_->GetCABACContextIndexInLastParsedSliceSegment();
+    }
+
 private:
     FrameSyntax* frame_syntax_;
     const IFrameSyntaxContext* frame_context_;
     FramePartitionManager* frame_partition_manager_;
+    CABACContextStorage* cabac_context_storage_;
 
 };
 
 CodedVideoSequence::CodedVideoSequence(
     DecodeProcessorManager* decode_processor_manager,
     ParametersManager* parameters_manager, 
-    FramePartitionManager* frame_partition_manager)
+    FramePartitionManager* frame_partition_manager,
+    CABACContextStorage* cabac_context_storage)
     : decode_processor_manager_(decode_processor_manager)
     , parameters_manager_(parameters_manager)
     , frame_partition_manager_(frame_partition_manager)
+    , cabac_context_storage_(cabac_context_storage)
     , frame_syntax_()
     , pocs_info_()
 {
@@ -164,17 +196,18 @@ bool CodedVideoSequence::PushNALOfSliceSegment(NalUnit* nal, bool is_idr_frame)
     bit_stream->Seek(bit_stream->GetBytePosition(),
                      bit_stream->GetBitPosition() - 1);
 
-    unique_ptr<SliceSegmentSyntax> slice_segment_syntax(
+    shared_ptr<SliceSegmentSyntax> slice_segment_syntax(
         new SliceSegmentSyntax(nal->GetNalUnitType(), nal->GetNuhLayerID(), 
                                parameters_manager_));
     SliceSegmentContext slice_segment_context(frame_syntax_.get(), this, 
-                                              frame_partition_manager_);
+                                              frame_partition_manager_,
+                                              cabac_context_storage_);
     bool success = slice_segment_syntax->Parse(nal->GetBitSteam(),
                                                &slice_segment_context);
     if (!success)
         return false;
 
-    success = frame_syntax_->AddSliceSegment(move(slice_segment_syntax));
+    success = frame_syntax_->AddSliceSegment(slice_segment_syntax);
     if (!success)
         return false;
 

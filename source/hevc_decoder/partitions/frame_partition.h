@@ -9,7 +9,7 @@
 
 #include "hevc_decoder/base/basic_types.h"
 
-class IFrameInfoProviderForFramePartition;
+class ISliceSegmentAddressProvider;
 class IFramePartitionCreatorInfoProvider;
 
 class FramePartition
@@ -18,15 +18,30 @@ public:
     ~FramePartition();
 
     const IFramePartitionCreatorInfoProvider* GetCreationInfoProvider();
-    uint32_t RasterScanToTileScan(uint32_t index);
-    uint32_t GetTileIndex(const Coordinate& block);
+    bool RasterScanIndexToTileScanIndex(uint32_t raster_scan_index, 
+                                        uint32_t* tile_scan_index);
+
+    bool GetTileIndex(const Coordinate& block, uint32_t* tile_index);
+    bool GetTileScanIndex(const Coordinate& block, uint32_t* tile_scan_index);
+    bool GetRasterScanIndex(const Coordinate& block, uint32_t* raster_scan_index);
+
     bool IsTheFirstCTBInTile(const Coordinate& block);
+    bool IsTheFirstCTBInTileByRasterScanIndex(uint32_t index);
+    bool IsTheFirstCTBInTileByTileScanIndex(uint32_t index);
+
+    bool IsTheFirstCTBInRowOfFrameByRasterScanIndex(uint32_t index);
+    bool IsTheFirstCTBInRowOfFrameByTileScanIndex(uint32_t index);
+    bool IsTheFirstCTBInRowOfFrame(const Coordinate& block);
+
+    bool IsTheFirstCTBInRowOfTileByRasterScanIndex(uint32_t index);
+    bool IsTheFirstCTBInRowOfTileByTileScanIndex(uint32_t index);
+    bool IsTheFirstCTBInRowOfTile(const Coordinate& block);
 
     // 6.4.1 判断邻居块对于当前块来说是否可用, 判断两个是否为同一个tile,同一个slice,
     // 并且当前块为邻居块的后面的可可用块
     bool IsZScanOrderNeighbouringBlockAvailable(
         const Coordinate& current_block, const Coordinate& neighbouring_block,
-        const IFrameInfoProviderForFramePartition* frame_info_provider);
+        const ISliceSegmentAddressProvider* slice_segment_address_provider);
 
 private:
     friend class FramePartitionManager;
@@ -43,6 +58,7 @@ private:
         uint32_t block_tile_scan_index;
         uint32_t tile_index;
         bool is_first_block_in_tile;
+        bool is_first_block_in_row_of_tile;
     };
 
     struct TransformBlockPositionInfo

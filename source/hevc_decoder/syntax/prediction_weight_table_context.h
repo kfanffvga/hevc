@@ -1,7 +1,7 @@
 ﻿#ifndef _PREDICTION_WEIGHT_TABLE_CONTEXT_H_
 #define _PREDICTION_WEIGHT_TABLE_CONTEXT_H_
 
-#include <inttypes.h>
+#include <stdint.h>
 #include <vector>
 
 enum ChromaFormatType;

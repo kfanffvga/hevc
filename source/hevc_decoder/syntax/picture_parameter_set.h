@@ -38,6 +38,7 @@ public:
     const TileInfo& GetTileInfo() const;
     uint32_t GetNumRefIdxNegativeDefaultActive() const;
     uint32_t GetNumRefIdxPositiveDefaultActive() const;
+    uint32_t GetInitQuantizationParameter() const;
 
 private:
     struct DeblockingFilterControlInfo
@@ -72,6 +73,7 @@ private:
     std::unique_ptr<TileInfo> tile_info_;
     uint32_t num_ref_idx_negative_default_active_;
     uint32_t num_ref_idx_positive_default_active_;
+    uint32_t init_qp_;
 
 };
 #endif

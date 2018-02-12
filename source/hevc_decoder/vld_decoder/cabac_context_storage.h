@@ -25,7 +25,7 @@ public:
     CABACContext GetCTBStorageContext(uint32_t ctb_storage_id);
     CABACContext GetSliceSegmentStorageContext(uint32_t slice_segment_storage_id);
 
-    uint32_t SaveCTBStorageContext(const CABACContext& context);
+    uint32_t SaveCTUStorageContext(const CABACContext& context);
     uint32_t SaveSliceSegmentStorageContext(const CABACContext& context);
 
     void ClearStorageContext();

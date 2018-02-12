@@ -36,6 +36,7 @@ PictureParameterSet::PictureParameterSet()
     , tile_info_(new TileInfo())
     , num_ref_idx_negative_default_active_(0)
     , num_ref_idx_positive_default_active_(0)
+    , init_qp_(0)
 {
     memset(&deblocking_filter_control_info_, 0, 
            sizeof(deblocking_filter_control_info_));
@@ -65,7 +66,7 @@ bool PictureParameterSet::Parse(BitStream* bit_stream)
     uint32_t num_ref_idx_positive_default_active_ = 
         golomb_reader.ReadUnsignedValue() + 1;
 
-    int init_qp = golomb_reader.ReadSignedValue() + 26;
+    init_qp_ = golomb_reader.ReadSignedValue() + 26;
     bool is_constrained_intra_pred = bit_stream->ReadBool();
     bool is_transform_skip_enabled = bit_stream->ReadBool();
     bool is_cu_qp_delta_enabled = bit_stream->ReadBool();
@@ -289,4 +290,9 @@ uint32_t PictureParameterSet::GetNumRefIdxNegativeDefaultActive() const
 uint32_t PictureParameterSet::GetNumRefIdxPositiveDefaultActive() const
 {
     return num_ref_idx_positive_default_active_;
+}
+
+uint32_t PictureParameterSet::GetInitQuantizationParameter() const
+{
+    return init_qp_;
 }

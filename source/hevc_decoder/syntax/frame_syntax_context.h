@@ -1,7 +1,7 @@
 #ifndef _FRAME_SYNTAX_CONTEXT_H_
 #define _FRAME_SYNTAX_CONTEXT_H_
 
-#include <inttypes.h>
+#include <stdint.h>
 
 struct PictureOrderCount;
 

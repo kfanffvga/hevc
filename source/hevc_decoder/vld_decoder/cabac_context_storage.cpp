@@ -185,7 +185,7 @@ CABACContext CABACContextStorage::GetSliceSegmentStorageContext(
         CABACContext() : slice_segment_contexts_[slice_segment_storage_id];
 }
 
-uint32_t CABACContextStorage::SaveCTBStorageContext(const CABACContext& context)
+uint32_t CABACContextStorage::SaveCTUStorageContext(const CABACContext& context)
 {
     uint32_t index = tile_contexts_.size();
     tile_contexts_.push_back(context);

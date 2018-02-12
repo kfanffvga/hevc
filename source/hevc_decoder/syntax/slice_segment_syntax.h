@@ -1,14 +1,17 @@
 ﻿#ifndef _SLICE_SEGMENT_SYNTAX_H_
 #define _SLICE_SEGMENT_SYNTAX_H_
 
-#include "hevc_decoder/vld_decoder/slice_segment_info_provider_for_cabac.h"
+#include <stdint.h>
+#include <memory>
 
 class ISliceSegmentContext;
 class ParametersManager;
 class BitStream;
+class SliceSegmentHeader;
+class SliceSegmentData;
 enum NalUnitType;
 
-class SliceSegmentSyntax : public ISliceSegmentInfoProviderForCABAC
+class SliceSegmentSyntax
 {
 public:
     SliceSegmentSyntax(NalUnitType nal_unit_type, uint8_t nuh_layer_id,
@@ -20,16 +23,14 @@ public:
     NalUnitType GetNalUnitType() const;
     uint8_t GetNuhLayerID() const;
 
-private:
-    virtual uint32_t GetQuantizationParameter() const override;
-    virtual bool IsEntropyCodingSyncEnabled() const override;
-    virtual bool IsDependentSliceSegment() const override;
-    virtual uint32_t GetSliceSegmentAddress() const override;
-    virtual uint32_t GetCABACStorageIndex() const override;
+    const SliceSegmentHeader& GetSliceSegmentHeader() const;
+    const SliceSegmentData& GetSliceSegmentData() const;
 
-    const ParametersManager* parameters_manager_;
+private:
     NalUnitType nal_unit_type_;
     uint8_t nuh_layer_id_;
+    std::unique_ptr<SliceSegmentHeader> header_;
+    std::unique_ptr<SliceSegmentData> data_;
 };
 
 #endif

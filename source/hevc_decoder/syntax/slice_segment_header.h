@@ -24,6 +24,10 @@ class TileInfo;
 // 如调用者在调用parse之前就去调用相关的有访问到sps与pps的函数产生的问题，
 // 由调用者进行保证
 
+// 虽然sps与pps是全局公用的参数集，但由于考虑到将来多线程的问题，每个slice应该可以独立解码
+// 因此，此处认为，所有的解码所需的参数都应该在header里可以得到，保证每个线程或者每个线程组
+// 可以在得到slice之后，就可以独立完成其他所有的运算
+
 class SliceSegmentHeader
 {
 public:
@@ -37,8 +41,13 @@ public:
     uint32_t GetHeight() const;
     const TileInfo& GetTileInfo() const;
     uint32_t GetCTBLog2SizeY() const;
+    uint32_t GetCTBHeight() const;
     uint32_t GetMinTBLog2SizeY() const;
     SliceType GetSliceType() const;
+    uint32_t GetSliceSegmentAddress() const;
+    bool IsDependentSliceSegment() const;
+    uint32_t GetQuantizationParameter() const;
+    bool IsEntropyCodingSyncEnabled() const;
     const std::vector<int32_t>& GetNegativeRefPOCList() const;
     const std::vector<int32_t>& GetPositiveRefPOCList() const;
 
@@ -94,6 +103,9 @@ private:
     std::vector<int32_t> negative_ref_poc_list_;
     std::vector<int32_t> positive_ref_poc_list_;
     SliceType slice_type_;
+    uint32_t slice_segment_address_;
+    bool is_dependent_slice_segment_;
+    uint32_t quantization_parameter_;
 };
 
 #endif

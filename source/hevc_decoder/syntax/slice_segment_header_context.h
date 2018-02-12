@@ -1,7 +1,7 @@
 #ifndef _SLICE_SEGMENT_HEADER_CONTEXT_H_
 #define _SLICE_SEGMENT_HEADER_CONTEXT_H_
 
-#include <inttypes.h>
+#include <stdint.h>
 
 struct PictureOrderCount;
 

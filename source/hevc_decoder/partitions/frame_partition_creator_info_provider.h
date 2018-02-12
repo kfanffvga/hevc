@@ -1,7 +1,7 @@
 #ifndef _FRAME_PARTITION_CREATOR_INFO_PROVIDER_H_
 #define _FRAME_PARTITION_CREATOR_INFO_PROVIDER_H_
 
-#include <inttypes.h>
+#include <stdint.h>
 #include <vector>
 
 class IFramePartitionCreatorInfoProvider

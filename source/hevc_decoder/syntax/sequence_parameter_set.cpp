@@ -34,6 +34,7 @@ SequenceParameterSet::SequenceParameterSet()
     , sps_scc_extension_(new SPSScreenContentCodingExtension())
     , bit_depth_chroma_(0)
     , ctb_log2_size_y_(0)
+    , ctb_height_(0)
     , log2_min_luma_transform_block_size_(0)
 {
 
@@ -95,6 +96,7 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
 
     ctb_log2_size_y_ = log2_min_luma_coding_block_size + 
         log2_diff_max_min_luma_coding_block_size;
+    ctb_height_ = 1 << ctb_log2_size_y_;
     uint32_t pic_width_in_ctb_y =
         UpAlignRightShift(pic_width_in_luma_samples_, ctb_log2_size_y_);
     uint32_t pic_height_in_ctb_y =
@@ -366,4 +368,9 @@ const SPSScreenContentCodingExtension&
     SequenceParameterSet::GetSPSScreenContentCodingExtension() const
 {
     return *sps_scc_extension_;
+}
+
+uint32_t SequenceParameterSet::GetCTBHeight() const
+{
+    return ctb_height_;
 }

@@ -1,11 +1,15 @@
 ﻿#include "hevc_decoder/syntax/frame_syntax.h"
 
+#include <cassert>
+
 #include "hevc_decoder/syntax/slice_segment_syntax.h"
+#include "hevc_decoder/syntax/slice_segment_header.h"
 #include "hevc_decoder/syntax/slice_syntax.h"
 #include "hevc_decoder/syntax/coded_video_sequence.h"
+#include "hevc_decoder/syntax/slice_segment_data.h"
 
-using std::unique_ptr;
 using std::shared_ptr;
+using std::unique_ptr;
 using std::vector;
 
 FrameSyntax::FrameSyntax(IFrameSyntaxContext* frame_syntax_context)
@@ -13,6 +17,7 @@ FrameSyntax::FrameSyntax(IFrameSyntaxContext* frame_syntax_context)
     , picture_order_count_()
     , frame_syntax_context_(frame_syntax_context)
     , frame_partition_()
+    , ctu_count_by_tile_scan_(0)
 {
 
 }
@@ -22,53 +27,22 @@ FrameSyntax::~FrameSyntax()
 
 }
 
-uint32_t FrameSyntax::GetSliceAddressByRasterScanBlockIndex(uint32_t index) const
+bool FrameSyntax::AddSliceSegment(shared_ptr<SliceSegmentSyntax> slice_segment)
 {
-    return 0;
-}
+    if (!slices_.empty() && slices_.back()->AddSliceSegment(slice_segment))
+        return true;
 
-bool FrameSyntax::IsTheFirstBlockInTile(const Coordinate& block) const
-{
+    if (slice_segment->GetSliceSegmentHeader().IsDependentSliceSegment())
+        return false;
+
+    unique_ptr<SliceSyntax> slice(new SliceSyntax(frame_syntax_context_));
+    if (!slice->AddSliceSegment(slice_segment))
+        return false;
+
+    ctu_count_by_tile_scan_ += 
+        slice_segment->GetSliceSegmentData().GetCTUCount();
+    slices_.push_back(move(slice));
     return false;
-}
-
-bool FrameSyntax::IsTheFirstBlockInRowOfTile(const Coordinate& block) const
-{
-    return false;
-}
-
-bool FrameSyntax::IsTheFirstBlockInRowOfFrame(const Coordinate& block) const
-{
-    return false;
-}
-
-uint32_t FrameSyntax::GetCTBHeight() const
-{
-    return 0;
-}
-
-bool FrameSyntax::IsZScanOrderNeighbouringBlockAvailable(
-    const Coordinate& current_block, const Coordinate& neighbouring_block) const
-{
-    return false;
-}
-
-const ICodingTreeBlockContext* FrameSyntax::GetCodingTreeBlockContext(
-    const Coordinate& block) const
-{
-    return nullptr;
-}
-
-const ISliceSegmentInfoProviderForCABAC* 
-    FrameSyntax::GetSliceSegmentInfoProviderForCABAC(
-        uint32_t slice_segment_address) const
-{
-    return nullptr;
-}
-
-bool FrameSyntax::AddSliceSegment(unique_ptr<SliceSegmentSyntax> slice_segment)
-{
-    return true;
 }
 
 bool FrameSyntax::HasFramePartition() const
@@ -102,7 +76,42 @@ const PictureOrderCount& FrameSyntax::GetPictureOrderCount() const
     return picture_order_count_;
 }
 
-PictureOrderCount FrameSyntax::CalcPictureOrderCount(uint32_t previous_msb, 
+shared_ptr<FramePartition> FrameSyntax::GetFramePartition()
+{
+    return frame_partition_;
+}
+
+bool FrameSyntax::GetSliceSegmentAddressByTileScanIndex(
+    uint32_t tile_scan_index, uint32_t* address) const
+{
+    if (!address)
+        return false;
+
+    for (const auto& slice : slices_)
+    {
+        bool success = slice->GetSliceSegmentAddressByCTUTileScanIndex(
+            tile_scan_index, address);
+        if (success)
+            return success;
+    }
+    return false;
+}
+
+uint32_t FrameSyntax::GetContainCTUCountByTileScan()
+{
+    return ctu_count_by_tile_scan_;
+}
+
+uint32_t FrameSyntax::GetCABACContextIndexInLastParsedSliceSegment()
+{
+    assert(!slices_.empty());
+    if (slices_.empty())
+        return 0;
+
+    return slices_.back()->GetCABACContextIndexInLastParsedSliceSegment();
+}
+
+PictureOrderCount FrameSyntax::CalcPictureOrderCount(uint32_t previous_msb,
                                                      uint32_t previous_lsb, 
                                                      bool is_idr_frame, 
                                                      uint32_t max_lsb, 

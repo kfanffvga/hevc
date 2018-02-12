@@ -31,6 +31,7 @@ public:
     uint32_t GetPicHeightInLumaSamples() const;
     
     uint32_t GetCTBLog2SizeY() const;
+    uint32_t GetCTBHeight() const;
     uint32_t GetLog2MinLumaTransformBlockSize() const;
 
     uint32_t GetSequenceParameterSetID();
@@ -89,6 +90,7 @@ private:
     std::unique_ptr<SPSScreenContentCodingExtension> sps_scc_extension_;
     uint32_t bit_depth_chroma_;
     uint32_t ctb_log2_size_y_;
+    uint32_t ctb_height_;
     uint32_t log2_min_luma_transform_block_size_;
 };
 

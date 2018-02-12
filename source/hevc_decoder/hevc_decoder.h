@@ -14,6 +14,7 @@ class DecodeProcessorManager;
 class FramePartitionManager;
 class CodedVideoSequence;
 class FrameSequenceArranger;
+class CABACContextStorage;
 class SyntaxDispatcher;
 enum HEVC_ERROR;
 
@@ -36,6 +37,7 @@ private:
     std::unique_ptr<ParametersManager> parameters_manager_;
     std::unique_ptr<FrameSequenceArranger> frame_sequence_arranger_;
     std::unique_ptr<FramePartitionManager> frame_partition_manager_;
+    std::unique_ptr<CABACContextStorage> cabac_context_storage_;
     std::unique_ptr<DecodeProcessorManager> decode_processor_manager_;
     std::unique_ptr<CodedVideoSequence> coded_video_sequence_;
     std::unique_ptr<SyntaxDispatcher> syntax_dispatcher_;

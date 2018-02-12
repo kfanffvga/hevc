@@ -104,6 +104,9 @@ SliceSegmentHeader::SliceSegmentHeader(
     , negative_ref_poc_list_()
     , positive_ref_poc_list_()
     , slice_type_(I_SLICE)
+    , slice_segment_address_(0)
+    , is_dependent_slice_segment_(false)
+    , quantization_parameter_(0)
 {
 
 }
@@ -137,16 +140,15 @@ bool SliceSegmentHeader::Parse(BitStream* bit_stream,
     if (!sps_)
         return false;
 
-    bool is_dependent_slice_segment = false;
     if (!is_first_slice_segment_in_pic_)
     {
         if (pps_->IsDependentSliceSegmentEnabled())
-            is_dependent_slice_segment = bit_stream->ReadBool();
+            is_dependent_slice_segment_ = bit_stream->ReadBool();
 
-        uint32_t slice_segment_address = 
+        slice_segment_address_ = 
             bit_stream->Read<uint32_t>(sps_->GetSliceSegmentAddressBitLength());
     }
-    if (!is_dependent_slice_segment)
+    if (!is_dependent_slice_segment_)
     {
         bool success = ParseIndependentSyntax(bit_stream, context);
         if (!success)
@@ -181,6 +183,11 @@ uint32_t SliceSegmentHeader::GetCTBLog2SizeY() const
     return sps_->GetCTBLog2SizeY();
 }
 
+uint32_t SliceSegmentHeader::GetCTBHeight() const
+{
+    return sps_->GetCTBHeight();
+}
+
 uint32_t SliceSegmentHeader::GetMinTBLog2SizeY() const
 {
     return sps_->GetLog2MinLumaTransformBlockSize();
@@ -189,6 +196,26 @@ uint32_t SliceSegmentHeader::GetMinTBLog2SizeY() const
 SliceType SliceSegmentHeader::GetSliceType() const
 {
     return slice_type_;
+}
+
+uint32_t SliceSegmentHeader::GetSliceSegmentAddress() const
+{
+    return slice_segment_address_;
+}
+
+bool SliceSegmentHeader::IsDependentSliceSegment() const
+{
+    return is_dependent_slice_segment_;
+}
+
+uint32_t SliceSegmentHeader::GetQuantizationParameter() const
+{
+    return quantization_parameter_;
+}
+
+bool SliceSegmentHeader::IsEntropyCodingSyncEnabled() const
+{
+    return pps_->IsEntropyCodingSyncEnabled();
 }
 
 const vector<int32_t>& SliceSegmentHeader::GetNegativeRefPOCList() const
@@ -575,6 +602,8 @@ bool SliceSegmentHeader::ParseQuantizationParameterInfo(
 
     GolombReader golomb_reader(bit_stream);
     int32_t slice_qp_delta = golomb_reader.ReadSignedValue();
+    quantization_parameter_ = 
+        pps_->GetInitQuantizationParameter() + slice_qp_delta;
     if (pps_->HasPPSSliceChromaQPOffsetPresent())
     {
         int32_t slice_cb_qp_offset = golomb_reader.ReadSignedValue();

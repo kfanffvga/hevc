@@ -9,19 +9,17 @@
 class BitStream;
 class CABACContextStorage;
 class IFrameInfoProviderForCABAC;
-class ISliceSegmentInfoProviderForCABAC;
 
 class CABACReader
 {
 public:
     CABACReader(
         CABACContextStorage* cabac_context_storage, BitStream* stream, 
-        const IFrameInfoProviderForCABAC* frame_info_provider, 
-        const ISliceSegmentInfoProviderForCABAC* slice_segment_info_provider);
+        const IFrameInfoProviderForCABAC* frame_info_provider);
     ~CABACReader();
 
-    bool StartToReadWithNewCTB(const Coordinate& current_ctb);
-    bool FinishToReadInCTB(uint32_t* index_of_ctb_pool);
+    bool StartToReadWithNewCTU(const Coordinate& current_ctb);
+    bool FinishToReadInCTU(uint32_t* index_of_ctb_pool);
     bool FinishToReadSliceSegment(uint32_t* index_of_slice_segment_pool);
 
     uint8_t ReadBypassBit();
@@ -37,7 +35,6 @@ private:
     CABACContextStorage* cabac_context_storage_;
     BitStream* stream_;
     const IFrameInfoProviderForCABAC* frame_info_provider_;
-    const ISliceSegmentInfoProviderForCABAC* slice_segment_info_provider_;
     bool is_first_ctb_in_slice_segment_;
     CABACContext context_;
     uint16_t current_range_;

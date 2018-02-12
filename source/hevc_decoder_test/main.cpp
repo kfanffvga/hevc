@@ -3,6 +3,8 @@
 #include <vector>
 #include <stdio.h>
 
+#include <list>
+
 #include <boost/multi_array.hpp>
 
 #include "hevc_decoder/hevc_decoder.h"

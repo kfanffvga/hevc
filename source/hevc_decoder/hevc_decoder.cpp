@@ -8,6 +8,7 @@
 #include "hevc_decoder/decode_processor_manager.h"
 #include "hevc_decoder/frame_sequence_arranger.h"
 #include "hevc_decoder/partitions/frame_partition_manager.h"
+#include "hevc_decoder/vld_decoder/cabac_context_storage.h"
 
 using std::unique_ptr;
 using std::list;
@@ -16,19 +17,21 @@ HEVCDecoder::HEVCDecoder()
     : parameters_manager_(new ParametersManager())
     , frame_sequence_arranger_(new FrameSequenceArranger())
     , frame_partition_manager_(new FramePartitionManager())
+    , cabac_context_storage_(new CABACContextStorage())
     , decode_processor_manager_(
         new DecodeProcessorManager(parameters_manager_.get(), 
                                    frame_sequence_arranger_.get()))
     , coded_video_sequence_(
         new CodedVideoSequence(decode_processor_manager_.get(), 
                                parameters_manager_.get(),
-                               frame_partition_manager_.get()))
+                               frame_partition_manager_.get(),
+                               cabac_context_storage_.get()))
     , syntax_dispatcher_(
         new SyntaxDispatcher(parameters_manager_.get(), 
                              coded_video_sequence_.get()))
     , organizer_(new NALOrganizer(syntax_dispatcher_.get()))
 {
-
+    cabac_context_storage_->Init();
 }
 
 HEVCDecoder::~HEVCDecoder()
