@@ -1,16 +1,16 @@
-﻿#ifndef _CODED_TREE_UNIT_SYNTAX_H_
-#define _CODED_TREE_UNIT_SYNTAX_H_
+﻿#ifndef _CODED_TREE_UNIT_H_
+#define _CODED_TREE_UNIT_H_
 
 #include <stdint.h>
 
 class CABACReader;
 class ICodedTreeUnitContext;
 
-class CodedTreeUnitSyntax
+class CodedTreeUnit
 {
 public:
-    CodedTreeUnitSyntax(uint32_t tile_scan_index);
-    ~CodedTreeUnitSyntax();
+    CodedTreeUnit(uint32_t tile_scan_index);
+    ~CodedTreeUnit();
 
     bool Parse(CABACReader* reader, ICodedTreeUnitContext* context);
 

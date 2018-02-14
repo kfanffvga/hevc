@@ -16,4 +16,6 @@ private:
     virtual SyntaxElementName GetSyntaxElementName() override;
     virtual ReadFunctionIndex GetFunctionIndex(uint16_t bin_idx) override;
 };
+
+typedef EndOfSliceSegmentFlagReader EndOfSubSetOneBitReader;
 #endif

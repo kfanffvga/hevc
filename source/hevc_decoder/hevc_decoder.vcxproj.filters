@@ -179,7 +179,7 @@
     <ClInclude Include="partitions\slice_segment_address_provider.h">
       <Filter>base</Filter>
     </ClInclude>
-    <ClInclude Include="syntax\coded_tree_unit_syntax.h" />
+    <ClInclude Include="syntax\coded_tree_unit.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -311,6 +311,6 @@
     <ClCompile Include="vld_decoder\end_of_slice_segment_flag_reader.cpp">
       <Filter>variant_length_data_decoder</Filter>
     </ClCompile>
-    <ClCompile Include="syntax\coded_tree_unit_syntax.cpp" />
+    <ClCompile Include="syntax\coded_tree_unit.cpp" />
   </ItemGroup>
 </Project>

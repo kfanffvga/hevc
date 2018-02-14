@@ -94,7 +94,7 @@
     <ClInclude Include="partitions\frame_partition_creator_info_provider_impl.h" />
     <ClInclude Include="partitions\frame_partition_manager.h" />
     <ClInclude Include="predictors\predictor_manager.h" />
-    <ClInclude Include="syntax\coded_tree_unit_syntax.h" />
+    <ClInclude Include="syntax\coded_tree_unit.h" />
     <ClInclude Include="syntax\colour_mapping_octants.h" />
     <ClInclude Include="syntax\colour_mapping_table.h" />
     <ClInclude Include="syntax\delta_dlt.h" />
@@ -154,7 +154,7 @@
     <ClCompile Include="partitions\frame_partition_creator_info_provider_impl.cpp" />
     <ClCompile Include="partitions\frame_partition_manager.cpp" />
     <ClCompile Include="predictors\predictor_manager.cpp" />
-    <ClCompile Include="syntax\coded_tree_unit_syntax.cpp" />
+    <ClCompile Include="syntax\coded_tree_unit.cpp" />
     <ClCompile Include="syntax\coded_video_sequence.cpp" />
     <ClCompile Include="syntax\colour_mapping_octants.cpp" />
     <ClCompile Include="syntax\colour_mapping_table.cpp" />

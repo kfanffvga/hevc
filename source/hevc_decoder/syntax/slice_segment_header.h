@@ -48,6 +48,7 @@ public:
     bool IsDependentSliceSegment() const;
     uint32_t GetQuantizationParameter() const;
     bool IsEntropyCodingSyncEnabled() const;
+    bool IsTilesEnabled() const;
     const std::vector<int32_t>& GetNegativeRefPOCList() const;
     const std::vector<int32_t>& GetPositiveRefPOCList() const;
 

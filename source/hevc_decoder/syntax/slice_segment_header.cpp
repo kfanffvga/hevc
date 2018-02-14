@@ -218,6 +218,11 @@ bool SliceSegmentHeader::IsEntropyCodingSyncEnabled() const
     return pps_->IsEntropyCodingSyncEnabled();
 }
 
+bool SliceSegmentHeader::IsTilesEnabled() const
+{
+    return pps_->IsTilesEnabled();
+}
+
 const vector<int32_t>& SliceSegmentHeader::GetNegativeRefPOCList() const
 {
     return negative_ref_poc_list_;

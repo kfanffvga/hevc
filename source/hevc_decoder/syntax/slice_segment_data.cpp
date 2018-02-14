@@ -4,11 +4,12 @@
 #include "hevc_decoder/syntax/slice_segment_data_context.h"
 #include "hevc_decoder/syntax/slice_segment_data_context.h"
 #include "hevc_decoder/syntax/slice_segment_header.h"
+#include "hevc_decoder/syntax/coded_tree_unit.h"
 #include "hevc_decoder/vld_decoder/cabac_reader.h"
 #include "hevc_decoder/vld_decoder/frame_info_provider_for_cabac.h"
+#include "hevc_decoder/vld_decoder/end_of_slice_segment_flag_reader.h"
 #include "hevc_decoder/partitions/frame_partition.h"
 #include "hevc_decoder/partitions/slice_segment_address_provider.h"
-#include "hevc_decoder/syntax/coded_tree_unit_syntax.h"
 
 using std::shared_ptr;
 
@@ -228,6 +229,70 @@ bool SliceSegmentData::Parse(BitStream* bit_stream,
     CABACReaderInfoProvider cabac_reader_info_provider(
         context, this, context->GetSliceSegmentHeader());
     CABACReader cabac_reader(storage, bit_stream, &cabac_reader_info_provider);
+
+    return Parse(bit_stream, &cabac_reader, context);
+}
+
+bool SliceSegmentData::Parse(BitStream* bit_stream, CABACReader* reader, 
+                             ISliceSegmentDataContext* context)
+{
+    assert(reader);
+    assert(context);
+
+    SliceSegmentHeader* header = context->GetSliceSegmentHeader();
+    shared_ptr<FramePartition> frame_partition = context->GetFramePartition();
+    bool is_end_of_slice_segment = false;
+    do {
+        uint32_t tile_scan_index = start_ctu_index_of_tile_scan_ + ctus_.size();
+        shared_ptr<CodedTreeUnit> ctu(new CodedTreeUnit(tile_scan_index));
+        if (!ctu->Parse(reader, nullptr))
+            return false;
+
+        ctus_.push_back(ctu);
+        is_end_of_slice_segment = EndOfSliceSegmentFlagReader(reader).Read();
+
+        uint32_t next_tile_scan_index = tile_scan_index + 1;
+        
+        if (!is_end_of_slice_segment && 
+            IsNextCTUNeedCABACInit(next_tile_scan_index, header, frame_partition))
+        {
+            bool end_of_sub_set_one_bit = EndOfSubSetOneBitReader(reader).Read();
+            assert(end_of_sub_set_one_bit);
+            if (!end_of_sub_set_one_bit)
+                return false;
+
+            bit_stream->ByteAlign();
+        }
+    } while (is_end_of_slice_segment);
+    return true;
+}
+
+bool SliceSegmentData::IsNextCTUNeedCABACInit(
+    uint32_t tile_scan_index_of_ctu, SliceSegmentHeader* header, 
+    const std::shared_ptr<FramePartition>& frame_partition)
+{
+    if (header->IsTilesEnabled())
+    {
+        bool is_the_first_ctu_in_tile = 
+            frame_partition->IsTheFirstCTBInTileByTileScanIndex(
+                tile_scan_index_of_ctu);
+        if (is_the_first_ctu_in_tile)
+            return true;
+    }
+    if (header->IsEntropyCodingSyncEnabled())
+    {
+        bool is_the_first_ctu_in_row = 
+            frame_partition->IsTheFirstCTBInRowOfFrameByTileScanIndex(
+                tile_scan_index_of_ctu);
+        if (is_the_first_ctu_in_row)
+            return true;
+
+        bool is_the_first_ctu_in_row_of_tile = 
+            frame_partition->IsTheFirstCTBInRowOfTileByTileScanIndex(
+                tile_scan_index_of_ctu);
+        if (is_the_first_ctu_in_row_of_tile)
+            return true;
+    }
     return false;
 }
 

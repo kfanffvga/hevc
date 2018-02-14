@@ -6,8 +6,11 @@
 #include <stdint.h>
 
 class BitStream;
-class CodedTreeUnitSyntax;
+class CodedTreeUnit;
 class ISliceSegmentDataContext;
+class CABACReader;
+class SliceSegmentHeader;
+class FramePartition;
 
 class SliceSegmentData
 {
@@ -26,9 +29,15 @@ public:
     bool IsInnerCTUByTileScanIndex(uint32_t index) const;
 
 private:
+    bool Parse(BitStream* bit_stream, CABACReader* reader, 
+               ISliceSegmentDataContext* context);
+    bool IsNextCTUNeedCABACInit(
+        uint32_t tile_scan_index_of_ctu, SliceSegmentHeader* header, 
+        const std::shared_ptr<FramePartition>& frame_partition);
+
     uint32_t start_ctu_index_of_tile_scan_;
     uint32_t cabac_context_storage_index_;
-    std::vector<std::shared_ptr<CodedTreeUnitSyntax>> ctus_;
+    std::vector<std::shared_ptr<CodedTreeUnit>> ctus_;
 };
 
 #endif
