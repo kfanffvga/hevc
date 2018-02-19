@@ -28,6 +28,7 @@ public:
         : frame_syntax_(frame_syntax)
         , frame_context_(frame_context)
         , frame_partition_manager_(frame_partition_manager)
+        , cabac_context_storage_(cabac_context_storage)
     {
         assert(frame_syntax);
         assert(frame_context);
@@ -109,7 +110,8 @@ public:
 
     virtual uint32_t GetFirstCTUIndexOfTileScan() override
     {
-        return frame_syntax_->GetContainCTUCountByTileScan() - 1;
+        uint32_t ctu_count = frame_syntax_->GetContainCTUCountByTileScan();
+        return 0 == ctu_count ? 0 : ctu_count - 1;
     }
 
     virtual uint32_t GetCABACContextIndexInLastParsedSliceSegment() 

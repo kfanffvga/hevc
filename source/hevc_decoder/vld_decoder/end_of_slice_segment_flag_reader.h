@@ -3,6 +3,8 @@
 
 #include "hevc_decoder/vld_decoder/common_cabac_syntax_reader.h"
 
+enum CABACInitType;
+
 class EndOfSliceSegmentFlagReader : public CommonCABACSyntaxReader
 {
 public:
@@ -12,7 +14,7 @@ public:
     bool Read();
 
 private:
-    virtual int GetArithmeticContextIndex(uint16_t bin_idx) override;
+    virtual uint32_t GetArithmeticContextIndex(uint16_t bin_idx) override;
     virtual SyntaxElementName GetSyntaxElementName() override;
     virtual ReadFunctionIndex GetFunctionIndex(uint16_t bin_idx) override;
 };

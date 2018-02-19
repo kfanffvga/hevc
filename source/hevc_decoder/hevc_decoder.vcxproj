@@ -55,6 +55,7 @@
       <AdditionalIncludeDirectories>$(solutionDir)\source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <PreprocessorDefinitions>_MBCS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -94,7 +95,9 @@
     <ClInclude Include="partitions\frame_partition_creator_info_provider_impl.h" />
     <ClInclude Include="partitions\frame_partition_manager.h" />
     <ClInclude Include="predictors\predictor_manager.h" />
-    <ClInclude Include="syntax\coded_tree_unit.h" />
+    <ClInclude Include="syntax\byte_alignment.h" />
+    <ClInclude Include="syntax\coding_tree_unit.h" />
+    <ClInclude Include="syntax\coding_tree_unit_context.h" />
     <ClInclude Include="syntax\colour_mapping_octants.h" />
     <ClInclude Include="syntax\colour_mapping_table.h" />
     <ClInclude Include="syntax\delta_dlt.h" />
@@ -114,6 +117,8 @@
     <ClInclude Include="syntax\prediction_weight_table_context.h" />
     <ClInclude Include="syntax\profile_tier_level.h" />
     <ClInclude Include="syntax\reference_picture_lists_modification.h" />
+    <ClInclude Include="syntax\sample_adaptive_offset.h" />
+    <ClInclude Include="syntax\sample_adaptive_offset_context.h" />
     <ClInclude Include="syntax\scaling_list_data.h" />
     <ClInclude Include="syntax\sequence_parameter_set.h" />
     <ClInclude Include="syntax\short_term_reference_picture_set.h" />
@@ -138,9 +143,17 @@
     <ClInclude Include="vld_decoder\cabac_context_storage.h" />
     <ClInclude Include="vld_decoder\cabac_context_types.h" />
     <ClInclude Include="vld_decoder\cabac_reader.h" />
+    <ClInclude Include="vld_decoder\fixed_length_value_reader.h" />
     <ClInclude Include="vld_decoder\frame_info_provider_for_cabac.h" />
     <ClInclude Include="vld_decoder\common_cabac_syntax_reader.h" />
     <ClInclude Include="vld_decoder\end_of_slice_segment_flag_reader.h" />
+    <ClInclude Include="vld_decoder\sao_band_position_reader.h" />
+    <ClInclude Include="vld_decoder\sao_eo_class_reader.h" />
+    <ClInclude Include="vld_decoder\sao_merge_flag_reader.h" />
+    <ClInclude Include="vld_decoder\sao_offset_abs_reader.h" />
+    <ClInclude Include="vld_decoder\sao_offset_sign_reader.h" />
+    <ClInclude Include="vld_decoder\sao_type_index_reader.h" />
+    <ClInclude Include="vld_decoder\truncated_rice_value_reader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\tile_info.cpp" />
@@ -154,7 +167,8 @@
     <ClCompile Include="partitions\frame_partition_creator_info_provider_impl.cpp" />
     <ClCompile Include="partitions\frame_partition_manager.cpp" />
     <ClCompile Include="predictors\predictor_manager.cpp" />
-    <ClCompile Include="syntax\coded_tree_unit.cpp" />
+    <ClCompile Include="syntax\byte_alignment.cpp" />
+    <ClCompile Include="syntax\coding_tree_unit.cpp" />
     <ClCompile Include="syntax\coded_video_sequence.cpp" />
     <ClCompile Include="syntax\colour_mapping_octants.cpp" />
     <ClCompile Include="syntax\colour_mapping_table.cpp" />
@@ -172,6 +186,7 @@
     <ClCompile Include="syntax\prediction_weight_table.cpp" />
     <ClCompile Include="syntax\profile_tier_level.cpp" />
     <ClCompile Include="syntax\reference_picture_lists_modification.cpp" />
+    <ClCompile Include="syntax\sample_adaptive_offset.cpp" />
     <ClCompile Include="syntax\scaling_list_data.cpp" />
     <ClCompile Include="syntax\sequence_parameter_set.cpp" />
     <ClCompile Include="syntax\short_term_reference_picture_set.cpp" />
@@ -191,6 +206,14 @@
     <ClCompile Include="vld_decoder\cabac_reader.cpp" />
     <ClCompile Include="vld_decoder\common_cabac_syntax_reader.cpp" />
     <ClCompile Include="vld_decoder\end_of_slice_segment_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\fixed_length_value_reader.cpp" />
+    <ClCompile Include="vld_decoder\sao_band_position_reader.cpp" />
+    <ClCompile Include="vld_decoder\sao_eo_class_reader.cpp" />
+    <ClCompile Include="vld_decoder\sao_merge_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\sao_offset_abs_reader.cpp" />
+    <ClCompile Include="vld_decoder\sao_offset_sign_reader.cpp" />
+    <ClCompile Include="vld_decoder\sao_type_index_reader.cpp" />
+    <ClCompile Include="vld_decoder\truncated_rice_value_reader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

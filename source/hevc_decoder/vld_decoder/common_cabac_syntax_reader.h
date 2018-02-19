@@ -8,6 +8,7 @@
 #include "hevc_decoder/vld_decoder/cabac_context_types.h"
 
 class CABACReader;
+enum SliceType;
 
 class CommonCABACSyntaxReader
 {
@@ -24,7 +25,7 @@ protected:
     };
 
     uint8_t ReadBit();
-    virtual int GetArithmeticContextIndex(uint16_t bin_idx) = 0;
+    virtual uint32_t GetArithmeticContextIndex(uint16_t bin_idx) = 0;
     virtual SyntaxElementName GetSyntaxElementName() = 0;
     virtual ReadFunctionIndex GetFunctionIndex(uint16_t bin_idx) = 0;
     

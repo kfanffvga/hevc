@@ -101,6 +101,7 @@ bool NALOrganizer::DispatchNalUnit()
 {
     if (has_start_prefix_)
     {
+        assert(unused_length_ > 0);
         unique_ptr<NalUnit> nal_unit(
             new NalUnit(raw_nal_unit_data_.GetBuffer(), unused_length_));
         bool success = dispatcher_->CreateSyntaxAndDispatch(move(nal_unit));

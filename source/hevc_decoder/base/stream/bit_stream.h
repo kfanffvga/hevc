@@ -35,8 +35,8 @@ public:
     }
 
     bool ReadBool();
-    bool Seek(int byte_position, int bit_position);
-    int GetSize();
+    bool Seek(uint32_t byte_position, uint32_t bit_position);
+    uint32_t GetSize();
     int GetBytePosition();
     int GetBitPosition();
     void SkipBits(uint32_t bits);
@@ -48,7 +48,7 @@ private:
     inline int ReadBitInByte(int length, int64_t* read_result);
 
     const int8_t* data_;
-    int byte_inner_sequence_;
+    uint32_t byte_inner_sequence_;
     const int8_t* current_pos_ptr_;
     const int8_t* end_ptr_;
 };

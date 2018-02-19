@@ -23,7 +23,11 @@ public:
 
     bool GetTileIndex(const Coordinate& block, uint32_t* tile_index);
     bool GetTileScanIndex(const Coordinate& block, uint32_t* tile_scan_index);
-    bool GetRasterScanIndex(const Coordinate& block, uint32_t* raster_scan_index);
+    bool GetRasterScanIndex(const Coordinate& block, 
+                            uint32_t* raster_scan_index);
+
+    bool GetCoordinateByTileScanIndex(uint32_t index, Coordinate* c);
+    bool GetCoordinateByRasterScanIndex(uint32_t index, Coordinate* c);
 
     bool IsTheFirstCTBInTile(const Coordinate& block);
     bool IsTheFirstCTBInTileByRasterScanIndex(uint32_t index);

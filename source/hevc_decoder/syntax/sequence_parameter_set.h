@@ -45,6 +45,7 @@ public:
     bool IsTemporalMVPEnabled() const;
     bool IsSampleAdaptiveOffsetEnabled() const;
     ChromaFormatType GetChromaFormatType() const;
+    uint32_t GetBitDepthLuma() const;
     uint32_t GetBitDepthChroma() const;
 
     const SPSRangeExtension& GetSPSRangeExtension() const;
@@ -88,6 +89,7 @@ private:
     uint32_t pic_height_in_luma_samples_;
     std::unique_ptr<SPSRangeExtension> sps_range_extension_;
     std::unique_ptr<SPSScreenContentCodingExtension> sps_scc_extension_;
+    uint32_t bit_depth_luma_;
     uint32_t bit_depth_chroma_;
     uint32_t ctb_log2_size_y_;
     uint32_t ctb_height_;

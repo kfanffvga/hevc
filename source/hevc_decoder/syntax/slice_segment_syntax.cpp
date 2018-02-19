@@ -7,6 +7,7 @@
 #include "hevc_decoder/syntax/slice_segment_context.h"
 #include "hevc_decoder/syntax/slice_segment_data.h"
 #include "hevc_decoder/syntax/slice_segment_data_context.h"
+#include "hevc_decoder/syntax/byte_alignment.h"
 
 using std::shared_ptr;
 
@@ -150,11 +151,12 @@ bool SliceSegmentSyntax::Parse(BitStream* bit_stream,
     if (!success)
         return false;
 
-    bit_stream->ByteAlign();
+    ByteAlignment byte_alignment;
+    if (!byte_alignment.Parse(bit_stream))
+        return false;
 
     SliceSegmentDataContext data_context(context, header_.get());
     success = data_->Parse(bit_stream, &data_context);
-    
 
     return success;
 }

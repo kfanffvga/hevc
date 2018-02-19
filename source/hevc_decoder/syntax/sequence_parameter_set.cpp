@@ -32,6 +32,7 @@ SequenceParameterSet::SequenceParameterSet()
     , pic_height_in_luma_samples_(0)
     , sps_range_extension_(new SPSRangeExtension())
     , sps_scc_extension_(new SPSScreenContentCodingExtension())
+    , bit_depth_luma_(0)
     , bit_depth_chroma_(0)
     , ctb_log2_size_y_(0)
     , ctb_height_(0)
@@ -79,7 +80,7 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
         uint32_t conf_win_top_offset = golomb_reader.ReadUnsignedValue();
         uint32_t conf_win_bottom_offset = golomb_reader.ReadUnsignedValue();
     }
-    uint32_t bit_depth_luma = golomb_reader.ReadUnsignedValue() + 8;
+    bit_depth_luma_ = golomb_reader.ReadUnsignedValue() + 8;
     bit_depth_chroma_ = golomb_reader.ReadUnsignedValue() + 8;
 
     log2_max_pic_order_cnt_lsb_ = golomb_reader.ReadUnsignedValue() + 4;
@@ -373,4 +374,9 @@ const SPSScreenContentCodingExtension&
 uint32_t SequenceParameterSet::GetCTBHeight() const
 {
     return ctb_height_;
+}
+
+uint32_t SequenceParameterSet::GetBitDepthLuma() const
+{
+    return bit_depth_luma_;
 }

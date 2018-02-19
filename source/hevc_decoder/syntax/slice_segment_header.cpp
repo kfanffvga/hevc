@@ -107,6 +107,9 @@ SliceSegmentHeader::SliceSegmentHeader(
     , slice_segment_address_(0)
     , is_dependent_slice_segment_(false)
     , quantization_parameter_(0)
+    , is_slice_sao_luma_(false)
+    , is_slice_sao_chroma_(false)
+    , is_used_cabac_init_(false)
 {
 
 }
@@ -223,6 +226,36 @@ bool SliceSegmentHeader::IsTilesEnabled() const
     return pps_->IsTilesEnabled();
 }
 
+bool SliceSegmentHeader::IsSliceSAOLuma() const
+{
+    return is_slice_sao_luma_;
+}
+
+bool SliceSegmentHeader::IsSliceSAOChroma() const
+{
+    return is_slice_sao_chroma_;
+}
+
+bool SliceSegmentHeader::IsUsedCABACInit() const
+{
+    return is_used_cabac_init_;
+}
+
+ChromaFormatType SliceSegmentHeader::GetChromaFormatType() const
+{
+    return sps_->GetChromaFormatType();
+}
+
+uint32_t SliceSegmentHeader::GetBitDepthLuma() const
+{
+    return sps_->GetBitDepthLuma();
+}
+
+uint32_t SliceSegmentHeader::GetBitDepthChroma() const
+{
+    return sps_->GetBitDepthChroma();
+}
+
 const vector<int32_t>& SliceSegmentHeader::GetNegativeRefPOCList() const
 {
     return negative_ref_poc_list_;
@@ -273,14 +306,12 @@ bool SliceSegmentHeader::ParseIndependentSyntax(
             is_slice_temporal_mvp_enabled = bit_stream->ReadBool();
     }
 
-    bool is_slice_sao_luma = false;
-    bool is_slice_sao_chroma = false;
     if (sps_->IsSampleAdaptiveOffsetEnabled())
     {
-        is_slice_sao_luma = bit_stream->ReadBool();
+        is_slice_sao_luma_ = bit_stream->ReadBool();
         if ((sps_->GetChromaFormatType() != MONO_CHROME) && 
             (sps_->GetChromaFormatType() != YUV_MONO_CHROME))
-            is_slice_sao_chroma = bit_stream->ReadBool();
+            is_slice_sao_chroma_ = bit_stream->ReadBool();
     }
     if (slice_type_ != I_SLICE)
     {
@@ -295,9 +326,7 @@ bool SliceSegmentHeader::ParseIndependentSyntax(
     if (!success)
         return false;
 
-    success = ParseReconstructPictureInfo(is_slice_sao_luma, is_slice_sao_chroma, 
-                                          bit_stream);
-    return success;
+    return ParseReconstructPictureInfo(bit_stream);
 }
 
 bool SliceSegmentHeader::ParseReferencePictureSet(
@@ -456,7 +485,7 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
         bool is_mvd_positive_zero = bit_stream->ReadBool();
 
     if (pps_->HasCABACInitPresent())
-        bool is_need_cabac_init = bit_stream->ReadBool();
+        is_used_cabac_init_ = bit_stream->ReadBool();
 
     if (is_slice_temporal_mvp_enabled)
     {
@@ -513,6 +542,10 @@ uint32_t SliceSegmentHeader::GetCurrentAvailableReferencePictureCount(
     return pps_->GetPPSSccExtension().IsPPSCurrentPictureReferenceEnabled() ?
         reference_picture_count + 1 : reference_picture_count;
 }
+
+// 推导出来的所有的参考帧未必要全部用完，因此，有可能会出现
+// ref_pic_list_modification.GetListEntryOfNegative().size() < 
+// merge_cache_ref_list.size()。 GetListEntryOfNegative同理
 
 bool SliceSegmentHeader::ConstructReferencePOCList(
     ISliceSegmentHeaderContext* context, bool is_current_picture_ref_enabled,
@@ -573,15 +606,8 @@ bool SliceSegmentHeader::ConstructReferencePOCList(
         if (is_allow_self_ref)
             merge_cache_ref_list.push_back(static_cast<int32_t>(self_poc));
 
-        if (!ref_pic_list_resort_indices.empty())
-        {
-            for (const auto& i : ref_pic_list_resort_indices)
-                ref_list->push_back(merge_cache_ref_list[i]);
-        }
-        else
-        {
-            *ref_list = merge_cache_ref_list;
-        }
+        for (const auto& i : ref_pic_list_resort_indices)
+            ref_list->push_back(merge_cache_ref_list[i]);
     };
     
     general_reference_list(poc_st_curr_before, poc_st_curr_after, poc_lt_curr, 
@@ -626,8 +652,7 @@ bool SliceSegmentHeader::ParseQuantizationParameterInfo(
     return true;
 }
 
-bool SliceSegmentHeader::ParseReconstructPictureInfo(
-    bool is_slice_sao_luma, bool is_slice_sao_chroma, BitStream* bit_stream)
+bool SliceSegmentHeader::ParseReconstructPictureInfo(BitStream* bit_stream)
 {
     if (!bit_stream)
         return false;
@@ -648,7 +673,7 @@ bool SliceSegmentHeader::ParseReconstructPictureInfo(
         }
     }
     if (pps_->IsPPSLoopFilterAcrossSliceEnabled() && 
-        (is_slice_sao_luma || is_slice_sao_chroma || 
+        (is_slice_sao_luma_ || is_slice_sao_chroma_ || 
         !is_slice_deblocking_filter_disabled))
         bool is_slice_loop_filter_across_slice_enabled = bit_stream->ReadBool();
 

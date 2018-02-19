@@ -15,6 +15,7 @@ class ShortTermReferencePictureSet;
 class ISliceSegmentHeaderContext;
 enum NalUnitType;
 enum SliceType;
+enum ChromaFormatType;
 class BitStream;
 class TileInfo;
 
@@ -49,6 +50,12 @@ public:
     uint32_t GetQuantizationParameter() const;
     bool IsEntropyCodingSyncEnabled() const;
     bool IsTilesEnabled() const;
+    bool IsSliceSAOLuma() const;
+    bool IsSliceSAOChroma() const;
+    bool IsUsedCABACInit() const;
+    ChromaFormatType GetChromaFormatType() const;
+    uint32_t GetBitDepthLuma() const;
+    uint32_t GetBitDepthChroma() const;
     const std::vector<int32_t>& GetNegativeRefPOCList() const;
     const std::vector<int32_t>& GetPositiveRefPOCList() const;
 
@@ -77,11 +84,7 @@ private:
         BitStream* bit_stream, ISliceSegmentHeaderContext* context);
 
     bool ParseQuantizationParameterInfo(BitStream* bit_stream);
-
-    bool ParseReconstructPictureInfo(bool is_slice_sao_luma, 
-                                     bool is_slice_sao_chroma,
-                                     BitStream* bit_stream);
-
+    bool ParseReconstructPictureInfo(BitStream* bit_stream);
     bool ParseTileInfo(BitStream* bit_stream);
 
     uint32_t GetCurrentAvailableReferencePictureCount(
@@ -107,6 +110,9 @@ private:
     uint32_t slice_segment_address_;
     bool is_dependent_slice_segment_;
     uint32_t quantization_parameter_;
+    bool is_slice_sao_luma_;
+    bool is_slice_sao_chroma_;
+    bool is_used_cabac_init_;
 };
 
 #endif

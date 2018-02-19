@@ -1,5 +1,7 @@
 ﻿#include "hevc_decoder/hevc_decoder.h"
 
+#include <cassert>
+
 #include "hevc_decoder/hevc_decoder_def.h"
 #include "hevc_decoder/syntax/nal_organizer.h"
 #include "hevc_decoder/syntax/parameters_manager.h"
@@ -48,6 +50,7 @@ HEVC_ERROR HEVCDecoder::Decode(const int8_t* buffer, uint32_t len,
                                list<unique_ptr<Frame>>* frames)
 {    
     bool success = organizer_->Decode(buffer, len);
+    assert(success);
     if (success)
         success = frame_sequence_arranger_->GetFrames(frames);
 

@@ -42,7 +42,7 @@ bool FrameSyntax::AddSliceSegment(shared_ptr<SliceSegmentSyntax> slice_segment)
     ctu_count_by_tile_scan_ += 
         slice_segment->GetSliceSegmentData().GetCTUCount();
     slices_.push_back(move(slice));
-    return false;
+    return true;
 }
 
 bool FrameSyntax::HasFramePartition() const

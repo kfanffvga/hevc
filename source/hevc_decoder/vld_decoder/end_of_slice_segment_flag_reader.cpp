@@ -2,7 +2,8 @@
 
 #include <cassert>
 
-EndOfSliceSegmentFlagReader::EndOfSliceSegmentFlagReader(CABACReader* reader)
+EndOfSliceSegmentFlagReader::EndOfSliceSegmentFlagReader(
+    CABACReader* reader)
     : CommonCABACSyntaxReader(reader)
 {
 
@@ -18,7 +19,8 @@ bool EndOfSliceSegmentFlagReader::Read()
     return !!ReadBit();
 }
 
-int EndOfSliceSegmentFlagReader::GetArithmeticContextIndex(uint16_t bin_idx)
+uint32_t EndOfSliceSegmentFlagReader::GetArithmeticContextIndex(
+    uint16_t bin_idx)
 {
     return 0;
 }

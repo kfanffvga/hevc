@@ -292,6 +292,37 @@ bool FramePartition::Init(
      return false;
  }
 
+ bool FramePartition::GetCoordinateByTileScanIndex(uint32_t index, Coordinate* c)
+ {
+     if (!c)
+         return false;
+
+     auto& tile_scan_index_values = 
+         tile_and_raster_partition_info_.get<TileScanIndex>();
+     auto block_info = tile_scan_index_values.find(index);
+     if (tile_scan_index_values.end() == block_info)
+         return false;
+
+     *c = block_info->block_coordinate;
+     return true;
+ }
+
+ bool FramePartition::GetCoordinateByRasterScanIndex(uint32_t index, 
+                                                     Coordinate* c)
+ {
+     if (!c)
+         return false;
+
+     auto& raster_scan_index_values =
+         tile_and_raster_partition_info_.get<RasterScanIndex>();
+     auto block_info = raster_scan_index_values.find(index);
+     if (raster_scan_index_values.end() == block_info)
+         return false;
+
+     *c = block_info->block_coordinate;
+     return true;
+ }
+
  bool FramePartition::IsTheFirstCTBInTile(const Coordinate& block)
  {
      auto& coordinate_values = 
@@ -379,4 +410,3 @@ bool FramePartition::Init(
 
      return block_info->is_first_block_in_row_of_tile;
  }
-

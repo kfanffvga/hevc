@@ -17,9 +17,11 @@ public:
     CABACContextStorage();
     ~CABACContextStorage();
 
+    static CABACInitType GetInitType(SliceType slice_type, bool is_cabac_init);
+    static uint32_t GetLowestContextID(SyntaxElementName name, 
+                                       CABACInitType init_type);
+
     void Init();
-    int GetInitType(SliceType slice_type, bool is_cabac_init);
-    inline int GetLowestContextID(SyntaxElementName name, int init_type) const;
 
     CABACContext GetDefaultContext(uint32_t qp);
     CABACContext GetCTBStorageContext(uint32_t ctb_storage_id);

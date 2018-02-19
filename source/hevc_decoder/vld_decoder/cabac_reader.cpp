@@ -211,14 +211,21 @@ uint8_t CABACReader::ReadNormalBit(SyntaxElementName syntax_name,
         context_item.state_idx = trans_idx_mps[context_item.state_idx];
         current_range_ = mps_range;
     }
-    if (current_range_ <= 256)
-        Renormalize();
+    Renormalize();
 
     return val;
 }
 
 void CABACReader::Renormalize()
 {
-    current_range_ <<= 1;
-    offset_ = (offset_ << 1) | stream_->Read<uint16_t>(1);
+    if (current_range_ > 256)
+        return;
+
+    uint32_t n = 0;
+    while (current_range_ <= 256)
+    {
+        ++n;
+        current_range_ <<= 1;
+    }   
+    offset_ = (offset_ << n) | stream_->Read<uint16_t>(n);
 }

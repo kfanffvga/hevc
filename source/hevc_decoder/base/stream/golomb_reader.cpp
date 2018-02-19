@@ -16,7 +16,15 @@ uint32_t GolombReader::ReadUnsignedValue()
 {
     int zero_bits = 0;
     while (!bit_stream_->Read<uint8_t>(1))
+    {
+        if (bit_stream_->IsEof())
+        {
+            assert(false);
+            break;
+        }
         ++zero_bits;
+        assert(zero_bits < 32);
+    }
 
     return (0 == zero_bits) ? 0 :
         (1 << zero_bits) - 1 + bit_stream_->Read<uint32_t>(zero_bits);

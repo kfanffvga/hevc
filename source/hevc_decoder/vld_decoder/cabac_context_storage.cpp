@@ -155,15 +155,16 @@ void CABACContextStorage::Init()
         InitByQuantizationParameter(qp);
 }
 
-int CABACContextStorage::GetInitType(SliceType slice_type, bool is_cabac_init)
+CABACInitType CABACContextStorage::GetInitType(SliceType slice_type, 
+                                               bool is_cabac_init)
 {
     if (I_SLICE == slice_type)
-        return 0;
+        return FIRST_TYPE;
 
     if (P_SLICE == slice_type)
-        return is_cabac_init ? 2 : 1;
+        return is_cabac_init ? THIRD_TYPE : SECOND_TYPE;
 
-    return is_cabac_init ? 1 : 2;
+    return is_cabac_init ? SECOND_TYPE : THIRD_TYPE;
 }
 
 CABACContext CABACContextStorage::GetDefaultContext(uint32_t qp)
@@ -234,9 +235,9 @@ void CABACContextStorage::InitByQuantizationParameter(uint32_t qp)
     default_contexts_.push_back(context_of_qp);
 }
 
-int CABACContextStorage::GetLowestContextID(SyntaxElementName name, 
-                                            int init_type) const
+uint32_t CABACContextStorage::GetLowestContextID(SyntaxElementName name, 
+                                                 CABACInitType init_type)
 {
     assert(!init_type_to_ctxidx[name][init_type].empty());
-    return init_type_to_ctxidx[name][init_type][0];
+    return init_type_to_ctxidx[name][static_cast<uint32_t>(init_type)][0];
 }

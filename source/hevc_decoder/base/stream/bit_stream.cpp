@@ -16,12 +16,12 @@ BitStream::~BitStream()
     end_ptr_ = nullptr;
 }
 
-int BitStream::GetSize()
+uint32_t BitStream::GetSize()
 {
     return end_ptr_ - data_;
 }
 
-bool BitStream::Seek(int byte_position, int bit_position)
+bool BitStream::Seek(uint32_t byte_position, uint32_t bit_position)
 {
     if ((byte_position < 0) && byte_position > GetSize() &&
         (bit_position < 0) && (bit_position > 7))
