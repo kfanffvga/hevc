@@ -37,6 +37,7 @@ SequenceParameterSet::SequenceParameterSet()
     , ctb_log2_size_y_(0)
     , ctb_height_(0)
     , log2_min_luma_transform_block_size_(0)
+    , log2_min_luma_coding_block_size_(0)
 {
 
 }
@@ -90,12 +91,11 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
     ParseSubLayerOrderingInfo(&golomb_reader, sps_max_sub_layers, 
                               has_sps_sub_layer_ordering_info_present);
 
-    uint32_t log2_min_luma_coding_block_size = 
-        golomb_reader.ReadUnsignedValue() + 3;
+    log2_min_luma_coding_block_size_ = golomb_reader.ReadUnsignedValue() + 3;
     uint32_t log2_diff_max_min_luma_coding_block_size = 
         golomb_reader.ReadUnsignedValue();
 
-    ctb_log2_size_y_ = log2_min_luma_coding_block_size + 
+    ctb_log2_size_y_ = log2_min_luma_coding_block_size_ + 
         log2_diff_max_min_luma_coding_block_size;
     ctb_height_ = 1 << ctb_log2_size_y_;
     uint32_t pic_width_in_ctb_y =
@@ -379,4 +379,9 @@ uint32_t SequenceParameterSet::GetCTBHeight() const
 uint32_t SequenceParameterSet::GetBitDepthLuma() const
 {
     return bit_depth_luma_;
+}
+
+uint32_t SequenceParameterSet::GetLog2MinLumaCodingBlockSize() const
+{
+    return log2_min_luma_coding_block_size_;
 }

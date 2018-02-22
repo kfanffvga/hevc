@@ -33,6 +33,7 @@ public:
     uint32_t GetCTBLog2SizeY() const;
     uint32_t GetCTBHeight() const;
     uint32_t GetLog2MinLumaTransformBlockSize() const;
+    uint32_t GetLog2MinLumaCodingBlockSize() const;
 
     uint32_t GetSequenceParameterSetID();
     uint32_t GetSliceSegmentAddressBitLength() const;
@@ -94,6 +95,7 @@ private:
     uint32_t ctb_log2_size_y_;
     uint32_t ctb_height_;
     uint32_t log2_min_luma_transform_block_size_;
+    uint32_t log2_min_luma_coding_block_size_;
 };
 
 #endif

@@ -53,9 +53,14 @@ public:
     bool IsSliceSAOLuma() const;
     bool IsSliceSAOChroma() const;
     bool IsUsedCABACInit() const;
+    bool IsCUQPDeltaEnabled() const;
+    bool IsCUChromaQPOffsetEnabled() const;
     ChromaFormatType GetChromaFormatType() const;
     uint32_t GetBitDepthLuma() const;
     uint32_t GetBitDepthChroma() const;
+    uint32_t GetMinCBLog2SizeY() const;
+    uint32_t GetLog2MinCUQPDeltaSize() const;
+    uint32_t GetLog2MinCUChromaQPOffsetSize() const;
     const std::vector<int32_t>& GetNegativeRefPOCList() const;
     const std::vector<int32_t>& GetPositiveRefPOCList() const;
 
@@ -113,6 +118,7 @@ private:
     bool is_slice_sao_luma_;
     bool is_slice_sao_chroma_;
     bool is_used_cabac_init_;
+    bool is_cu_chroma_qp_offset_enabled_;
 };
 
 #endif

@@ -85,8 +85,6 @@ bool SampleAdaptiveOffset::ParseIndependentSAOInfo(
         ((context->GetChromaFormatType() == MONO_CHROME) || 
         (context->GetChromaFormatType() == YUV_MONO_CHROME)) ? 1 : 3;
 
-    SAOTypeIndexReader sao_type_index_reader(cabac_reader, 
-                                             context->GetCABACInitType());
     sao_type_indices_.resize(color_count);
     sao_offsets_.resize(color_count);
     sao_band_positions_.resize(color_count);
@@ -98,12 +96,16 @@ bool SampleAdaptiveOffset::ParseIndependentSAOInfo(
 
         if (0 == color_index)
         {
+            SAOTypeIndexReader sao_type_index_reader(
+                cabac_reader, context->GetCABACInitType());
             uint32_t sao_type_idx_luma = sao_type_index_reader.Read();
             sao_type_indices_[0] = 
                 static_cast<SampleAdaptiveOffsetType>(sao_type_idx_luma);
         }
         else if (1 == color_index)
         {
+            SAOTypeIndexReader sao_type_index_reader(
+                cabac_reader, context->GetCABACInitType());
             uint32_t sao_type_idx_chroma = sao_type_index_reader.Read();
             sao_type_indices_[1] = 
                 static_cast<SampleAdaptiveOffsetType>(sao_type_idx_chroma);
@@ -141,11 +143,11 @@ bool SampleAdaptiveOffset::ParseSingleColorSAODetailInfo(
     
     if (BAND_OFFSET == sao_type)
     {
-        SAOOffsetSignReader sao_offset_sign_reader(cabac_reader);
         for (uint32_t i = 0; i < 4; ++i)
         {
             if ((*sao_offset)[i] != 0)
             {
+                SAOOffsetSignReader sao_offset_sign_reader(cabac_reader);
                 bool is_positive_sign = sao_offset_sign_reader.Read();
                 if (!is_positive_sign)
                     (*sao_offset)[i] = -(*sao_offset)[i];

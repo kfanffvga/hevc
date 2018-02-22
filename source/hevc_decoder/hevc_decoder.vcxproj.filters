@@ -192,6 +192,9 @@
     <ClInclude Include="vld_decoder\fixed_length_value_reader.h" />
     <ClInclude Include="vld_decoder\sao_band_position_reader.h" />
     <ClInclude Include="vld_decoder\sao_eo_class_reader.h" />
+    <ClInclude Include="syntax\coding_quadtree.h" />
+    <ClInclude Include="syntax\coding_quadtree_context.h" />
+    <ClInclude Include="vld_decoder\split_cu_flag_reader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -334,5 +337,7 @@
     <ClCompile Include="vld_decoder\fixed_length_value_reader.cpp" />
     <ClCompile Include="vld_decoder\sao_band_position_reader.cpp" />
     <ClCompile Include="vld_decoder\sao_eo_class_reader.cpp" />
+    <ClCompile Include="syntax\coding_quadtree.cpp" />
+    <ClCompile Include="vld_decoder\split_cu_flag_reader.cpp" />
   </ItemGroup>
 </Project>

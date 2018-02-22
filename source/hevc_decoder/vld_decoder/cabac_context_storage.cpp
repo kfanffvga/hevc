@@ -137,7 +137,8 @@ const static vector<vector<int>> init_values =
 };
 
 CABACContextStorage::CABACContextStorage()
-    : default_contexts_()
+    : initialzed_(false)
+    , default_contexts_()
     , tile_contexts_()
     , slice_segment_contexts_()
 {
@@ -151,8 +152,14 @@ CABACContextStorage::~CABACContextStorage()
 
 void CABACContextStorage::Init()
 {
+    assert(!initialzed_);
+    if (initialzed_)
+        return;
+
     for (uint32_t qp = 0; qp < 52; ++qp)
         InitByQuantizationParameter(qp);
+
+    initialzed_ = true;
 }
 
 CABACInitType CABACContextStorage::GetInitType(SliceType slice_type, 
@@ -220,7 +227,7 @@ void CABACContextStorage::InitByQuantizationParameter(uint32_t qp)
             int m = slope_idx * 5 - 45;
             int n = (offset_idx << 3) - 16;
             int prepare_context_state = 
-                Clip3(1, 126, static_cast<int>(((m * qp) >> 4) + n));
+                Clip3(1, 126, ((m * static_cast<int>(qp)) >> 4) + n);
             ContextItem item = { };
             item.val_mps = prepare_context_state <= 63 ? 0 : 1;
             item.state_idx = item.val_mps ? 

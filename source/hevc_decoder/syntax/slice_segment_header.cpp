@@ -110,6 +110,7 @@ SliceSegmentHeader::SliceSegmentHeader(
     , is_slice_sao_luma_(false)
     , is_slice_sao_chroma_(false)
     , is_used_cabac_init_(false)
+    , is_cu_chroma_qp_offset_enabled_(false)
 {
 
 }
@@ -241,6 +242,16 @@ bool SliceSegmentHeader::IsUsedCABACInit() const
     return is_used_cabac_init_;
 }
 
+bool SliceSegmentHeader::IsCUQPDeltaEnabled() const
+{
+    return pps_->IsCUQPDeltaEnabled();
+}
+
+bool SliceSegmentHeader::IsCUChromaQPOffsetEnabled() const
+{
+    return is_cu_chroma_qp_offset_enabled_;
+}
+
 ChromaFormatType SliceSegmentHeader::GetChromaFormatType() const
 {
     return sps_->GetChromaFormatType();
@@ -254,6 +265,22 @@ uint32_t SliceSegmentHeader::GetBitDepthLuma() const
 uint32_t SliceSegmentHeader::GetBitDepthChroma() const
 {
     return sps_->GetBitDepthChroma();
+}
+
+uint32_t SliceSegmentHeader::GetMinCBLog2SizeY() const
+{
+    return sps_->GetLog2MinLumaCodingBlockSize();
+}
+
+uint32_t SliceSegmentHeader::GetLog2MinCUQPDeltaSize() const
+{
+    return sps_->GetCTBLog2SizeY() - pps_->GetDiffCUQPDeltaDepth();
+}
+
+uint32_t SliceSegmentHeader::GetLog2MinCUChromaQPOffsetSize() const
+{
+    return sps_->GetCTBLog2SizeY() - 
+        pps_->GetPPSRangeExtension().GetDiffCUChromaQPOffsetDepth();
 }
 
 const vector<int32_t>& SliceSegmentHeader::GetNegativeRefPOCList() const
@@ -647,7 +674,7 @@ bool SliceSegmentHeader::ParseQuantizationParameterInfo(
         int32_t slice_act_cr_qp_offset = golomb_reader.ReadSignedValue();
     }
     if (pps_->GetPPSRangeExtension().IsChromaQPOffsetListEnabled())
-        bool cu_chroma_qp_offset_enabled = bit_stream->ReadBool();
+        is_cu_chroma_qp_offset_enabled_ = bit_stream->ReadBool();
 
     return true;
 }

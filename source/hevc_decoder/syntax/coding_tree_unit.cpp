@@ -1,12 +1,14 @@
 ﻿#include "hevc_decoder/syntax/coding_tree_unit.h"
 
-#include "hevc_decoder/base/basic_types.h"
 #include "hevc_decoder/partitions/frame_partition.h"
 #include "hevc_decoder/vld_decoder/cabac_reader.h"
 #include "hevc_decoder/syntax/coding_tree_unit_context.h"
 #include "hevc_decoder/syntax/sample_adaptive_offset_context.h"
 #include "hevc_decoder/syntax/slice_segment_header.h"
 #include "hevc_decoder/syntax/sample_adaptive_offset.h"
+#include "hevc_decoder/syntax/coding_quadtree.h"
+#include "hevc_decoder/syntax/coding_quadtree_context.h"
+#include "hevc_decoder/partitions/slice_segment_address_provider.h"
 
 using std::shared_ptr;
 
@@ -15,10 +17,12 @@ class SampleAdaptiveOffsetContext : public ISampleAdaptiveOffsetContext
 public:
     SampleAdaptiveOffsetContext(
         const shared_ptr<FramePartition>& frame_partition, 
-        ICodingTreeUnitContext* ctu_context, Coordinate& ctb_point)
+        ICodingTreeUnitContext* ctu_context, Coordinate& ctb_point,
+        uint32_t ctb_size_y)
         : frame_partition_(frame_partition)
         , ctu_context_(ctu_context)
         , ctb_point_(ctb_point)
+        , ctb_size_y_(ctb_size_y)
     {
         
     }
@@ -48,7 +52,7 @@ public:
             return false;
 
         Coordinate left_neighbour_ctb_point = 
-            {ctb_point_.x - ctu_context_->GetCTBLog2SizeY(), ctb_point_.y};
+            {ctb_point_.x - ctb_size_y_, ctb_point_.y};
         
         uint32_t left_neighbour_ctb_tile_index = 0;
         success = frame_partition_->GetTileIndex(left_neighbour_ctb_point, 
@@ -62,7 +66,7 @@ public:
     virtual bool HasUpCTBInSliceSegment() const override
     {
         Coordinate up_neighbour_ctb_point =
-            {ctb_point_.x, ctb_point_.y - ctu_context_->GetCTBLog2SizeY()};
+            {ctb_point_.x, ctb_point_.y - ctb_size_y_};
 
         uint32_t neighbour_raster_scan_index = 0;
         bool success = frame_partition_->GetRasterScanIndex(
@@ -83,7 +87,7 @@ public:
             return false;
         
         Coordinate up_neighbour_ctb_point =
-            {ctb_point_.x, ctb_point_.y - ctu_context_->GetCTBLog2SizeY()};
+            {ctb_point_.x, ctb_point_.y - ctb_size_y_};
         uint32_t neighbour_tile_index = 0;
         success = frame_partition_->GetTileIndex(up_neighbour_ctb_point, 
                                                  &neighbour_tile_index);
@@ -150,11 +154,91 @@ private:
     shared_ptr<FramePartition> frame_partition_;
     ICodingTreeUnitContext* ctu_context_;
     Coordinate ctb_point_;
+    uint32_t ctb_size_y_;
 };
 
-CodingTreeUnit::CodingTreeUnit(uint32_t tile_scan_index)
+class CodingQuadtreeContext : public ICodingQuadtreeContext
+{
+public:
+    CodingQuadtreeContext(ICodingTreeUnitContext* ctu_context,
+                          CodingTreeUnit* ctu)
+        : ctu_context_(ctu_context)
+        , ctu_(ctu)
+    {
+
+    }
+
+    virtual ~CodingQuadtreeContext()
+    {
+
+    }
+
+    virtual uint32_t GetFrameWidthInLumaSamples() const override
+    {
+        return ctu_context_->GetFrameWidthInLumaSamples();
+    }
+
+    virtual uint32_t GetFrameHeightInLumaSamples() const override
+    {
+        return ctu_context_->GetFrameHeightInLumaSamples();
+    }
+
+    virtual uint32_t GetMinCBLog2SizeY() const override
+    {
+        return ctu_context_->GetMinCBLog2SizeY();
+    }
+
+    virtual bool IsCUQPDeltaEnabled() const override
+    {
+        return ctu_context_->IsCUQPDeltaEnabled();
+    }
+
+    virtual uint32_t GetLog2MinCUQPDeltaSize() const override
+    {
+        return ctu_context_->GetLog2MinCUQPDeltaSize();
+    }
+
+    virtual bool IsCUChromaQPOffsetEnabled() const override
+    {
+        return ctu_context_->IsCUChromaQPOffsetEnabled();
+    }
+
+    virtual uint32_t GetLog2MinCUChromaQPOffsetSize() const override
+    {
+        return ctu_context_->GetLog2MinCUChromaQPOffsetSize();
+    }
+
+    virtual CABACInitType GetCABACInitType() const override
+    {
+        return ctu_context_->GetCABACInitType();
+    }
+
+    virtual bool IsNeighbourBlockAvailable(
+        const Coordinate& current, const Coordinate& neighbour) const override
+    {
+        return ctu_context_->IsNeighbourBlockAvailable(current, neighbour);
+    }
+
+    virtual uint32_t GetNearestCULayerByCoordinate(const Coordinate& point)
+        const override
+    {
+        return ctu_->GetNearestCULayerByCoordinate(point);
+    }
+
+private:
+    ICodingTreeUnitContext* ctu_context_;
+    CodingTreeUnit* ctu_;
+};
+
+CodingTreeUnit::CodingTreeUnit(uint32_t tile_scan_index, 
+                               const Coordinate& point, 
+                               uint32_t ctb_log2_size_y)
     : tile_scan_index_(tile_scan_index)
+    , point_(point)
+    , ctb_log2_size_y_(ctb_log2_size_y)
+    , ctb_size_y_(1 << ctb_log2_size_y)
     , cabac_context_storage_index_(0)
+    , coding_quadtree_(new CodingQuadtree(point, ctb_log2_size_y, 0))
     , sample_adaptive_offset_()
 {
 
@@ -174,23 +258,20 @@ bool CodingTreeUnit::Parse(CABACReader* reader, ICodingTreeUnitContext* context)
     if (!frame_partition)
         return false;
 
-    Coordinate ctb_point = {};
-    bool success = frame_partition->GetCoordinateByTileScanIndex(
-        tile_scan_index_, &ctb_point);
-    if (!success)
-        return false;
-
-    if (!reader->StartToReadWithNewCTU(ctb_point))
+    if (!reader->StartToReadWithNewCTU(point_))
         return false;
 
     if (context->IsSliceSAOLuma() || context->IsSliceSAOChroma())
     {
         sample_adaptive_offset_.reset(new SampleAdaptiveOffset());
         SampleAdaptiveOffsetContext sao_context(frame_partition, context, 
-                                                ctb_point);
+                                                point_, ctb_size_y_);
         if (!sample_adaptive_offset_->Parse(reader, &sao_context))
             return false;
     }
+    CodingQuadtreeContext coding_quadtree_context(context, this);
+    if (!coding_quadtree_->Parse(reader, &coding_quadtree_context))
+        return false;
 
     return reader->FinishToReadInCTU(&cabac_context_storage_index_);
 }
@@ -203,5 +284,11 @@ uint32_t CodingTreeUnit::GetCABACContextStorageIndex() const
 const SampleAdaptiveOffset* CodingTreeUnit::GetSampleAdaptiveOffset() const
 {
     return sample_adaptive_offset_.get();
+}
+
+uint32_t CodingTreeUnit::GetNearestCULayerByCoordinate(const Coordinate& point) 
+    const
+{
+    return coding_quadtree_->GetNearestCULayerByCoordinate(point);
 }
 

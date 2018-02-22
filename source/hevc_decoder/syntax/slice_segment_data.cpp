@@ -16,8 +16,83 @@
 
 using std::shared_ptr;
 
+class SliceSegmentAddressProvider : public ISliceSegmentAddressProvider
+{
+public: 
+    SliceSegmentAddressProvider(
+        ISliceSegmentDataContext* slice_segment_data_context,
+        const SliceSegmentData* slice_segment_data,
+        const SliceSegmentHeader* header)
+    {
+
+    }
+
+    virtual ~SliceSegmentAddressProvider()
+    {
+
+    }
+
+    virtual bool GetSliceAddressByRasterScanIndex(
+        uint32_t index, uint32_t* address) const override
+    {
+        shared_ptr<FramePartition> frame_partition =
+            slice_segment_data_context_->GetFramePartition();
+        if (!frame_partition)
+            return false;
+
+        uint32_t tile_scan_index = 0;
+        bool success = frame_partition->RasterScanIndexToTileScanIndex(
+            index, &tile_scan_index);
+        if (!success)
+            return false;
+
+        return GetSliceAddressByTileScanIndex(tile_scan_index, address);
+    }
+
+    virtual bool GetSliceAddressByTileScanIndex(
+        uint32_t index, uint32_t* address) const override
+    {
+        if (!address)
+            return false;
+
+        uint32_t index_end = slice_segment_data_->GetStartCTUIndexOfTileScan() +
+            slice_segment_data_->GetCTUCount();
+        if (index > index_end)
+            return false;
+
+        if (index >= slice_segment_data_->GetStartCTUIndexOfTileScan())
+        {
+            *address = header_->GetSliceSegmentAddress();
+            return true;
+        }
+        return slice_segment_data_context_->GetSliceSegmentAddressByTileScanIndex(
+            index, address);
+    }
+
+    virtual bool GetSliceAddress(const Coordinate& coordinate,
+                                 uint32_t* address) const override
+    {
+        shared_ptr<FramePartition> frame_partition =
+            slice_segment_data_context_->GetFramePartition();
+        if (!frame_partition)
+            return false;
+
+        uint32_t tile_scan_index = 0;
+        bool success = frame_partition->GetTileScanIndex(coordinate,
+                                                         &tile_scan_index);
+        if (success)
+            return false;
+
+        return GetSliceAddressByTileScanIndex(tile_scan_index, address);
+    }
+
+private:
+    ISliceSegmentDataContext* slice_segment_data_context_;
+    const SliceSegmentHeader* header_;
+    const SliceSegmentData* slice_segment_data_;
+};
+
 class CABACReaderInfoProvider : public IFrameInfoProviderForCABAC
-                              , public ISliceSegmentAddressProvider
 {
 public:
     CABACReaderInfoProvider(ISliceSegmentDataContext* slice_segment_data_context,
@@ -95,8 +170,11 @@ public:
         if (!frame_partition)
             return false;
 
+        SliceSegmentAddressProvider address_provider(
+            slice_segment_data_context_, slice_segment_data_, header_);
+
         return frame_partition->IsZScanOrderNeighbouringBlockAvailable(
-            current_block, neighbouring_block, this);
+            current_block, neighbouring_block, &address_provider);
     }
 
     virtual bool GetCABACContextIndexInCTU(
@@ -141,78 +219,29 @@ public:
         return context->GetCABACContextIndexInPriorSliceSegment();
     }
 
-    virtual bool GetSliceAddressByRasterScanIndex(
-        uint32_t index, uint32_t* address) const override
-    {
-        shared_ptr<FramePartition> frame_partition =
-            slice_segment_data_context_->GetFramePartition();
-        if (!frame_partition)
-            return false;
-
-        uint32_t tile_scan_index = 0;
-        bool success = frame_partition->RasterScanIndexToTileScanIndex(
-            index, &tile_scan_index);
-        if (!success)
-            return false;
-
-        return GetSliceAddressByTileScanIndex(tile_scan_index, address);
-    }
-
-    virtual bool GetSliceAddressByTileScanIndex(
-        uint32_t index, uint32_t* address) const override
-    {
-        if (!address)
-            return false;
-
-        uint32_t index_end = slice_segment_data_->GetStartCTUIndexOfTileScan() + 
-            slice_segment_data_->GetCTUCount();
-        if (index > index_end)
-            return false;
-
-        if (index >= slice_segment_data_->GetStartCTUIndexOfTileScan())
-        {
-            *address = header_->GetSliceSegmentAddress();
-            return true;
-        }
-        return slice_segment_data_context_->GetSliceSegmentAddressByTileScanIndex(
-            index, address);
-    }
-
-    virtual bool GetSliceAddress(const Coordinate& coordinate, 
-                                 uint32_t* address) const override
-    {
-        shared_ptr<FramePartition> frame_partition =
-            slice_segment_data_context_->GetFramePartition();
-        if (!frame_partition)
-            return false;
-
-        uint32_t tile_scan_index = 0;
-        bool success = frame_partition->GetTileScanIndex(coordinate, 
-                                                         &tile_scan_index);
-        if (success)
-            return false;
-
-        return GetSliceAddressByTileScanIndex(tile_scan_index, address);
-    }
-
 private:
     ISliceSegmentDataContext* slice_segment_data_context_;
     const SliceSegmentHeader* header_;
     const SliceSegmentData* slice_segment_data_;
 };
 
+// 由于代码规则上要求调用者在构造函数传递指针类型的时候必须保证指针在该类的对象的生命周期里
+// 安全，因此此处的frame_partition是用构造函数传入，而非用从slice_segment_data_context
+// 中获取
 class CodingTreeUnitContext : public ICodingTreeUnitContext
 {
 public:
     CodingTreeUnitContext(const shared_ptr<FramePartition>& frame_partition,
                           SliceSegmentHeader* header, SliceSegmentData* data, 
                           uint32_t tile_scan_index, 
-                          CABACInitType cabac_init_type)
+                          CABACInitType cabac_init_type,
+                          ISliceSegmentDataContext* slice_segment_data_context)
         : frame_partition_(frame_partition)
         , header_(header)
         , data_(data)
         , tile_scan_index_(tile_scan_index)
         , cabac_init_type_(cabac_init_type)
+        , slice_segment_data_context_(slice_segment_data_context)
     {
 
     }
@@ -242,11 +271,6 @@ public:
         return header_->GetSliceSegmentAddress();
     }
 
-    virtual uint32_t GetCTBLog2SizeY() const override
-    {
-        return header_->GetCTBLog2SizeY();
-    }
-
     virtual CABACInitType GetCABACInitType() const override
     {
         return cabac_init_type_;
@@ -265,6 +289,51 @@ public:
     virtual uint32_t GetBitDepthChroma() const
     {
         return header_->GetBitDepthChroma();
+    }
+
+    virtual uint32_t GetFrameHeightInLumaSamples() const override
+    {
+        return header_->GetHeight();
+    }
+
+    virtual uint32_t GetFrameWidthInLumaSamples() const override
+    {
+        return header_->GetWidth();
+    }
+
+    virtual uint32_t GetMinCBLog2SizeY() const override
+    {
+        return header_->GetMinCBLog2SizeY();
+    }
+
+    virtual bool IsCUQPDeltaEnabled() const override
+    {
+        return header_->IsCUQPDeltaEnabled();
+    }
+
+    virtual uint32_t GetLog2MinCUQPDeltaSize() const override
+    {
+        return header_->GetLog2MinCUQPDeltaSize();
+    }
+
+    virtual bool IsCUChromaQPOffsetEnabled() const override
+    {
+        return header_->IsCUChromaQPOffsetEnabled();
+    }
+
+    virtual uint32_t GetLog2MinCUChromaQPOffsetSize() const override
+    {
+        return header_->GetLog2MinCUChromaQPOffsetSize();
+    }
+
+    virtual bool IsNeighbourBlockAvailable(
+        const Coordinate& current, const Coordinate& neighbour) const override
+    {
+        SliceSegmentAddressProvider address_provider(
+            slice_segment_data_context_, data_, header_);
+
+        return frame_partition_->IsZScanOrderNeighbouringBlockAvailable(
+            current, neighbour, &address_provider);
     }
 
     virtual CodingTreeUnit* GetLeftNeighbourCTU() const override
@@ -319,6 +388,7 @@ private:
     SliceSegmentData* data_;
     uint32_t tile_scan_index_;
     CABACInitType cabac_init_type_;
+    ISliceSegmentDataContext* slice_segment_data_context_;
 };
 
 SliceSegmentData::SliceSegmentData()
@@ -370,11 +440,20 @@ bool SliceSegmentData::Parse(BitStream* bit_stream, CABACReader* reader,
                                          header->IsUsedCABACInit());
     do {
         uint32_t tile_scan_index = start_ctu_index_of_tile_scan_ + ctus_.size();
+        Coordinate c = {};
+        bool success = 
+            frame_partition->GetCoordinateByTileScanIndex(tile_scan_index, &c);
+        if (!success)
+            return false;
 
-        shared_ptr<CodingTreeUnit> ctu(new CodingTreeUnit(tile_scan_index));
+        shared_ptr<CodingTreeUnit> ctu(
+            new CodingTreeUnit(
+                tile_scan_index, c, 
+                context->GetSliceSegmentHeader()->GetCTBLog2SizeY()));
+
         CodingTreeUnitContext codeing_tree_unit_context(
             context->GetFramePartition(), context->GetSliceSegmentHeader(), 
-            this, tile_scan_index, cabac_init_type);
+            this, tile_scan_index, cabac_init_type, context);
         if (!ctu->Parse(reader, &codeing_tree_unit_context))
             return false;
 

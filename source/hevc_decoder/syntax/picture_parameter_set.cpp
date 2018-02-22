@@ -33,6 +33,8 @@ PictureParameterSet::PictureParameterSet()
     , is_pps_loop_filter_across_slices_enabled_(false)
     , is_tiles_enabled_(false)
     , is_entropy_coding_sync_enabled_(false)
+    , is_cu_qp_delta_enabled_(false)
+    , diff_cu_qp_delta_depth_(0)
     , tile_info_(new TileInfo())
     , num_ref_idx_negative_default_active_(0)
     , num_ref_idx_positive_default_active_(0)
@@ -69,9 +71,9 @@ bool PictureParameterSet::Parse(BitStream* bit_stream)
     init_qp_ = golomb_reader.ReadSignedValue() + 26;
     bool is_constrained_intra_pred = bit_stream->ReadBool();
     bool is_transform_skip_enabled = bit_stream->ReadBool();
-    bool is_cu_qp_delta_enabled = bit_stream->ReadBool();
-    if (is_cu_qp_delta_enabled)
-        uint32_t diff_cu_qp_delta_depth = golomb_reader.ReadUnsignedValue();
+    is_cu_qp_delta_enabled_ = bit_stream->ReadBool();
+    if (is_cu_qp_delta_enabled_)
+        diff_cu_qp_delta_depth_ = golomb_reader.ReadUnsignedValue();
 
     int pps_cb_qp_offset = golomb_reader.ReadSignedValue();
     int pps_cr_qp_offset = golomb_reader.ReadSignedValue();
@@ -275,6 +277,16 @@ bool PictureParameterSet::IsTilesEnabled() const
 bool PictureParameterSet::IsEntropyCodingSyncEnabled() const
 {
     return is_entropy_coding_sync_enabled_;
+}
+
+bool PictureParameterSet::IsCUQPDeltaEnabled() const
+{
+    return is_cu_qp_delta_enabled_;
+}
+
+uint32_t PictureParameterSet::GetDiffCUQPDeltaDepth() const
+{
+    return diff_cu_qp_delta_depth_;
 }
 
 const TileInfo& PictureParameterSet::GetTileInfo() const

@@ -18,7 +18,7 @@ SAOEOClassReader::~SAOEOClassReader()
 uint32_t SAOEOClassReader::Read()
 {
     auto bit_reader = bind(&SAOEOClassReader::ReadBit, this);
-    return !!FixedLengthValueReader(bit_reader).Read(2);
+    return FixedLengthValueReader(bit_reader).Read(2);
 }
 
 uint32_t SAOEOClassReader::GetArithmeticContextIndex(uint16_t bin_idx)

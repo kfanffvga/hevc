@@ -9,6 +9,7 @@ using std::vector;
 
 PPSRangeExtension::PPSRangeExtension()
     : is_chroma_qp_offset_list_enabled_(false)
+    , diff_cu_chroma_qp_offset_depth_(0)
 {
 
 }
@@ -34,9 +35,7 @@ bool PPSRangeExtension::Parse(BitStream* bit_stream,
     is_chroma_qp_offset_list_enabled_ = bit_stream->ReadBool();
     if (is_chroma_qp_offset_list_enabled_)
     {
-        uint32_t diff_cu_chroma_qp_offset_depth = 
-            golomb_reader.ReadUnsignedValue();
-
+        diff_cu_chroma_qp_offset_depth_ = golomb_reader.ReadUnsignedValue();
         uint32_t chroma_qp_offset_list_len = golomb_reader.ReadUnsignedValue();
         vector<int32_t> cb_qp_offset_list(chroma_qp_offset_list_len);
         vector<int32_t> cr_qp_offset_list(chroma_qp_offset_list_len);
@@ -54,4 +53,9 @@ bool PPSRangeExtension::Parse(BitStream* bit_stream,
 bool PPSRangeExtension::IsChromaQPOffsetListEnabled() const
 {
     return is_chroma_qp_offset_list_enabled_;
+}
+
+uint32_t PPSRangeExtension::GetDiffCUChromaQPOffsetDepth() const
+{
+    return diff_cu_chroma_qp_offset_depth_;
 }

@@ -7,8 +7,7 @@ SAOMergeFlagReader::SAOMergeFlagReader(CABACReader* cabac_reader,
                                        CABACInitType init_type)
     : CommonCABACSyntaxReader(cabac_reader)
     , lowest_context_index_(
-        CABACContextStorage::GetLowestContextID(SAO_TYPE_IDX, init_type)
-    )
+        CABACContextStorage::GetLowestContextID(SAO_TYPE_IDX, init_type))
 {
     
 }

@@ -96,6 +96,8 @@
     <ClInclude Include="partitions\frame_partition_manager.h" />
     <ClInclude Include="predictors\predictor_manager.h" />
     <ClInclude Include="syntax\byte_alignment.h" />
+    <ClInclude Include="syntax\coding_quadtree.h" />
+    <ClInclude Include="syntax\coding_quadtree_context.h" />
     <ClInclude Include="syntax\coding_tree_unit.h" />
     <ClInclude Include="syntax\coding_tree_unit_context.h" />
     <ClInclude Include="syntax\colour_mapping_octants.h" />
@@ -153,6 +155,7 @@
     <ClInclude Include="vld_decoder\sao_offset_abs_reader.h" />
     <ClInclude Include="vld_decoder\sao_offset_sign_reader.h" />
     <ClInclude Include="vld_decoder\sao_type_index_reader.h" />
+    <ClInclude Include="vld_decoder\split_cu_flag_reader.h" />
     <ClInclude Include="vld_decoder\truncated_rice_value_reader.h" />
   </ItemGroup>
   <ItemGroup>
@@ -168,6 +171,7 @@
     <ClCompile Include="partitions\frame_partition_manager.cpp" />
     <ClCompile Include="predictors\predictor_manager.cpp" />
     <ClCompile Include="syntax\byte_alignment.cpp" />
+    <ClCompile Include="syntax\coding_quadtree.cpp" />
     <ClCompile Include="syntax\coding_tree_unit.cpp" />
     <ClCompile Include="syntax\coded_video_sequence.cpp" />
     <ClCompile Include="syntax\colour_mapping_octants.cpp" />
@@ -213,6 +217,7 @@
     <ClCompile Include="vld_decoder\sao_offset_abs_reader.cpp" />
     <ClCompile Include="vld_decoder\sao_offset_sign_reader.cpp" />
     <ClCompile Include="vld_decoder\sao_type_index_reader.cpp" />
+    <ClCompile Include="vld_decoder\split_cu_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\truncated_rice_value_reader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
