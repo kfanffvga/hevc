@@ -38,6 +38,15 @@ SequenceParameterSet::SequenceParameterSet()
     , ctb_height_(0)
     , log2_min_luma_transform_block_size_(0)
     , log2_min_luma_coding_block_size_(0)
+    , max_transform_block_size_y_(0)
+    , is_amp_enabled_(false)
+    , is_pcm_enabled_(false)
+    , log2_min_pcm_coding_block_size_y_(0)
+    , log2_max_pcm_coding_block_size_y_(0)
+    , min_pcm_coding_block_size_y_(0)
+    , max_pcm_coding_block_size_y_(0)
+    , max_transform_hierarchy_depth_inter_(0)
+    , max_transform_hierarchy_depth_intra_(0)
 {
 
 }
@@ -95,6 +104,7 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
     uint32_t log2_diff_max_min_luma_coding_block_size = 
         golomb_reader.ReadUnsignedValue();
 
+    min_luma_coding_block_size_y_ = 1 << log2_min_luma_coding_block_size_;
     ctb_log2_size_y_ = log2_min_luma_coding_block_size_ + 
         log2_diff_max_min_luma_coding_block_size;
     ctb_height_ = 1 << ctb_log2_size_y_;
@@ -109,10 +119,11 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
     uint32_t log2_diff_max_min_luma_transform_block_size = 
         golomb_reader.ReadUnsignedValue();
 
-    uint32_t max_transform_hierarchy_depth_inter = 
-        golomb_reader.ReadUnsignedValue();
-    uint32_t max_transform_hierarchy_depth_intra = 
-        golomb_reader.ReadUnsignedValue();
+    max_transform_block_size_y_ = 1 << (log2_min_luma_transform_block_size_ + 
+        log2_diff_max_min_luma_transform_block_size);
+
+    max_transform_hierarchy_depth_inter_ = golomb_reader.ReadUnsignedValue();
+    max_transform_hierarchy_depth_intra_ = golomb_reader.ReadUnsignedValue();
 
     bool is_scaling_list_enabled = bit_stream->ReadBool();
     if (is_scaling_list_enabled)
@@ -125,17 +136,22 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
                 return false;
         }
     }
-    bool is_amp_enabled = bit_stream->ReadBool();
+    is_amp_enabled_ = bit_stream->ReadBool();
     is_sample_adaptive_offset_enabled_ = bit_stream->ReadBool();
-    bool is_pcm_enabled = bit_stream->ReadBool();
-    if (is_pcm_enabled)
+    is_pcm_enabled_ = bit_stream->ReadBool();
+    if (is_pcm_enabled_)
     {
         uint8_t pcm_sample_bit_depth_luma = bit_stream->Read<uint8_t>(4) + 1;
         uint8_t pcm_sample_bit_depth_chroma_ = bit_stream->Read<uint8_t>(4) + 1;
-        uint32_t log2_min_pcm_luma_coding_block_ = 
+        uint32_t log2_min_pcm_luma_coding_block_size = 
             golomb_reader.ReadUnsignedValue() + 3;
+        log2_min_pcm_coding_block_size_y_ = log2_min_pcm_luma_coding_block_size;
         uint32_t log2_diff_max_min_pcm_luma_coding_block_size = 
             golomb_reader.ReadUnsignedValue();
+        log2_max_pcm_coding_block_size_y_ = log2_min_pcm_coding_block_size_y_ + 
+            log2_diff_max_min_pcm_luma_coding_block_size;
+        min_pcm_coding_block_size_y_ = 1 << log2_min_pcm_coding_block_size_y_;
+        max_pcm_coding_block_size_y_ = 1 << log2_max_pcm_coding_block_size_y_;
         bool is_pcm_loop_filter_disabled = bit_stream->ReadBool();
     }
     bool success = ParseReferencePicturesInfo(bit_stream, 
@@ -384,4 +400,54 @@ uint32_t SequenceParameterSet::GetBitDepthLuma() const
 uint32_t SequenceParameterSet::GetLog2MinLumaCodingBlockSize() const
 {
     return log2_min_luma_coding_block_size_;
+}
+
+uint32_t SequenceParameterSet::GetMaxTransformBlockSizeY() const
+{
+    return max_transform_block_size_y_;
+}
+
+bool SequenceParameterSet::IsAMPEnabled() const
+{
+    return is_amp_enabled_;
+}
+
+bool SequenceParameterSet::IsPCMEnabled() const
+{
+    return is_pcm_enabled_;
+}
+
+uint32_t SequenceParameterSet::GetLog2MinPCMCodingBlockSizeY() const
+{
+    return log2_min_pcm_coding_block_size_y_;
+}
+
+uint32_t SequenceParameterSet::GetLog2MaxPCMCodingBlockSizeY() const
+{
+    return log2_max_pcm_coding_block_size_y_;
+}
+
+uint32_t SequenceParameterSet::GetMinPCMCodingBlockSizeY() const
+{
+    return min_pcm_coding_block_size_y_;
+}
+
+uint32_t SequenceParameterSet::GetMaxPCMCodingBlockSizeY() const
+{
+    return max_pcm_coding_block_size_y_;
+}
+
+uint32_t SequenceParameterSet::GetMinLumaCodingBlockSizeY() const
+{
+    return min_luma_coding_block_size_y_;
+}
+
+uint32_t SequenceParameterSet::GetMaxTransformHierarchyDepthIntra() const
+{
+    return max_transform_hierarchy_depth_intra_;
+}
+
+uint32_t SequenceParameterSet::GetMaxTransformHierarchyDepthInter() const
+{
+    return max_transform_hierarchy_depth_inter_;
 }

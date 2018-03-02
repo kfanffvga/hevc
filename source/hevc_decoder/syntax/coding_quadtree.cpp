@@ -2,6 +2,8 @@
 
 #include "hevc_decoder/syntax/coding_quadtree_context.h"
 #include "hevc_decoder/vld_decoder/split_cu_flag_reader.h"
+#include "hevc_decoder/syntax/coding_unit.h"
+#include "hevc_decoder/syntax/coding_unit_context.h"
 
 class SplitCUFlagReaderContext : public ISplitCUFlagReaderContext
 {
@@ -50,7 +52,7 @@ private:
 
     virtual uint32_t GetUpBlockLayer() const override
     {
-        Coordinate up_neighbour = {point_.x - 1, point_.y};
+        Coordinate up_neighbour = {point_.x, point_.y - 1};
         return coding_quadtree_context_->GetNearestCULayerByCoordinate(
             up_neighbour);
     }
@@ -58,6 +60,101 @@ private:
     Coordinate point_;
     ICodingQuadtreeContext* coding_quadtree_context_;
     CodingQuadtree* coding_quadtree_;
+};
+
+class CodingUnitContext : public ICodingUnitContext
+{
+public:
+    CodingUnitContext(ICodingQuadtreeContext* quadtree_context)
+        : quadtree_context_(quadtree_context)
+    {
+
+    }
+
+    virtual ~CodingUnitContext()
+    {
+
+    }
+
+    virtual bool IsTransquantBypassEnabled() const override
+    {
+        return quadtree_context_->IsTransquantBypassEnabled();
+    }
+
+    virtual CABACInitType GetCABACInitType() const override
+    {
+        return quadtree_context_->GetCABACInitType();
+    }
+
+    virtual SliceType GetSliceType() const override
+    {
+        return quadtree_context_->GetSliceType();
+    }
+
+    virtual bool IsPaletteModeEnabled() const override
+    {
+        return quadtree_context_->IsPaletteModeEnabled();
+    }
+
+    virtual uint32_t GetMaxTransformBlockSizeY() const override
+    {
+        return quadtree_context_->GetMaxTransformBlockSizeY();
+    }
+
+    virtual uint32_t GetMinCBSizeY() const override
+    {
+        return quadtree_context_->GetMinCBSizeY();
+    }
+
+    virtual uint32_t GetMinPCMCodingBlockSizeY() const override
+    {
+        return quadtree_context_->GetMinPCMCodingBlockSizeY();
+    }
+
+    virtual uint32_t GetMaxPCMCodingBlockSizeY() const override
+    {
+        return quadtree_context_->GetMaxPCMCodingBlockSizeY();
+    }
+
+    virtual bool IsAsymmetricMotionPartitionsEnabled() const override
+    {
+        return quadtree_context_->IsAsymmetricMotionPartitionsEnabled();
+    }
+
+    virtual bool IsPCMEnabled() const override
+    {
+        return quadtree_context_->IsPCMEnabled();
+    }
+
+    virtual ChromaFormatType GetChromaFormatType() const override
+    {
+        return quadtree_context_->GetChromaFormatType();
+    }
+
+    virtual uint32_t GetMaxTransformHierarchyDepthIntra() const override
+    {
+        return quadtree_context_->GetMaxTransformHierarchyDepthIntra();
+    }
+
+    virtual uint32_t GetMaxTransformHierarchyDepthInter() const override
+    {
+        return quadtree_context_->GetMaxTransformHierarchyDepthInter();
+    }
+
+    virtual bool IsNeighbourBlockAvailable(
+        const Coordinate& current, const Coordinate& neighbour) const override
+    {
+        return quadtree_context_->IsNeighbourBlockAvailable(current, neighbour);
+    }
+
+    virtual uint32_t GetNearestCULayerByCoordinate(const Coordinate& point)
+        const
+    {
+        return quadtree_context_->GetNearestCULayerByCoordinate(point);
+    }
+
+private:
+    ICodingQuadtreeContext* quadtree_context_;
 };
 
 CodingQuadtree::CodingQuadtree(const Coordinate& point, uint32_t cb_log2_size_y, 
@@ -132,7 +229,10 @@ bool CodingQuadtree::Parse(CABACReader* cabac_reader,
     }
     else
     {
-
+        CodingUnit cu(point_, layer_, cb_size_y_);
+        CodingUnitContext cu_context(context);
+        if (!cu.Parse(cabac_reader, &cu_context))
+            return false;
     }
     return true;
 }
@@ -144,8 +244,9 @@ uint32_t CodingQuadtree::GetNearestCULayerByCoordinate(const Coordinate& point)
         return 0;
 
     Coordinate reference_point = {point.x - point_.x, point.y - point_.y};
-    uint32_t index = (reference_point.x & (cb_size_y_ >> 1)) || 
-        ((reference_point.y & (cb_size_y_ >> 1)) << 1);
+    uint32_t sub_cb_size_y = cb_size_y_ >> 1;
+    uint32_t index = ((reference_point.x & sub_cb_size_y) > 0 ? 1 : 0) | 
+        (((reference_point.y & sub_cb_size_y) > 0 ? 1 : 0) << 1);
 
     if (!sub_coding_quadtrees_[index])
         return layer_;

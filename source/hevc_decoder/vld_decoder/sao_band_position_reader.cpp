@@ -18,7 +18,7 @@ SAOBandPositionReader::~SAOBandPositionReader()
 uint32_t SAOBandPositionReader::Read()
 {
     auto bit_reader = bind(&SAOBandPositionReader::ReadBit, this);
-    return !!FixedLengthValueReader(bit_reader).Read(5);
+    return FixedLengthValueReader(bit_reader).Read(5);
 }
 
 uint32_t SAOBandPositionReader::GetArithmeticContextIndex(uint16_t bin_idx)

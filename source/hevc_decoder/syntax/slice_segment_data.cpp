@@ -6,6 +6,7 @@
 #include "hevc_decoder/syntax/slice_segment_header.h"
 #include "hevc_decoder/syntax/coding_tree_unit.h"
 #include "hevc_decoder/syntax/coding_tree_unit_context.h"
+#include "hevc_decoder/syntax/sps_screen_content_coding_extension.h"
 #include "hevc_decoder/syntax/byte_alignment.h"
 #include "hevc_decoder/vld_decoder/cabac_reader.h"
 #include "hevc_decoder/vld_decoder/cabac_context_storage.h"
@@ -306,6 +307,11 @@ public:
         return header_->GetMinCBLog2SizeY();
     }
 
+    virtual uint32_t GetMinCBSizeY() const override
+    {
+        return header_->GetMinCBSizeY();
+    }
+
     virtual bool IsCUQPDeltaEnabled() const override
     {
         return header_->IsCUQPDeltaEnabled();
@@ -324,6 +330,58 @@ public:
     virtual uint32_t GetLog2MinCUChromaQPOffsetSize() const override
     {
         return header_->GetLog2MinCUChromaQPOffsetSize();
+    }
+
+    virtual bool IsTransquantBypassEnabled() const override
+    {
+        return header_->IsTransquantBypassEnabled();
+    }
+
+    virtual SliceType GetSliceType() const override
+    {
+        return header_->GetSliceType();
+    }
+
+    virtual bool IsPaletteModeEnabled() const override
+    {
+        const SPSScreenContentCodingExtension& sps_scc =
+            header_->GetSPSScreenContentCodingExtension();
+        return sps_scc.IsPaletteModeEnabled();
+    }
+
+    virtual uint32_t GetMaxTransformBlockSizeY() const override
+    {
+        return header_->GetMaxTransformBlockSizeY();
+    }
+
+    virtual uint32_t GetMinPCMCodingBlockSizeY() const override
+    {
+        return header_->GetMinPCMCodingBlockSizeY();
+    }
+
+    virtual uint32_t GetMaxPCMCodingBlockSizeY() const override
+    {
+        return header_->GetMaxPCMCodingBlockSizeY();
+    }
+
+    virtual bool IsAsymmetricMotionPartitionsEnabled() const override
+    {
+        return header_->IsAMPEnabled();
+    }
+
+    virtual bool IsPCMEnabled() const override
+    {
+        return header_->IsPCMEnabled();
+    }
+
+    virtual uint32_t GetMaxTransformHierarchyDepthIntra() const override
+    {
+        return header_->GetMaxTransformHierarchyDepthIntra();
+    }
+
+    virtual uint32_t GetMaxTransformHierarchyDepthInter() const override
+    {
+        return header_->GetMaxTransformHierarchyDepthInter();
     }
 
     virtual bool IsNeighbourBlockAvailable(
@@ -423,10 +481,10 @@ bool SliceSegmentData::Parse(BitStream* bit_stream,
         context, this, context->GetSliceSegmentHeader());
     CABACReader cabac_reader(storage, bit_stream, &cabac_reader_info_provider);
 
-    return Parse(bit_stream, &cabac_reader, context);
+    return Parse(&cabac_reader, context);
 }
 
-bool SliceSegmentData::Parse(BitStream* bit_stream, CABACReader* reader, 
+bool SliceSegmentData::Parse(CABACReader* reader, 
                              ISliceSegmentDataContext* context)
 {
     assert(reader);
@@ -471,7 +529,7 @@ bool SliceSegmentData::Parse(BitStream* bit_stream, CABACReader* reader,
                 return false;
 
             ByteAlignment byte_alignment;
-            if (!byte_alignment.Parse(bit_stream))
+            if (!byte_alignment.Parse(reader->GetSourceBitStream()))
                 return false;
         }
     } while (is_end_of_slice_segment);

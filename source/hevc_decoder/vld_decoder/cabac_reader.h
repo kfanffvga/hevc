@@ -26,6 +26,9 @@ public:
     uint8_t ReadTerminateBit();
     uint8_t ReadNormalBit(SyntaxElementName syntax_name, uint32_t ctxidx);
 
+    void Reset();
+    BitStream* GetSourceBitStream();
+
 private:
     void InitReader(const Coordinate& current_ctb);
     void InitContext(const Coordinate& current_ctb);

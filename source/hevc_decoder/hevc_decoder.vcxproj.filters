@@ -195,6 +195,23 @@
     <ClInclude Include="syntax\coding_quadtree.h" />
     <ClInclude Include="syntax\coding_quadtree_context.h" />
     <ClInclude Include="vld_decoder\split_cu_flag_reader.h" />
+    <ClInclude Include="syntax\coding_unit.h" />
+    <ClInclude Include="syntax\coding_unit_context.h" />
+    <ClInclude Include="vld_decoder\cu_transquant_bypass_flag_reader.h" />
+    <ClInclude Include="vld_decoder\cu_skip_flag_reader.h" />
+    <ClInclude Include="vld_decoder\pred_mode_flag_reader.h" />
+    <ClInclude Include="vld_decoder\palette_mode_flag_reader.h" />
+    <ClInclude Include="vld_decoder\part_mode_reader.h" />
+    <ClInclude Include="vld_decoder\pcm_flag_reader.h" />
+    <ClInclude Include="syntax\pcm_sample.h" />
+    <ClInclude Include="vld_decoder\prev_intra_luma_pred_flag_reader.h" />
+    <ClInclude Include="vld_decoder\mpm_idx_reader.h" />
+    <ClInclude Include="vld_decoder\rem_intra_luma_pred_mode_reader.h" />
+    <ClInclude Include="vld_decoder\intra_chroma_pred_mode_reader.h" />
+    <ClInclude Include="syntax\prediction_unit.h" />
+    <ClInclude Include="vld_decoder\rqt_root_cbf_reader.h" />
+    <ClInclude Include="syntax\transform_tree.h" />
+    <ClInclude Include="syntax\palette_coding.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -339,5 +356,21 @@
     <ClCompile Include="vld_decoder\sao_eo_class_reader.cpp" />
     <ClCompile Include="syntax\coding_quadtree.cpp" />
     <ClCompile Include="vld_decoder\split_cu_flag_reader.cpp" />
+    <ClCompile Include="syntax\coding_unit.cpp" />
+    <ClCompile Include="vld_decoder\cu_transquant_bypass_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\cu_skip_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\pred_mode_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\palette_mode_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\part_mode_reader.cpp" />
+    <ClCompile Include="vld_decoder\pcm_flag_reader.cpp" />
+    <ClCompile Include="syntax\pcm_sample.cpp" />
+    <ClCompile Include="vld_decoder\prev_intra_luma_pred_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\mpm_idx_reader.cpp" />
+    <ClCompile Include="vld_decoder\rem_intra_luma_pred_mode_reader.cpp" />
+    <ClCompile Include="vld_decoder\intra_chroma_pred_mode_reader.cpp" />
+    <ClCompile Include="syntax\prediction_unit.cpp" />
+    <ClCompile Include="vld_decoder\rqt_root_cbf_reader.cpp" />
+    <ClCompile Include="syntax\transform_tree.cpp" />
+    <ClCompile Include="syntax\palette_coding.cpp" />
   </ItemGroup>
 </Project>

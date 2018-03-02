@@ -34,6 +34,8 @@ public:
     uint32_t GetCTBHeight() const;
     uint32_t GetLog2MinLumaTransformBlockSize() const;
     uint32_t GetLog2MinLumaCodingBlockSize() const;
+    uint32_t GetMaxTransformBlockSizeY() const;
+    uint32_t GetMinLumaCodingBlockSizeY() const;
 
     uint32_t GetSequenceParameterSetID();
     uint32_t GetSliceSegmentAddressBitLength() const;
@@ -45,10 +47,18 @@ public:
 
     bool IsTemporalMVPEnabled() const;
     bool IsSampleAdaptiveOffsetEnabled() const;
+    bool IsAMPEnabled() const;
+    bool IsPCMEnabled() const;
     ChromaFormatType GetChromaFormatType() const;
     uint32_t GetBitDepthLuma() const;
     uint32_t GetBitDepthChroma() const;
 
+    uint32_t GetLog2MinPCMCodingBlockSizeY() const;
+    uint32_t GetLog2MaxPCMCodingBlockSizeY() const;
+    uint32_t GetMinPCMCodingBlockSizeY() const;
+    uint32_t GetMaxPCMCodingBlockSizeY() const;
+    uint32_t GetMaxTransformHierarchyDepthIntra() const;
+    uint32_t GetMaxTransformHierarchyDepthInter() const;
     const SPSRangeExtension& GetSPSRangeExtension() const;
     const SPSScreenContentCodingExtension& GetSPSScreenContentCodingExtension() 
         const;
@@ -96,6 +106,16 @@ private:
     uint32_t ctb_height_;
     uint32_t log2_min_luma_transform_block_size_;
     uint32_t log2_min_luma_coding_block_size_;
+    uint32_t min_luma_coding_block_size_y_;
+    uint32_t max_transform_block_size_y_;
+    bool is_amp_enabled_;
+    bool is_pcm_enabled_;
+    uint32_t log2_min_pcm_coding_block_size_y_;
+    uint32_t log2_max_pcm_coding_block_size_y_;
+    uint32_t min_pcm_coding_block_size_y_;
+    uint32_t max_pcm_coding_block_size_y_;
+    uint32_t max_transform_hierarchy_depth_inter_;
+    uint32_t max_transform_hierarchy_depth_intra_;
 };
 
 #endif

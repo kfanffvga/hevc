@@ -105,8 +105,7 @@ bool CABACReader::FinishToReadInCTU(uint32_t* index_of_ctb_pool)
 void CABACReader::InitReader(const Coordinate& current_ctb)
 {
     InitContext(current_ctb);
-    current_range_ = 510;
-    offset_ = stream_->Read<uint16_t>(9);
+    Reset();
 }
 
 bool CABACReader::FinishToReadSliceSegment(uint32_t* index_of_slice_segment_pool)
@@ -214,6 +213,17 @@ uint8_t CABACReader::ReadNormalBit(SyntaxElementName syntax_name,
     Renormalize();
 
     return val;
+}
+
+void CABACReader::Reset()
+{
+    current_range_ = 510;
+    offset_ = stream_->Read<uint16_t>(9);
+}
+
+BitStream* CABACReader::GetSourceBitStream()
+{
+    return stream_;
 }
 
 void CABACReader::Renormalize()

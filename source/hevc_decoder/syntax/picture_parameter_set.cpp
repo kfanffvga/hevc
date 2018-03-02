@@ -34,6 +34,7 @@ PictureParameterSet::PictureParameterSet()
     , is_tiles_enabled_(false)
     , is_entropy_coding_sync_enabled_(false)
     , is_cu_qp_delta_enabled_(false)
+    , is_transquant_bypass_enabled_(false)
     , diff_cu_qp_delta_depth_(0)
     , tile_info_(new TileInfo())
     , num_ref_idx_negative_default_active_(0)
@@ -80,7 +81,7 @@ bool PictureParameterSet::Parse(BitStream* bit_stream)
     has_pps_slice_chroma_qp_offsets_present_ = bit_stream->ReadBool();
     has_weighted_pred_ = bit_stream->ReadBool();
     has_weighted_bipred_ = bit_stream->ReadBool();
-    bool is_transquant_bypass_enabled = bit_stream->ReadBool();
+    is_transquant_bypass_enabled_ = bit_stream->ReadBool();
     is_tiles_enabled_ = bit_stream->ReadBool();
     is_entropy_coding_sync_enabled_ = bit_stream->ReadBool();
     if (is_tiles_enabled_)
@@ -282,6 +283,11 @@ bool PictureParameterSet::IsEntropyCodingSyncEnabled() const
 bool PictureParameterSet::IsCUQPDeltaEnabled() const
 {
     return is_cu_qp_delta_enabled_;
+}
+
+bool PictureParameterSet::IsTransquantBypassEnabled() const
+{
+    return is_transquant_bypass_enabled_;
 }
 
 uint32_t PictureParameterSet::GetDiffCUQPDeltaDepth() const

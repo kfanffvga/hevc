@@ -197,6 +197,11 @@ uint32_t SliceSegmentHeader::GetMinTBLog2SizeY() const
     return sps_->GetLog2MinLumaTransformBlockSize();
 }
 
+uint32_t SliceSegmentHeader::GetMaxTransformBlockSizeY() const
+{
+    return sps_->GetMaxTransformBlockSizeY();
+}
+
 SliceType SliceSegmentHeader::GetSliceType() const
 {
     return slice_type_;
@@ -252,6 +257,21 @@ bool SliceSegmentHeader::IsCUChromaQPOffsetEnabled() const
     return is_cu_chroma_qp_offset_enabled_;
 }
 
+bool SliceSegmentHeader::IsTransquantBypassEnabled() const
+{
+    return pps_->IsTransquantBypassEnabled();
+}
+
+bool SliceSegmentHeader::IsAMPEnabled() const
+{
+    return sps_->IsAMPEnabled();
+}
+
+bool SliceSegmentHeader::IsPCMEnabled() const
+{
+    return sps_->IsPCMEnabled();
+}
+
 ChromaFormatType SliceSegmentHeader::GetChromaFormatType() const
 {
     return sps_->GetChromaFormatType();
@@ -272,6 +292,11 @@ uint32_t SliceSegmentHeader::GetMinCBLog2SizeY() const
     return sps_->GetLog2MinLumaCodingBlockSize();
 }
 
+uint32_t SliceSegmentHeader::GetMinCBSizeY() const
+{
+    return sps_->GetMinLumaCodingBlockSizeY();
+}
+
 uint32_t SliceSegmentHeader::GetLog2MinCUQPDeltaSize() const
 {
     return sps_->GetCTBLog2SizeY() - pps_->GetDiffCUQPDeltaDepth();
@@ -283,6 +308,26 @@ uint32_t SliceSegmentHeader::GetLog2MinCUChromaQPOffsetSize() const
         pps_->GetPPSRangeExtension().GetDiffCUChromaQPOffsetDepth();
 }
 
+uint32_t SliceSegmentHeader::GetMinPCMCodingBlockSizeY() const
+{
+    return sps_->GetMinPCMCodingBlockSizeY();
+}
+
+uint32_t SliceSegmentHeader::GetMaxPCMCodingBlockSizeY() const
+{
+    return sps_->GetMaxPCMCodingBlockSizeY();
+}
+
+uint32_t SliceSegmentHeader::GetMaxTransformHierarchyDepthIntra() const
+{
+    return sps_->GetMaxTransformHierarchyDepthIntra();
+}
+
+uint32_t SliceSegmentHeader::GetMaxTransformHierarchyDepthInter() const
+{
+    return sps_->GetMaxTransformHierarchyDepthInter();
+}
+
 const vector<int32_t>& SliceSegmentHeader::GetNegativeRefPOCList() const
 {
     return negative_ref_poc_list_;
@@ -291,6 +336,12 @@ const vector<int32_t>& SliceSegmentHeader::GetNegativeRefPOCList() const
 const vector<int32_t>& SliceSegmentHeader::GetPositiveRefPOCList() const
 {
     return positive_ref_poc_list_;
+}
+
+const SPSScreenContentCodingExtension& 
+    SliceSegmentHeader::GetSPSScreenContentCodingExtension() const
+{
+    return sps_->GetSPSScreenContentCodingExtension();
 }
 
 bool SliceSegmentHeader::ParseIndependentSyntax(

@@ -18,8 +18,9 @@ struct ContextItem
 };
 
 // 此处的句法元素是需要用到概率表的句法元素，但由于某些句法元素是全部用bypass解码，
-// 则那些句法元素不会出现在此处，因此在CommonCABACSyntaxReader::GetSyntaxElementName
-// 的实现的时候，可以返回SYNTAX_ELEMENT_NAME_COUNT作为该函数的返回值，当用
+// termirate解码, 则那些句法元素不会出现在此处，
+// 因此在CommonCABACSyntaxReader::GetSyntaxElementName的实现的时候，
+// 可以返回SYNTAX_ELEMENT_NAME_COUNT作为该函数的返回值，当用
 // SYNTAX_ELEMENT_NAME_COUNT返回的时候，则认为是不需要概率表的
 
 enum SyntaxElementName
@@ -30,6 +31,7 @@ enum SyntaxElementName
     CU_TRANSQUANT_BYPASS_FLAG,
     CU_SKIP_FLAG,
     PRED_MODE_FLAG,
+    PALETTE_MODE_FLAG,
     PART_MODE,
     PREV_INTRA_LUMA_PRED_FLAG,
     INTRA_CHROMA_PRED_MODE,

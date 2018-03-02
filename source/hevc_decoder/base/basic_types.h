@@ -19,6 +19,24 @@ enum ChromaFormatType
     YUV_MONO_CHROME = 0xffff   // 此处可以认为chroma_array_type为0
 };
 
+enum PredModeType
+{
+    MODE_INTER = 0,
+    MODE_INTRA = 1,
+    MODE_SKIP = 2
+};
+
+enum PartModeType
+{
+    PART_2Nx2N = 0,
+    PART_2NxN = 1,
+    PART_Nx2N = 2,
+    PART_NxN = 3,
+    PART_2NxnU = 4,
+    PART_2NxnD = 5,
+    PART_nLx2N = 6, 
+    PART_nRx2N = 7
+};
 
 struct Coordinate
 {

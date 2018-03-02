@@ -31,8 +31,7 @@ public:
         uint32_t index) const;
 
 private:
-    bool Parse(BitStream* bit_stream, CABACReader* reader, 
-               ISliceSegmentDataContext* context);
+    bool Parse(CABACReader* reader, ISliceSegmentDataContext* context);
     bool IsNextCTUNeedCABACInit(
         uint32_t tile_scan_index_of_ctu, SliceSegmentHeader* header, 
         const std::shared_ptr<FramePartition>& frame_partition);

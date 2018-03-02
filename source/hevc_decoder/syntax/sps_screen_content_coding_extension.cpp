@@ -8,6 +8,8 @@
 using boost::multi_array;
 
 SPSScreenContentCodingExtension::SPSScreenContentCodingExtension()
+    : motion_vector_resolution_control_idc_(0)
+    , is_palette_mode_enabled_(false)
 {
 
 }
@@ -24,8 +26,8 @@ bool SPSScreenContentCodingExtension::Parse(BitStream* bit_stream,
         return false;
 
     bool is_sps_curr_pic_ref_enabled = bit_stream->ReadBool();
-    bool is_palette_mode_enabled = bit_stream->ReadBool();
-    if (is_palette_mode_enabled)
+    bool is_palette_mode_enabled_ = bit_stream->ReadBool();
+    if (is_palette_mode_enabled_)
     {
         GolombReader golomb_reader(bit_stream);
         uint32_t palette_max_size = golomb_reader.ReadUnsignedValue();
@@ -69,4 +71,9 @@ uint8_t SPSScreenContentCodingExtension::GetMotionVectorResolutionControlIDC()
     const
 {
     return motion_vector_resolution_control_idc_;
+}
+
+bool SPSScreenContentCodingExtension::IsPaletteModeEnabled() const
+{
+    return is_palette_mode_enabled_;
 }

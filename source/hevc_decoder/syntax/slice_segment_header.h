@@ -13,6 +13,7 @@ class SequenceParameterSet;
 class ReferencePictureListsModification;
 class ShortTermReferencePictureSet;
 class ISliceSegmentHeaderContext;
+class SPSScreenContentCodingExtension;
 enum NalUnitType;
 enum SliceType;
 enum ChromaFormatType;
@@ -44,6 +45,7 @@ public:
     uint32_t GetCTBLog2SizeY() const;
     uint32_t GetCTBHeight() const;
     uint32_t GetMinTBLog2SizeY() const;
+    uint32_t GetMaxTransformBlockSizeY() const;
     SliceType GetSliceType() const;
     uint32_t GetSliceSegmentAddress() const;
     bool IsDependentSliceSegment() const;
@@ -55,14 +57,24 @@ public:
     bool IsUsedCABACInit() const;
     bool IsCUQPDeltaEnabled() const;
     bool IsCUChromaQPOffsetEnabled() const;
+    bool IsTransquantBypassEnabled() const;
+    bool IsAMPEnabled() const;
+    bool IsPCMEnabled() const;
     ChromaFormatType GetChromaFormatType() const;
     uint32_t GetBitDepthLuma() const;
     uint32_t GetBitDepthChroma() const;
     uint32_t GetMinCBLog2SizeY() const;
+    uint32_t GetMinCBSizeY() const;
     uint32_t GetLog2MinCUQPDeltaSize() const;
     uint32_t GetLog2MinCUChromaQPOffsetSize() const;
+    uint32_t GetMinPCMCodingBlockSizeY() const;
+    uint32_t GetMaxPCMCodingBlockSizeY() const;
+    uint32_t GetMaxTransformHierarchyDepthIntra() const;
+    uint32_t GetMaxTransformHierarchyDepthInter() const;
     const std::vector<int32_t>& GetNegativeRefPOCList() const;
     const std::vector<int32_t>& GetPositiveRefPOCList() const;
+    const SPSScreenContentCodingExtension& GetSPSScreenContentCodingExtension()
+        const;
 
 private:
     struct LongTermReferencePictureOrderCountInfo

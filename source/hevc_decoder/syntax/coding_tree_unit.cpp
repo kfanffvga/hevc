@@ -188,6 +188,11 @@ public:
         return ctu_context_->GetMinCBLog2SizeY();
     }
 
+    virtual uint32_t GetMinCBSizeY() const override
+    {
+        return ctu_context_->GetMinCBSizeY();
+    }
+
     virtual bool IsCUQPDeltaEnabled() const override
     {
         return ctu_context_->IsCUQPDeltaEnabled();
@@ -211,6 +216,61 @@ public:
     virtual CABACInitType GetCABACInitType() const override
     {
         return ctu_context_->GetCABACInitType();
+    }
+
+    virtual bool IsTransquantBypassEnabled() const override
+    {
+        return ctu_context_->IsTransquantBypassEnabled();
+    }
+
+    virtual SliceType GetSliceType() const override
+    {
+        return ctu_context_->GetSliceType();
+    }
+
+    virtual bool IsPaletteModeEnabled() const override
+    {
+        return ctu_context_->IsPaletteModeEnabled();
+    }
+
+    virtual uint32_t GetMaxTransformBlockSizeY() const override
+    {
+        return ctu_context_->GetMaxTransformBlockSizeY();
+    }
+
+    virtual uint32_t GetMinPCMCodingBlockSizeY() const override
+    {
+        return ctu_context_->GetMinPCMCodingBlockSizeY();
+    }
+
+    virtual uint32_t GetMaxPCMCodingBlockSizeY() const override
+    {
+        return ctu_context_->GetMaxPCMCodingBlockSizeY();
+    }
+
+    virtual bool IsAsymmetricMotionPartitionsEnabled() const override
+    {
+        return ctu_context_->IsAsymmetricMotionPartitionsEnabled();
+    }
+
+    virtual bool IsPCMEnabled() const override
+    {
+        return ctu_context_->IsPCMEnabled();
+    }
+
+    virtual ChromaFormatType GetChromaFormatType() const override
+    {
+        return ctu_context_->GetChromaFormatType();
+    }
+
+    virtual uint32_t GetMaxTransformHierarchyDepthIntra() const override
+    {
+        return ctu_context_->GetMaxTransformHierarchyDepthIntra();
+    }
+
+    virtual uint32_t GetMaxTransformHierarchyDepthInter() const override
+    {
+        return ctu_context_->GetMaxTransformHierarchyDepthInter();
     }
 
     virtual bool IsNeighbourBlockAvailable(

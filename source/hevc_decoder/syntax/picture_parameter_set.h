@@ -36,6 +36,7 @@ public:
     bool IsTilesEnabled() const;
     bool IsEntropyCodingSyncEnabled() const;
     bool IsCUQPDeltaEnabled() const;
+    bool IsTransquantBypassEnabled() const;
     uint32_t GetDiffCUQPDeltaDepth() const;
     const TileInfo& GetTileInfo() const;
     uint32_t GetNumRefIdxNegativeDefaultActive() const;
@@ -73,6 +74,7 @@ private:
     bool is_tiles_enabled_;
     bool is_entropy_coding_sync_enabled_;
     bool is_cu_qp_delta_enabled_;
+    bool is_transquant_bypass_enabled_;
     uint32_t diff_cu_qp_delta_depth_;
     std::unique_ptr<TileInfo> tile_info_;
     uint32_t num_ref_idx_negative_default_active_;
