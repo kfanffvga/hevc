@@ -24,7 +24,7 @@ public:
     uint8_t GetExtraSliceHeaderBitLength() const;
     bool HasOutputFlagPresent() const;
     bool HasListsModificationPresent() const;
-    const PPSScreenContentCodingExtension& GetPPSSccExtension() const;
+    const PPSScreenContentCodingExtension& GetPPSSCCExtension() const;
     bool HasCABACInitPresent() const;
     bool HasWeightedPred() const;
     bool HasWeightedBipred() const;

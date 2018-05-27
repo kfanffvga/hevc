@@ -1,9 +1,12 @@
 ﻿#ifndef _CODING_UNIT_CONTEXT_H_
 #define _CODING_UNIT_CONTEXT_H_
 
+#include <memory>
+
 enum CABACInitType;
 enum SliceType;
 enum ChromaFormatType;
+class PaletteTable;
 
 class ICodingUnitContext
 {
@@ -26,6 +29,20 @@ public:
 
     virtual uint32_t GetNearestCULayerByCoordinate(const Coordinate& point)
         const = 0;
+
+    virtual std::shared_ptr<PaletteTable> GetPredictorPaletteTable() const = 0;
+    virtual uint32_t GetPaletteMaxSize() const = 0;
+    virtual uint32_t GetBitDepthLuma() const = 0;
+    virtual uint32_t GetBitDepthChroma() const = 0;
+    virtual uint32_t GetPredictorPaletteMaxSize() const = 0;
+    virtual bool IsCUQPDeltaEnabled() const = 0;
+    virtual bool IsCUQPDeltaCoded() const = 0;
+    virtual void SetCUQPDeltaVal(int32_t cu_qp_delta_val) = 0;
+    virtual bool IsCUChromaQPOffsetEnable() const = 0;
+    virtual bool IsCUChromaQPOffsetCoded() const = 0;
+    virtual uint32_t GetChromaQPOffsetListtLen() const = 0;
+    virtual void SetCUChromaQPOffsetIndex(uint32_t cu_chroma_qp_offset_index) 
+        = 0;
 };
 
 #endif

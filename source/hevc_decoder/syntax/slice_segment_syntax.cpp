@@ -40,17 +40,22 @@ public:
 
     virtual NalUnitType GetNalUnitType() const override
     {
-        return slice_segment_syntax_->GetNalUnitType();
+        return slice_segment_context_->GetNalUnitType();
     }
 
     virtual uint8_t GetNuhLayerID() const override
     {
-        return slice_segment_syntax_->GetNuhLayerID();
+        return slice_segment_context_->GetNuhLayerID();
     }
 
     virtual uint8_t GetNuhLayerIDByPOCValue(uint32_t poc_value) const override
     {
         return slice_segment_context_->GetNuhLayerIDByPOCValue(poc_value);
+    }
+
+    virtual const ParametersManager& GetParametersManager() const override
+    {
+        return slice_segment_context_->GetParametersManager();
     }
 
 private:
@@ -90,13 +95,6 @@ public:
         return slice_segment_context_->GetCABACContextStorage();
     }
 
-    virtual bool GetSliceSegmentAddressByTileScanIndex(
-        uint32_t tile_scan_index, uint32_t* slice_segment_address) override
-    {
-        return slice_segment_context_->GetSliceSegmentAddressByTileScanIndex(
-            tile_scan_index, slice_segment_address);
-    }
-
     virtual uint32_t GetFirstCTUIndexOfTileScan() override
     {
         return slice_segment_context_->GetFirstCTUIndexOfTileScan();
@@ -118,17 +116,39 @@ public:
         return header_;
     }
 
+    virtual bool IsZScanOrderNeighbouringBlockAvailable(
+        const Coordinate& current_block, const Coordinate& neighbouring_block)
+        const
+    {
+        return slice_segment_context_->IsZScanOrderNeighbouringBlockAvailable(
+            current_block, neighbouring_block);
+    }
+
+    virtual shared_ptr<PaletteTable> GetPredictorPaletteTable(
+        bool is_the_first_ctu_in_slice_segment, const Coordinate& point) 
+        override
+    {
+        return slice_segment_context_->GetPredictorPaletteTable(
+            is_the_first_ctu_in_slice_segment, header_->GetCTBHeight(),
+            header_->IsEntropyCodingSyncEnabled(), 
+            header_->IsDependentSliceSegment(), point);
+    }
+
+    virtual void SavePredictorPaletteTable(
+        const Coordinate& point, const shared_ptr<PaletteTable>& palette_table) 
+        override
+    {
+        return slice_segment_context_->SavePredictorPaletteTable(point, 
+                                                                 palette_table);
+    }
+
 private:
     ISliceSegmentContext* slice_segment_context_;
     SliceSegmentHeader* header_;
 };
 
-SliceSegmentSyntax::SliceSegmentSyntax(
-    NalUnitType nal_unit_type, uint8_t nuh_layer_id,
-    const ParametersManager* parameters_manager)
-    : nal_unit_type_(nal_unit_type)
-    , nuh_layer_id_(nuh_layer_id)
-    , header_(new SliceSegmentHeader(parameters_manager))
+SliceSegmentSyntax::SliceSegmentSyntax()
+    : header_(new SliceSegmentHeader())
     , data_(new SliceSegmentData())
 {
 
@@ -159,16 +179,6 @@ bool SliceSegmentSyntax::Parse(BitStream* bit_stream,
     success = data_->Parse(bit_stream, &data_context);
 
     return success;
-}
-
-NalUnitType SliceSegmentSyntax::GetNalUnitType() const
-{
-    return nal_unit_type_;
-}
-
-uint8_t SliceSegmentSyntax::GetNuhLayerID() const
-{
-    return nuh_layer_id_;
 }
 
 const SliceSegmentHeader& SliceSegmentSyntax::GetSliceSegmentHeader() const

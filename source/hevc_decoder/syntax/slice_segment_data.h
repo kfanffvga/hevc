@@ -11,6 +11,7 @@ class ISliceSegmentDataContext;
 class CABACReader;
 class SliceSegmentHeader;
 class FramePartition;
+class PaletteTable;
 
 class SliceSegmentData
 {
@@ -30,6 +31,8 @@ public:
     const std::shared_ptr<CodingTreeUnit> GetCodingTreeUnitByTileScanIndex(
         uint32_t index) const;
 
+    const PaletteTable& GetSliceSegmentPaletteTable() const;
+
 private:
     bool Parse(CABACReader* reader, ISliceSegmentDataContext* context);
     bool IsNextCTUNeedCABACInit(
@@ -39,6 +42,7 @@ private:
     uint32_t start_ctu_index_of_tile_scan_;
     uint32_t cabac_context_storage_index_;
     std::vector<std::shared_ptr<CodingTreeUnit>> ctus_;
+    std::unique_ptr<PaletteTable> predictor_palette_table_;
 };
 
 #endif

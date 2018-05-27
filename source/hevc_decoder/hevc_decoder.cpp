@@ -11,6 +11,7 @@
 #include "hevc_decoder/frame_sequence_arranger.h"
 #include "hevc_decoder/partitions/frame_partition_manager.h"
 #include "hevc_decoder/vld_decoder/cabac_context_storage.h"
+#include "hevc_decoder/partitions/block_scan_order_provider.h"
 
 using std::unique_ptr;
 using std::list;
@@ -33,6 +34,7 @@ HEVCDecoder::HEVCDecoder()
                              coded_video_sequence_.get()))
     , organizer_(new NALOrganizer(syntax_dispatcher_.get()))
 {
+    BlockScanOrderProvider::GetInstance();
     cabac_context_storage_->Init();
 }
 

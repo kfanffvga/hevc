@@ -224,7 +224,7 @@ bool PictureParameterSet::HasListsModificationPresent() const
     return has_lists_modification_present_;
 }
 
-const PPSScreenContentCodingExtension& PictureParameterSet::GetPPSSccExtension()
+const PPSScreenContentCodingExtension& PictureParameterSet::GetPPSSCCExtension()
     const
 {
     return *pps_scc_extension_;

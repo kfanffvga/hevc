@@ -26,9 +26,12 @@ public:
     bool PushNALOfSliceSegment(NalUnit* nal, bool is_idr_frame);
 
 private:
+    virtual const ParametersManager& GetParametersManager() const override;
     virtual uint8_t GetLayerID(uint32_t poc_value) const override;
     virtual bool GetPreviewPictureOrderCount(PictureOrderCount* poc) const
         override;
+    virtual FramePartitionManager* GetFramePartitionManager() const override;
+    virtual CABACContextStorage* GetCABACContextStorage() const override;
 
     DecodeProcessorManager* decode_processor_manager_;
     ParametersManager* parameters_manager_;

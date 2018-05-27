@@ -69,7 +69,14 @@ const static vector<int> init_type_to_ctxidx[SYNTAX_ELEMENT_NAME_COUNT - 1][3] =
                  69,70,71}},
 
     {vector<int>{0,1,2,3,4,5}, vector<int>{6,7,8,9,10,11}, 
-     vector<int>{12,13,14,15,16,17}}
+     vector<int>{12,13,14,15,16,17}},
+
+    {vector<int>{0,1,2,3,4,5,6,7}, vector<int>{8,9,10,11,12,13,14,15},
+     vector<int>{16,17,18,19,20,21,22,23}},
+
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}}
 };
 
 // 第一个索引是SyntaxElementName 第二个索引是ctx_idx
@@ -134,7 +141,12 @@ const static vector<vector<int>> init_values =
     vector<int>{154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,
                 154,154,154,154,154,154,154,154},
 
-    vector<int>{154,154,154,154,154,154}
+    vector<int>{154,154,154,154,154,154},
+    vector<int>{154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,
+                154,154,154,154,154,154,154,154},
+
+    vector<int>{154,154,154},
+    vector<int>{154,154,154},
 
 };
 

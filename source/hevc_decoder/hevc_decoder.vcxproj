@@ -79,6 +79,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="base\basic_types.h" />
+    <ClInclude Include="partitions\block_scan_order_provider.h" />
     <ClInclude Include="partitions\slice_segment_address_provider.h" />
     <ClInclude Include="base\tile_info.h" />
     <ClInclude Include="partitions\frame_partition.h" />
@@ -96,6 +97,8 @@
     <ClInclude Include="partitions\frame_partition_manager.h" />
     <ClInclude Include="predictors\predictor_manager.h" />
     <ClInclude Include="syntax\byte_alignment.h" />
+    <ClInclude Include="syntax\chroma_qp_offset.h" />
+    <ClInclude Include="syntax\chroma_qp_offset_context.h" />
     <ClInclude Include="syntax\coding_quadtree.h" />
     <ClInclude Include="syntax\coding_quadtree_context.h" />
     <ClInclude Include="syntax\coding_tree_unit.h" />
@@ -105,12 +108,15 @@
     <ClInclude Include="syntax\colour_mapping_octants.h" />
     <ClInclude Include="syntax\colour_mapping_table.h" />
     <ClInclude Include="syntax\delta_dlt.h" />
+    <ClInclude Include="syntax\delta_qp.h" />
+    <ClInclude Include="syntax\delta_qp_context.h" />
     <ClInclude Include="syntax\frame_syntax.h" />
     <ClInclude Include="syntax\hrd_parameters.h" />
     <ClInclude Include="syntax\nal_organizer.h" />
     <ClInclude Include="syntax\nal_unit.h" />
     <ClInclude Include="syntax\nal_unit_types.h" />
     <ClInclude Include="syntax\palette_coding.h" />
+    <ClInclude Include="syntax\palette_coding_context.h" />
     <ClInclude Include="syntax\parameters_manager.h" />
     <ClInclude Include="syntax\pcm_sample.h" />
     <ClInclude Include="syntax\picture_parameter_set.h" />
@@ -122,6 +128,8 @@
     <ClInclude Include="syntax\prediction_unit.h" />
     <ClInclude Include="syntax\prediction_weight_table.h" />
     <ClInclude Include="syntax\prediction_weight_table_context.h" />
+    <ClInclude Include="syntax\palette_table.h" />
+    <ClInclude Include="syntax\predictor_palette_table_storage.h" />
     <ClInclude Include="syntax\profile_tier_level.h" />
     <ClInclude Include="syntax\reference_picture_lists_modification.h" />
     <ClInclude Include="syntax\sample_adaptive_offset.h" />
@@ -151,15 +159,33 @@
     <ClInclude Include="vld_decoder\cabac_context_storage.h" />
     <ClInclude Include="vld_decoder\cabac_context_types.h" />
     <ClInclude Include="vld_decoder\cabac_reader.h" />
+    <ClInclude Include="vld_decoder\copy_above_indices_for_final_run_flag_reader.h" />
+    <ClInclude Include="vld_decoder\copy_above_palette_indices_flag_reader.h" />
+    <ClInclude Include="vld_decoder\cu_chroma_qp_offset_flag_reader.h" />
+    <ClInclude Include="vld_decoder\cu_chroma_qp_offset_idx_reader.h" />
+    <ClInclude Include="vld_decoder\cu_qp_delta_abs_reader.h" />
+    <ClInclude Include="vld_decoder\cu_qp_delta_sign_flag_reader.h" />
     <ClInclude Include="vld_decoder\cu_skip_flag_reader.h" />
     <ClInclude Include="vld_decoder\cu_transquant_bypass_flag_reader.h" />
+    <ClInclude Include="vld_decoder\exponential_golomb_reader.h" />
+    <ClInclude Include="vld_decoder\limited_exponential_golomb_reader.h" />
     <ClInclude Include="vld_decoder\fixed_length_value_reader.h" />
     <ClInclude Include="vld_decoder\frame_info_provider_for_cabac.h" />
     <ClInclude Include="vld_decoder\common_cabac_syntax_reader.h" />
     <ClInclude Include="vld_decoder\end_of_slice_segment_flag_reader.h" />
     <ClInclude Include="vld_decoder\intra_chroma_pred_mode_reader.h" />
     <ClInclude Include="vld_decoder\mpm_idx_reader.h" />
+    <ClInclude Include="vld_decoder\new_palette_entries_reader.h" />
+    <ClInclude Include="vld_decoder\num_palette_indices_reader.h" />
+    <ClInclude Include="vld_decoder\num_signalled_palette_entries_reader.h" />
+    <ClInclude Include="vld_decoder\palette_escape_val_present_flag_reader.h" />
+    <ClInclude Include="vld_decoder\palette_escape_val_reader.h" />
+    <ClInclude Include="vld_decoder\palette_index_idc_reader.h" />
     <ClInclude Include="vld_decoder\palette_mode_flag_reader.h" />
+    <ClInclude Include="vld_decoder\palette_predictor_run_reader.h" />
+    <ClInclude Include="vld_decoder\palette_run_prefix_reader.h" />
+    <ClInclude Include="vld_decoder\palette_run_suffix_reader.h" />
+    <ClInclude Include="vld_decoder\palette_transpose_flag_reader.h" />
     <ClInclude Include="vld_decoder\part_mode_reader.h" />
     <ClInclude Include="vld_decoder\pcm_flag_reader.h" />
     <ClInclude Include="vld_decoder\pred_mode_flag_reader.h" />
@@ -173,10 +199,12 @@
     <ClInclude Include="vld_decoder\sao_offset_sign_reader.h" />
     <ClInclude Include="vld_decoder\sao_type_index_reader.h" />
     <ClInclude Include="vld_decoder\split_cu_flag_reader.h" />
+    <ClInclude Include="vld_decoder\truncated_binary_reader.h" />
     <ClInclude Include="vld_decoder\truncated_rice_value_reader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\tile_info.cpp" />
+    <ClCompile Include="partitions\block_scan_order_provider.cpp" />
     <ClCompile Include="partitions\frame_partition.cpp" />
     <ClCompile Include="base\stream\bit_stream.cpp" />
     <ClCompile Include="base\stream\golomb_reader.cpp" />
@@ -188,6 +216,7 @@
     <ClCompile Include="partitions\frame_partition_manager.cpp" />
     <ClCompile Include="predictors\predictor_manager.cpp" />
     <ClCompile Include="syntax\byte_alignment.cpp" />
+    <ClCompile Include="syntax\chroma_qp_offset.cpp" />
     <ClCompile Include="syntax\coding_quadtree.cpp" />
     <ClCompile Include="syntax\coding_tree_unit.cpp" />
     <ClCompile Include="syntax\coded_video_sequence.cpp" />
@@ -195,6 +224,7 @@
     <ClCompile Include="syntax\colour_mapping_octants.cpp" />
     <ClCompile Include="syntax\colour_mapping_table.cpp" />
     <ClCompile Include="syntax\delta_dlt.cpp" />
+    <ClCompile Include="syntax\delta_qp.cpp" />
     <ClCompile Include="syntax\frame_syntax.cpp" />
     <ClCompile Include="syntax\hrd_parameters.cpp" />
     <ClCompile Include="syntax\nal_organizer.cpp" />
@@ -209,6 +239,8 @@
     <ClCompile Include="syntax\pps_screen_content_coding_extension.cpp" />
     <ClCompile Include="syntax\prediction_unit.cpp" />
     <ClCompile Include="syntax\prediction_weight_table.cpp" />
+    <ClCompile Include="syntax\palette_table.cpp" />
+    <ClCompile Include="syntax\predictor_palette_table_storage.cpp" />
     <ClCompile Include="syntax\profile_tier_level.cpp" />
     <ClCompile Include="syntax\reference_picture_lists_modification.cpp" />
     <ClCompile Include="syntax\sample_adaptive_offset.cpp" />
@@ -231,13 +263,30 @@
     <ClCompile Include="vld_decoder\cabac_context_storage.cpp" />
     <ClCompile Include="vld_decoder\cabac_reader.cpp" />
     <ClCompile Include="vld_decoder\common_cabac_syntax_reader.cpp" />
+    <ClCompile Include="vld_decoder\copy_above_indices_for_final_run_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\copy_above_palette_indices_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\cu_chroma_qp_offset_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\cu_chroma_qp_offset_idx_reader.cpp" />
+    <ClCompile Include="vld_decoder\cu_qp_delta_abs_reader.cpp" />
+    <ClCompile Include="vld_decoder\cu_qp_delta_sign_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\cu_skip_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\cu_transquant_bypass_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\end_of_slice_segment_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\exponential_golomb_reader.cpp" />
+    <ClCompile Include="vld_decoder\limited_exponential_golomb_reader.cpp" />
     <ClCompile Include="vld_decoder\fixed_length_value_reader.cpp" />
     <ClCompile Include="vld_decoder\intra_chroma_pred_mode_reader.cpp" />
     <ClCompile Include="vld_decoder\mpm_idx_reader.cpp" />
+    <ClCompile Include="vld_decoder\new_palette_entries_reader.cpp" />
+    <ClCompile Include="vld_decoder\num_palette_indices_reader.cpp" />
+    <ClCompile Include="vld_decoder\palette_escape_val_present_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\palette_escape_val_reader.cpp" />
+    <ClCompile Include="vld_decoder\palette_index_idc_reader.cpp" />
     <ClCompile Include="vld_decoder\palette_mode_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\palette_predictor_run_reader.cpp" />
+    <ClCompile Include="vld_decoder\palette_run_prefix_reader.cpp" />
+    <ClCompile Include="vld_decoder\palette_run_suffix_reader.cpp" />
+    <ClCompile Include="vld_decoder\palette_transpose_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\part_mode_reader.cpp" />
     <ClCompile Include="vld_decoder\pcm_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\pred_mode_flag_reader.cpp" />
@@ -251,6 +300,7 @@
     <ClCompile Include="vld_decoder\sao_offset_sign_reader.cpp" />
     <ClCompile Include="vld_decoder\sao_type_index_reader.cpp" />
     <ClCompile Include="vld_decoder\split_cu_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\truncated_binary_reader.cpp" />
     <ClCompile Include="vld_decoder\truncated_rice_value_reader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 struct PictureOrderCount;
+class ParametersManager;
 
 class ISliceSegmentHeaderContext
 {
@@ -13,6 +14,7 @@ public:
     virtual NalUnitType GetNalUnitType() const = 0;
     virtual uint8_t GetNuhLayerID() const = 0;
     virtual uint8_t GetNuhLayerIDByPOCValue(uint32_t poc_value) const = 0;
+    virtual const ParametersManager& GetParametersManager() const = 0;
 };
 
 #endif

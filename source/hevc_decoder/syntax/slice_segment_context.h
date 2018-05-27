@@ -24,5 +24,20 @@ public:
 
     virtual uint32_t GetFirstCTUIndexOfTileScan() = 0;
     virtual uint32_t GetCABACContextIndexInLastParsedSliceSegment() = 0;
+    virtual const ParametersManager& GetParametersManager() const = 0;
+    virtual NalUnitType GetNalUnitType() const = 0;
+    virtual uint8_t GetNuhLayerID() const = 0;
+    virtual bool IsZScanOrderNeighbouringBlockAvailable(
+        const Coordinate& current_block, const Coordinate& neighbouring_block)
+        const = 0;
+
+    virtual std::shared_ptr<PaletteTable> GetPredictorPaletteTable(
+        bool is_the_first_ctu_in_slice_segment, uint32_t ctb_size_y,
+        bool is_entropy_coding_sync_enabled, bool is_dependent_slice_segment,
+        const Coordinate& point) = 0;
+
+    virtual void SavePredictorPaletteTable(
+        const Coordinate& point,
+        const std::shared_ptr<PaletteTable>& palette_table) = 0;
 };
 #endif

@@ -6,6 +6,7 @@
 class FramePartition;
 enum CABACInitType;
 class CodingTreeUnit;
+class PaletteTable;
 
 class ICodingTreeUnitContext
 {
@@ -38,9 +39,22 @@ public:
     virtual uint32_t GetMaxTransformHierarchyDepthInter() const = 0;
     virtual bool IsNeighbourBlockAvailable(
         const Coordinate& current, const Coordinate& neighbour) const = 0;
+
     // 同一个slice_segment和tile之内
     virtual CodingTreeUnit* GetLeftNeighbourCTU() const = 0;
     virtual CodingTreeUnit* GetUpNeighbourCTU() const = 0;
+    virtual std::shared_ptr<PaletteTable> GetPredictorPaletteTable(
+        const Coordinate& point) = 0;
+    
+    virtual void SavePredictorPaletteTable(
+        const Coordinate& point, 
+        const std::shared_ptr<PaletteTable>& palette_table) = 0;
+
+    virtual uint32_t GetPaletteMaxSize() const = 0;
+    virtual uint32_t GetPredictorPaletteMaxSize() const = 0;
+    virtual uint32_t GetChromaQPOffsetListtLen() const = 0;
+    virtual const std::vector<int32_t>& GetCbQPOffsetList() const = 0;
+    virtual const std::vector<int32_t>& GetCrQPOffsetList() const = 0;
 };
 
 #endif

@@ -228,11 +228,11 @@ BitStream* CABACReader::GetSourceBitStream()
 
 void CABACReader::Renormalize()
 {
-    if (current_range_ > 256)
+    if (current_range_ >= 256)
         return;
 
     uint32_t n = 0;
-    while (current_range_ <= 256)
+    while (current_range_ < 256)
     {
         ++n;
         current_range_ <<= 1;

@@ -34,16 +34,21 @@ bool SampleAdaptiveOffset::Parse(CABACReader* cabac_reader,
         return false;
 
     bool is_allow_sao_merge_left = false;
-    SAOMergeFlagReader sao_merge_reader(cabac_reader, 
-                                        context->GetCABACInitType());
+    
     if ((context->GetCurrentCoordinate().x > 0) &&
         context->HasLeftCTBInSliceSegment() && context->HasLeftCTBInTile())
-        is_allow_sao_merge_left = sao_merge_reader.Read();
+    {
+        SAOMergeFlagReader reader(cabac_reader, context->GetCABACInitType());
+        is_allow_sao_merge_left = reader.Read();
+    }
 
     bool is_allow_sao_merge_up = false;
     if ((context->GetCurrentCoordinate().y > 0) && is_allow_sao_merge_left &&
         context->HasUpCTBInSliceSegment() && context->HasUpCTBInTile())
-        is_allow_sao_merge_up = sao_merge_reader.Read();
+    {
+        SAOMergeFlagReader reader(cabac_reader, context->GetCABACInitType());
+        is_allow_sao_merge_up = reader.Read();
+    }
 
     if (!is_allow_sao_merge_left && !is_allow_sao_merge_up)
         return ParseIndependentSAOInfo(cabac_reader, context);

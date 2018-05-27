@@ -60,9 +60,7 @@ public:
     uint32_t GetMaxTransformHierarchyDepthIntra() const;
     uint32_t GetMaxTransformHierarchyDepthInter() const;
     const SPSRangeExtension& GetSPSRangeExtension() const;
-    const SPSScreenContentCodingExtension& GetSPSScreenContentCodingExtension() 
-        const;
-
+    const SPSScreenContentCodingExtension& GetSPSSCCExtension() const;
     uint32_t GetShortTermReferencePictureSetCount() const;
     const ShortTermReferencePictureSet*
         GetShortTermReferencePictureSet(uint32_t index) const;

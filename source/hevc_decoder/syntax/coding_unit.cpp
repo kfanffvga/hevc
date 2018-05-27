@@ -7,6 +7,7 @@
 #include "hevc_decoder/syntax/prediction_unit.h"
 #include "hevc_decoder/syntax/palette_coding.h"
 #include "hevc_decoder/syntax/transform_tree.h"
+#include "hevc_decoder/syntax/palette_coding_context.h"
 #include "hevc_decoder/vld_decoder/cu_skip_flag_reader.h"
 #include "hevc_decoder/vld_decoder/cu_transquant_bypass_flag_reader.h"
 #include "hevc_decoder/vld_decoder/pred_mode_flag_reader.h"
@@ -118,12 +119,104 @@ private:
     ICodingUnitContext* cu_context_;
 };
 
+class PaletteCodingContext : public IPaletteCodingContext
+{
+public:
+    PaletteCodingContext(ICodingUnitContext* cu_context)
+        : cu_context_(cu_context)
+    {
+
+    }
+
+    virtual ~PaletteCodingContext()
+    {
+
+    }
+
+    virtual shared_ptr<PaletteTable> GetPredictorPaletteTable() const override
+    {
+        return cu_context_->GetPredictorPaletteTable();
+    }
+
+    virtual uint32_t GetPaletteMaxSize() const override
+    {
+        return cu_context_->GetPaletteMaxSize();
+    }
+
+    virtual uint32_t GetBitDepthLuma() const override
+    {
+        return cu_context_->GetBitDepthLuma();
+    }
+
+    virtual uint32_t GetBitDepthChroma() const override
+    {
+        return cu_context_->GetBitDepthChroma();
+    }
+
+    virtual uint32_t GetPredictorPaletteMaxSize() const override
+    {
+        return cu_context_->GetPredictorPaletteMaxSize();
+    }
+
+    virtual CABACInitType GetCABACInitType() const override
+    {
+        return cu_context_->GetCABACInitType();
+    }
+
+    virtual bool IsCUQPDeltaEnabled() const override
+    {
+        return cu_context_->IsCUQPDeltaEnabled();
+    }
+
+    virtual bool IsCUQPDeltaCoded() const override
+    {
+        return cu_context_->IsCUQPDeltaCoded();
+    } 
+
+    virtual void SetCUQPDeltaVal(int32_t cu_qp_delta_val) override
+    {
+        cu_context_->SetCUQPDeltaVal(cu_qp_delta_val);
+    }
+
+    virtual bool IsCUTransquantBypass() const override
+    {
+        return coding_unit_->IsCUTransquantBypass();
+    }
+
+    virtual bool IsCUChromaQPOffsetEnable() const override
+    {
+        return cu_context_->IsCUChromaQPOffsetEnable();
+    }
+
+    virtual bool IsCUChromaQPOffsetCoded() const override
+    {
+        return cu_context_->IsCUChromaQPOffsetCoded();
+    }
+
+    virtual uint32_t GetChromaQPOffsetListtLen() const override
+    {
+        return cu_context_->GetChromaQPOffsetListtLen();
+    }
+
+    virtual void SetCUChromaQPOffsetIndex(uint32_t cu_chroma_qp_offset_index)
+        override
+    {
+        cu_context_->SetCUChromaQPOffsetIndex(cu_chroma_qp_offset_index);
+    }
+
+private:
+    ICodingUnitContext* cu_context_;
+    CodingUnit* coding_unit_;
+};
+
 CodingUnit::CodingUnit(const Coordinate& point, uint32_t layer, 
                        uint32_t cb_size_y)
     : point_(point)
     , layer_(layer)
     , cb_size_y_(cb_size_y)
     , pred_mode_(MODE_SKIP)
+    , is_cu_transquant_bypass_(false)
+    , prediction_units_()
 {
 
 }
@@ -135,11 +228,11 @@ CodingUnit::~CodingUnit()
 
 bool CodingUnit::Parse(CABACReader* cabac_reader, ICodingUnitContext* context)
 {
-    if (!context->IsTransquantBypassEnabled())
+    if (context->IsTransquantBypassEnabled())
     {
         CUTransquantBypassFlagReader reader(cabac_reader, 
                                             context->GetCABACInitType());
-        bool is_cu_transquant_bypass = reader.Read();
+        is_cu_transquant_bypass_ = reader.Read();
     }
     bool is_cu_skip = false;
     if (context->GetSliceType() != I_SLICE)
@@ -178,6 +271,11 @@ PredModeType CodingUnit::GetPredMode() const
     return pred_mode_;
 }
 
+bool CodingUnit::IsCUTransquantBypass() const
+{
+    return is_cu_transquant_bypass_;
+}
+
 bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
                                  ICodingUnitContext* context)
 {
@@ -203,7 +301,8 @@ bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
     if (is_palette_mode)
     {
         PaletteCoding palette_coding(cb_size_y_);
-        return palette_coding.Parse(cabac_reader);
+        // return palette_coding.Parse(cabac_reader);
+        return true;
     }
     else
     {

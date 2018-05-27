@@ -38,6 +38,7 @@ enum PartModeType
     PART_nRx2N = 7
 };
 
+// 坐标的表示是与笛卡尔直角坐标系一致，由于二维数组的下标是[行][列]，因此在使用时候要注意
 struct Coordinate
 {
     uint32_t x;

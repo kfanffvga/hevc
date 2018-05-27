@@ -2,10 +2,12 @@
 #define _CODING_QUADTREE_CONTEXT_H_
 
 #include <stdint.h>
+#include <vector>
 
 // 此处的QP不是表示码率控制的量化值，而是把一个ctb量化成多少个cb
 
 enum CABACInitType;
+class PaletteTable;
 
 class ICodingQuadtreeContext
 {
@@ -35,6 +37,24 @@ public:
 
     virtual uint32_t GetNearestCULayerByCoordinate(const Coordinate& point) 
         const = 0;
+
+    virtual std::shared_ptr<PaletteTable> GetPredictorPaletteTable() const = 0;
+    virtual uint32_t GetPaletteMaxSize() const = 0;
+    virtual uint32_t GetBitDepthLuma() const = 0;
+    virtual uint32_t GetBitDepthChroma() const = 0;
+    virtual uint32_t GetPredictorPaletteMaxSize() const = 0;
+
+    virtual bool IsCUQPDeltaCoded() const = 0;
+    virtual void SetCUQPDeltaVal(int32_t cu_qp_delta_val) = 0;
+
+    virtual bool IsCUChromaQPOffsetCoded() const = 0;
+    virtual void SetCUChromaQPOffsetCrAndCb(int32_t cu_chroma_qp_offset_cr,
+                                            int32_t cu_chroma_qp_offset_cb) = 0;
+
+    virtual uint32_t GetChromaQPOffsetListtLen() const = 0;
+    virtual const std::vector<int32_t>& GetCbQPOffsetList() const = 0;
+    virtual const std::vector<int32_t>& GetCrQPOffsetList() const = 0;
+
 };
 
 #endif

@@ -14,6 +14,7 @@ class ReferencePictureListsModification;
 class ShortTermReferencePictureSet;
 class ISliceSegmentHeaderContext;
 class SPSScreenContentCodingExtension;
+class PaletteTable;
 enum NalUnitType;
 enum SliceType;
 enum ChromaFormatType;
@@ -33,7 +34,7 @@ class TileInfo;
 class SliceSegmentHeader
 {
 public:
-    SliceSegmentHeader(const ParametersManager* parameters_manager);
+    SliceSegmentHeader();
     virtual ~SliceSegmentHeader();
     
     bool Parse(BitStream* bit_stream, ISliceSegmentHeaderContext* context);
@@ -71,10 +72,17 @@ public:
     uint32_t GetMaxPCMCodingBlockSizeY() const;
     uint32_t GetMaxTransformHierarchyDepthIntra() const;
     uint32_t GetMaxTransformHierarchyDepthInter() const;
+    PaletteTable GetPalettePredictorInitializer() const;
+    uint32_t GetPaletteMaxSize() const;
+    uint32_t GetPredictorPaletteMaxSize() const;
     const std::vector<int32_t>& GetNegativeRefPOCList() const;
     const std::vector<int32_t>& GetPositiveRefPOCList() const;
     const SPSScreenContentCodingExtension& GetSPSScreenContentCodingExtension()
         const;
+
+    uint32_t GetChromaQPOffsetListtLen() const;
+    const std::vector<int32_t>& GetCbQPOffsetList() const;
+    const std::vector<int32_t>& GetCrQPOffsetList() const;
 
 private:
     struct LongTermReferencePictureOrderCountInfo
@@ -116,7 +124,6 @@ private:
         std::vector<int32_t>* negative_ref_pic_list,
         std::vector<int32_t>* positive_ref_pic_list);
 
-    const ParametersManager* parameters_manager_;
     std::shared_ptr<PictureParameterSet> pps_;
     std::shared_ptr<SequenceParameterSet> sps_;
 

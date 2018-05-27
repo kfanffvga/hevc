@@ -18,7 +18,7 @@ MPMIdxReader::~MPMIdxReader()
 uint32_t MPMIdxReader::Read()
 {
     auto bit_reader = bind(&MPMIdxReader::ReadBit, this);
-    return TruncatedRiceValueReader(bit_reader).Read(2);
+    return TruncatedRiceValueReader(bit_reader).Read(2, 0);
 }
 
 uint32_t MPMIdxReader::GetArithmeticContextIndex(uint16_t bin_idx)

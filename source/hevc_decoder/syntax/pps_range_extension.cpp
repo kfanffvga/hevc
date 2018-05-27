@@ -10,6 +10,8 @@ using std::vector;
 PPSRangeExtension::PPSRangeExtension()
     : is_chroma_qp_offset_list_enabled_(false)
     , diff_cu_chroma_qp_offset_depth_(0)
+    , cb_qp_offset_list_()
+    , cr_qp_offset_list_()
 {
 
 }
@@ -37,12 +39,12 @@ bool PPSRangeExtension::Parse(BitStream* bit_stream,
     {
         diff_cu_chroma_qp_offset_depth_ = golomb_reader.ReadUnsignedValue();
         uint32_t chroma_qp_offset_list_len = golomb_reader.ReadUnsignedValue();
-        vector<int32_t> cb_qp_offset_list(chroma_qp_offset_list_len);
-        vector<int32_t> cr_qp_offset_list(chroma_qp_offset_list_len);
+        cb_qp_offset_list_.resize(chroma_qp_offset_list_len);
+        cr_qp_offset_list_.resize(chroma_qp_offset_list_len);
         for (uint32_t i = 0; i < chroma_qp_offset_list_len; ++i)
         {
-            cb_qp_offset_list[i] = golomb_reader.ReadSignedValue();
-            cr_qp_offset_list[i] = golomb_reader.ReadSignedValue();
+            cb_qp_offset_list_[i] = golomb_reader.ReadSignedValue();
+            cr_qp_offset_list_[i] = golomb_reader.ReadSignedValue();
         }
         uint32_t sao_offset_scale_luma = golomb_reader.ReadUnsignedValue();
         uint32_t sao_offset_scale_chroma = golomb_reader.ReadUnsignedValue();
@@ -58,4 +60,19 @@ bool PPSRangeExtension::IsChromaQPOffsetListEnabled() const
 uint32_t PPSRangeExtension::GetDiffCUChromaQPOffsetDepth() const
 {
     return diff_cu_chroma_qp_offset_depth_;
+}
+
+uint32_t PPSRangeExtension::GetChromaQPOffsetListtLen() const
+{
+    return cb_qp_offset_list_.size();
+}
+
+const vector<int32_t>& PPSRangeExtension::GetCbQPOffsetList() const
+{
+    return cb_qp_offset_list_;
+}
+
+const vector<int32_t>& PPSRangeExtension::GetCrQPOffsetList() const
+{
+    return cr_qp_offset_list_;
 }

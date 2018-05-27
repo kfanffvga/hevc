@@ -323,7 +323,9 @@ bool SequenceParameterSet::ParseExtensionInfo(BitStream* bit_stream,
     }
     if (has_sps_scc_extension)
     {
-        bool success = sps_scc_extension_->Parse(bit_stream, chroma_format_idc);
+        bool success = sps_scc_extension_->Parse(bit_stream, chroma_format_idc, 
+                                                 bit_depth_luma_, 
+                                                 bit_depth_chroma_);
         if (!success)
             return false;
     }
@@ -382,7 +384,7 @@ uint32_t SequenceParameterSet::GetBitDepthChroma() const
 }
 
 const SPSScreenContentCodingExtension& 
-    SequenceParameterSet::GetSPSScreenContentCodingExtension() const
+    SequenceParameterSet::GetSPSSCCExtension() const
 {
     return *sps_scc_extension_;
 }

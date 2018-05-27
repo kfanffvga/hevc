@@ -12,19 +12,50 @@
 class ISliceSegmentAddressProvider;
 class IFramePartitionCreatorInfoProvider;
 
+struct TransformBlockIndexInfo
+{
+    uint32_t tile_index;
+    uint32_t raster_scan_index;
+    uint32_t tile_scan_index;
+    uint32_t zscan_index;
+};
+
 class FramePartition
 {
 public:
     ~FramePartition();
 
+    uint32_t GetWidth();
+    uint32_t GetHeight();
+    uint32_t GetMinTBLog2SizeY();
+
     const IFramePartitionCreatorInfoProvider* GetCreationInfoProvider();
     bool RasterScanIndexToTileScanIndex(uint32_t raster_scan_index, 
                                         uint32_t* tile_scan_index);
 
-    bool GetTileIndex(const Coordinate& block, uint32_t* tile_index);
-    bool GetTileScanIndex(const Coordinate& block, uint32_t* tile_scan_index);
-    bool GetRasterScanIndex(const Coordinate& block, 
-                            uint32_t* raster_scan_index);
+    bool GetTileIndexByCTBCoordinate(const Coordinate& block, 
+                                     uint32_t* tile_index);
+
+    bool GetTileScanIndexByCTBCoordinate(const Coordinate& block, 
+                                         uint32_t* tile_scan_index);
+
+    bool GetRasterScanIndexByCTBCoordinate(const Coordinate& block, 
+                                           uint32_t* raster_scan_index);
+
+    bool GetTileIndexByTransformBlockCoordinate(const Coordinate& block, 
+                                                uint32_t* tile_index);
+
+    bool GetTileScanIndexByTransformBlockCoordinate(const Coordinate& block,
+                                                    uint32_t* tile_scan_index);
+
+    bool GetZScanIndexByByTransformBlockCoordinate(const Coordinate& block,
+                                                   uint32_t* zscan_index);
+
+    bool GetRasterScanIndexByTransformBlockCoordinate(
+        const Coordinate& block, uint32_t* raster_scan_index);
+
+    bool GetIndexInfoByTransformBlockCoordinate(const Coordinate& block, 
+                                                TransformBlockIndexInfo* info);
 
     bool GetCoordinateByTileScanIndex(uint32_t index, Coordinate* c);
     bool GetCoordinateByRasterScanIndex(uint32_t index, Coordinate* c);
@@ -40,12 +71,6 @@ public:
     bool IsTheFirstCTBInRowOfTileByRasterScanIndex(uint32_t index);
     bool IsTheFirstCTBInRowOfTileByTileScanIndex(uint32_t index);
     bool IsTheFirstCTBInRowOfTile(const Coordinate& block);
-
-    // 6.4.1 判断邻居块对于当前块来说是否可用, 判断两个是否为同一个tile,同一个slice,
-    // 并且当前块为邻居块的后面的可可用块
-    bool IsZScanOrderNeighbouringBlockAvailable(
-        const Coordinate& current_block, const Coordinate& neighbouring_block,
-        const ISliceSegmentAddressProvider* slice_segment_address_provider);
 
 private:
     friend class FramePartitionManager;

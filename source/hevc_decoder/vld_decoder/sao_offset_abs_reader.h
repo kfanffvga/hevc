@@ -16,7 +16,7 @@ private:
     virtual SyntaxElementName GetSyntaxElementName() override;
     virtual ReadFunctionIndex GetFunctionIndex(uint16_t bin_idx) override;
 
-    uint32_t max_read_bits_;
+    uint32_t max_values_;
 };
 
 #endif

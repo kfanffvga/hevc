@@ -21,7 +21,22 @@ FramePartition::~FramePartition()
 
 }
 
-const IFramePartitionCreatorInfoProvider* 
+uint32_t FramePartition::GetWidth()
+{
+    return provider_->GetWidth();
+}
+
+uint32_t FramePartition::GetHeight()
+{
+    return provider_->GetHeight();
+}
+
+uint32_t FramePartition::GetMinTBLog2SizeY()
+{
+    return provider_->GetMinTBLog2SizeY();
+}
+
+const IFramePartitionCreatorInfoProvider*
     FramePartition::GetCreationInfoProvider()
 {
     return provider_.get();
@@ -183,65 +198,7 @@ bool FramePartition::Init(
     return false;
  }
 
- bool FramePartition::IsZScanOrderNeighbouringBlockAvailable(
-     const Coordinate& current_block, const Coordinate& neighbouring_block,
-     const ISliceSegmentAddressProvider* slice_segment_address_provider)
- {
-    if (!slice_segment_address_provider)
-        return false;
-
-    if ((current_block.x > provider_->GetWidth()) || 
-        (current_block.y > provider_->GetHeight()) ||
-        (neighbouring_block.x > provider_->GetWidth()) ||
-        (neighbouring_block.y > provider_->GetWidth()))
-        return false;
-
-    uint32_t min_tb_log2_size_y = provider_->GetMinTBLog2SizeY();
-    Coordinate c = { current_block.x >> min_tb_log2_size_y,
-                    current_block.y >> min_tb_log2_size_y};
-
-    auto& coordinate_values = 
-        transform_block_partition_info_.get<CoordinateKey>();
-
-    auto tb_of_current_block = coordinate_values.find(c);
-    if (coordinate_values.end() == tb_of_current_block)
-        return false;
-
-    c.x = neighbouring_block.x >> min_tb_log2_size_y;
-    c.y = neighbouring_block.y >> min_tb_log2_size_y;
-
-    auto tb_of_neighbouring_block = coordinate_values.find(c);
-    if (coordinate_values.end() == tb_of_neighbouring_block)
-        return false;
-
-    if (tb_of_neighbouring_block->index > tb_of_current_block->index)
-        return false;
-
-    // 两个块必须在同一个tile里
-    if (tb_of_current_block->belong_to_tile_index != 
-        tb_of_neighbouring_block->belong_to_tile_index)
-        return false;
-
-    uint32_t slice_address_of_current_block = 0;
-    bool success = 
-        slice_segment_address_provider->GetSliceAddressByRasterScanIndex(
-            tb_of_current_block->belong_to_raster_scan_index,
-            &slice_address_of_current_block);
-    if (!success)
-        return false;
-
-    uint32_t slice_address_of_neighbouring_block = 0;
-    success = slice_segment_address_provider->GetSliceAddressByRasterScanIndex(
-        tb_of_neighbouring_block->belong_to_raster_scan_index,
-        &slice_address_of_neighbouring_block);
-    if (!success)
-        return false;
-
-    // 两个块必须在同一个slice segment里
-    return slice_address_of_current_block == slice_address_of_neighbouring_block;
- }
-
- bool FramePartition::GetTileIndex(const Coordinate& block, uint32_t* tile_index)
+ bool FramePartition::GetTileIndexByCTBCoordinate(const Coordinate& block, uint32_t* tile_index)
  {
      if (!tile_index)
          return false;
@@ -258,7 +215,7 @@ bool FramePartition::Init(
      return false;
  }
 
- bool FramePartition::GetTileScanIndex(const Coordinate& block, 
+ bool FramePartition::GetTileScanIndexByCTBCoordinate(const Coordinate& block, 
                                        uint32_t* tile_scan_index)
  {
      if (!tile_scan_index)
@@ -275,8 +232,8 @@ bool FramePartition::Init(
      return false;
  }
 
- bool FramePartition::GetRasterScanIndex(const Coordinate& block,
-                                         uint32_t* raster_scan_index)
+ bool FramePartition::GetRasterScanIndexByCTBCoordinate(
+     const Coordinate& block, uint32_t* raster_scan_index)
  {
      if (!raster_scan_index)
          return false;
@@ -287,6 +244,94 @@ bool FramePartition::Init(
      if (block_info != coordinate_values.end())
      {
          *raster_scan_index = block_info->block_raster_scan_index;
+         return true;
+     }
+     return false;
+ }
+
+ bool FramePartition::GetTileIndexByTransformBlockCoordinate(
+     const Coordinate& block, uint32_t* tile_index)
+ {
+     if (!tile_index)
+         return false;
+
+     auto& coordinate_values = 
+         transform_block_partition_info_.get<CoordinateKey>();
+     auto block_info = coordinate_values.find(block);
+     if (block_info != coordinate_values.end())
+     {
+         *tile_index = block_info->belong_to_tile_index;
+         return true;
+     }
+     return false;
+ }
+
+ bool FramePartition::GetTileScanIndexByTransformBlockCoordinate(
+     const Coordinate& block, uint32_t* tile_scan_index)
+ {
+     if (!tile_scan_index)
+         return false;
+
+     auto& coordinate_values =
+         transform_block_partition_info_.get<CoordinateKey>();
+     auto block_info = coordinate_values.find(block);
+     if (block_info != coordinate_values.end())
+     {
+         *tile_scan_index = block_info->belong_to_tile_scan_index;
+         return true;
+     }
+     return false;
+ }
+
+ bool FramePartition::GetZScanIndexByByTransformBlockCoordinate(
+     const Coordinate& block, uint32_t* zscan_index)
+ {
+     if (!zscan_index)
+         return false;
+
+     auto& coordinate_values =
+         transform_block_partition_info_.get<CoordinateKey>();
+     auto block_info = coordinate_values.find(block);
+     if (block_info != coordinate_values.end())
+     {
+         *zscan_index = block_info->index;
+         return true;
+     }
+     return false;
+ }
+
+ bool FramePartition::GetRasterScanIndexByTransformBlockCoordinate(
+     const Coordinate& block, uint32_t* raster_scan_index)
+ {
+     if (!raster_scan_index)
+         return false;
+
+     auto& coordinate_values =
+         transform_block_partition_info_.get<CoordinateKey>();
+     auto block_info = coordinate_values.find(block);
+     if (block_info != coordinate_values.end())
+     {
+         *raster_scan_index = block_info->belong_to_raster_scan_index;
+         return true;
+     }
+     return false;
+ }
+
+ bool FramePartition::GetIndexInfoByTransformBlockCoordinate(
+     const Coordinate& block, TransformBlockIndexInfo* info)
+ {
+     if (!info)
+         return false;
+
+     auto& coordinate_values =
+         transform_block_partition_info_.get<CoordinateKey>();
+     auto block_info = coordinate_values.find(block);
+     if (block_info != coordinate_values.end())
+     {
+         info->raster_scan_index = block_info->belong_to_raster_scan_index;
+         info->tile_index = block_info->belong_to_tile_index;
+         info->tile_scan_index = block_info->belong_to_tile_scan_index;
+         info->zscan_index = block_info->index;
          return true;
      }
      return false;

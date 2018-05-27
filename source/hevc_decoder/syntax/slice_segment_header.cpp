@@ -22,6 +22,7 @@
 #include "hevc_decoder/syntax/slice_segment_header_context.h"
 #include "hevc_decoder/syntax/short_term_reference_picture_set_context_impl.h"
 #include "hevc_decoder/syntax/prediction_weight_table_context.h"
+#include "hevc_decoder/syntax/palette_table.h"
 
 using std::vector;
 using std::shared_ptr;
@@ -95,10 +96,8 @@ private:
     const shared_ptr<SequenceParameterSet> sps_;
 };
 
-SliceSegmentHeader::SliceSegmentHeader(
-    const ParametersManager* parameters_manager)
-    : parameters_manager_(parameters_manager)
-    , pps_()
+SliceSegmentHeader::SliceSegmentHeader()
+    : pps_()
     , sps_()
     , is_first_slice_segment_in_pic_(false)
     , negative_ref_poc_list_()
@@ -133,14 +132,12 @@ bool SliceSegmentHeader::Parse(BitStream* bit_stream,
 
     GolombReader golomb_reader(bit_stream);
     uint32_t slice_pic_parameter_set_id = golomb_reader.ReadUnsignedValue();
-
-    pps_ = parameters_manager_->GetPictureParameterSet(
-        slice_pic_parameter_set_id);
+    const ParametersManager& pm = context->GetParametersManager();
+    pps_ = pm.GetPictureParameterSet(slice_pic_parameter_set_id);
     if (!pps_)
         return false;
 
-    sps_ = parameters_manager_->GetSequenceParameterSet(
-            pps_->GetAssociateSequenceParameterSetID());
+    sps_ = pm.GetSequenceParameterSet(pps_->GetAssociateSequenceParameterSetID());
     if (!sps_)
         return false;
 
@@ -328,6 +325,27 @@ uint32_t SliceSegmentHeader::GetMaxTransformHierarchyDepthInter() const
     return sps_->GetMaxTransformHierarchyDepthInter();
 }
 
+PaletteTable SliceSegmentHeader::GetPalettePredictorInitializer() const
+{
+    if (pps_->GetPPSSCCExtension().HasPPSPalettePredictorInitializerPresent())
+        return pps_->GetPPSSCCExtension().GetPalettePredictorInitializer();
+
+    if (sps_->GetSPSSCCExtension().HasSPSPalettePredictorInitializerPresent())
+        return sps_->GetSPSSCCExtension().GetPalettePredictorInitializer(); 
+
+    return PaletteTable();   
+}
+
+uint32_t SliceSegmentHeader::GetPaletteMaxSize() const
+{
+    return sps_->GetSPSSCCExtension().GetPaletteMaxSize();
+}
+
+uint32_t SliceSegmentHeader::GetPredictorPaletteMaxSize() const
+{
+    return sps_->GetSPSSCCExtension().GetPredictorPaletteMaxSize();
+}
+
 const vector<int32_t>& SliceSegmentHeader::GetNegativeRefPOCList() const
 {
     return negative_ref_poc_list_;
@@ -341,7 +359,22 @@ const vector<int32_t>& SliceSegmentHeader::GetPositiveRefPOCList() const
 const SPSScreenContentCodingExtension& 
     SliceSegmentHeader::GetSPSScreenContentCodingExtension() const
 {
-    return sps_->GetSPSScreenContentCodingExtension();
+    return sps_->GetSPSSCCExtension();
+}
+
+uint32_t SliceSegmentHeader::GetChromaQPOffsetListtLen() const
+{
+    return pps_->GetPPSRangeExtension().GetChromaQPOffsetListtLen();
+}
+
+const vector<int32_t>& SliceSegmentHeader::GetCbQPOffsetList() const
+{
+    return pps_->GetPPSRangeExtension().GetCbQPOffsetList();
+}
+
+const vector<int32_t>& SliceSegmentHeader::GetCrQPOffsetList() const
+{
+    return pps_->GetPPSRangeExtension().GetCrQPOffsetList();
 }
 
 bool SliceSegmentHeader::ParseIndependentSyntax(
@@ -547,7 +580,7 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
             return false;
     }
     bool is_current_picture_ref_enabled = 
-        pps_->GetPPSSccExtension().IsPPSCurrentPictureReferenceEnabled();
+        pps_->GetPPSSCCExtension().IsPPSCurrentPictureReferenceEnabled();
 
     bool success = ConstructReferencePOCList(context, 
                                              is_current_picture_ref_enabled,
@@ -588,7 +621,7 @@ bool SliceSegmentHeader::ParseReferenceDetailInfo(
     }
     int32_t max_num_merge_cand = 5 - golomb_reader.ReadUnsignedValue();
     const SPSScreenContentCodingExtension& sps_scc_extension =
-        sps_->GetSPSScreenContentCodingExtension();
+        sps_->GetSPSSCCExtension();
     if (sps_scc_extension.GetMotionVectorResolutionControlIDC() == 2)
         bool is_use_integer_mv = bit_stream->ReadBool();
 
@@ -617,7 +650,7 @@ uint32_t SliceSegmentHeader::GetCurrentAvailableReferencePictureCount(
             ++reference_picture_count;
     }
     
-    return pps_->GetPPSSccExtension().IsPPSCurrentPictureReferenceEnabled() ?
+    return pps_->GetPPSSCCExtension().IsPPSCurrentPictureReferenceEnabled() ?
         reference_picture_count + 1 : reference_picture_count;
 }
 
@@ -718,7 +751,7 @@ bool SliceSegmentHeader::ParseQuantizationParameterInfo(
         int32_t slice_cb_qp_offset = golomb_reader.ReadSignedValue();
         int32_t slice_cr_qp_offset = golomb_reader.ReadSignedValue();
     }
-    if (pps_->GetPPSSccExtension().HasPPSSliceActQPOffsetsPresent())
+    if (pps_->GetPPSSCCExtension().HasPPSSliceActQPOffsetsPresent())
     {
         int32_t slice_act_y_qp_offset = golomb_reader.ReadSignedValue();
         int32_t slice_act_cb_qp_offset = golomb_reader.ReadSignedValue();

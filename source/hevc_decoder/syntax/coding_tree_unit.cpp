@@ -16,7 +16,7 @@ class SampleAdaptiveOffsetContext : public ISampleAdaptiveOffsetContext
 {
 public:
     SampleAdaptiveOffsetContext(
-        const shared_ptr<FramePartition>& frame_partition, 
+        const shared_ptr<FramePartition>& frame_partition,
         ICodingTreeUnitContext* ctu_context, Coordinate& ctb_point,
         uint32_t ctb_size_y)
         : frame_partition_(frame_partition)
@@ -24,7 +24,7 @@ public:
         , ctb_point_(ctb_point)
         , ctb_size_y_(ctb_size_y)
     {
-        
+
     }
 
     virtual ~SampleAdaptiveOffsetContext()
@@ -35,8 +35,8 @@ public:
     virtual bool HasLeftCTBInSliceSegment() const override
     {
         uint32_t raster_scan_index = 0;
-        bool success = frame_partition_->GetRasterScanIndex(ctb_point_, 
-                                                            &raster_scan_index);
+        bool success = frame_partition_->GetRasterScanIndexByCTBCoordinate(
+            ctb_point_, &raster_scan_index);
         if (!success)
             return false;
 
@@ -46,51 +46,51 @@ public:
     virtual bool HasLeftCTBInTile() const override
     {
         uint32_t current_tile_index = 0;
-        bool success = 
-            frame_partition_->GetTileIndex(ctb_point_, &current_tile_index);
+        bool success = frame_partition_->GetTileIndexByCTBCoordinate(
+            ctb_point_, &current_tile_index);
         if (!success)
             return false;
 
-        Coordinate left_neighbour_ctb_point = 
-            {ctb_point_.x - ctb_size_y_, ctb_point_.y};
-        
+        Coordinate left_neighbour_ctb_point =
+        {ctb_point_.x - ctb_size_y_, ctb_point_.y};
+
         uint32_t left_neighbour_ctb_tile_index = 0;
-        success = frame_partition_->GetTileIndex(left_neighbour_ctb_point, 
-                                                 &left_neighbour_ctb_tile_index);
+        success = frame_partition_->GetTileIndexByCTBCoordinate(
+            left_neighbour_ctb_point, &left_neighbour_ctb_tile_index);
         if (!success)
             return false;
-        
+
         return current_tile_index == left_neighbour_ctb_tile_index;
     }
 
     virtual bool HasUpCTBInSliceSegment() const override
     {
         Coordinate up_neighbour_ctb_point =
-            {ctb_point_.x, ctb_point_.y - ctb_size_y_};
+        {ctb_point_.x, ctb_point_.y - ctb_size_y_};
 
         uint32_t neighbour_raster_scan_index = 0;
-        bool success = frame_partition_->GetRasterScanIndex(
+        bool success = frame_partition_->GetRasterScanIndexByCTBCoordinate(
             up_neighbour_ctb_point, &neighbour_raster_scan_index);
         if (!success)
             return false;
 
-        return 
+        return
             neighbour_raster_scan_index > ctu_context_->GetSliceSegmentAddress();
     }
 
     virtual bool HasUpCTBInTile() const override
     {
         uint32_t current_tile_index = 0;
-        bool success =
-            frame_partition_->GetTileIndex(ctb_point_, &current_tile_index);
+        bool success = frame_partition_->GetTileIndexByCTBCoordinate(
+            ctb_point_, &current_tile_index);
         if (!success)
             return false;
-        
+
         Coordinate up_neighbour_ctb_point =
-            {ctb_point_.x, ctb_point_.y - ctb_size_y_};
+        {ctb_point_.x, ctb_point_.y - ctb_size_y_};
         uint32_t neighbour_tile_index = 0;
-        success = frame_partition_->GetTileIndex(up_neighbour_ctb_point, 
-                                                 &neighbour_tile_index);
+        success = frame_partition_->GetTileIndexByCTBCoordinate(
+            up_neighbour_ctb_point, &neighbour_tile_index);
         if (!success)
             return false;
 
@@ -116,12 +116,12 @@ public:
     {
         return ctu_context_->IsSliceSAOLuma();
     }
-    
+
     virtual bool IsSliceSAOChroma() const override
     {
         return ctu_context_->IsSliceSAOChroma();
     }
-    
+
     virtual uint32_t GetBitDepthLuma() const
     {
         return ctu_context_->GetBitDepthLuma();
@@ -157,18 +157,26 @@ private:
     uint32_t ctb_size_y_;
 };
 
-class CodingQuadtreeContext : public ICodingQuadtreeContext
+// 此处的is_cu_qp_delta_coded_直接设置为false是因为一在一个ctu开始的时候，本来就应该要
+// 初始化is_cu_qp_delta_coded_的值，但在CodingQuadtreeContextInMyself就需要考虑是否
+// 满足条件了, is_cu_chroma_qp_offset_coded_ 同理
+class CodingQuadtreeContextInCTU : public ICodingQuadtreeContext
 {
 public:
-    CodingQuadtreeContext(ICodingTreeUnitContext* ctu_context,
-                          CodingTreeUnit* ctu)
+    CodingQuadtreeContextInCTU(ICodingTreeUnitContext* ctu_context,
+                               CodingTreeUnit* ctu, CodingQuadtree* quadtree,
+    const shared_ptr<PaletteTable>& palette_table)
         : ctu_context_(ctu_context)
         , ctu_(ctu)
+        , palette_table_(palette_table)
+        , is_cu_qp_delta_coded_(false)
+        , is_cu_chroma_qp_offset_coded_(false)
+        , coding_quadtree_(quadtree)
     {
 
     }
 
-    virtual ~CodingQuadtreeContext()
+    virtual ~CodingQuadtreeContextInCTU()
     {
 
     }
@@ -285,13 +293,83 @@ public:
         return ctu_->GetNearestCULayerByCoordinate(point);
     }
 
+    virtual shared_ptr<PaletteTable> GetPredictorPaletteTable() const override
+    {
+        return palette_table_;
+    }
+
+    virtual uint32_t GetPaletteMaxSize() const override
+    {
+        return ctu_context_->GetPaletteMaxSize();
+    }
+
+    virtual uint32_t GetBitDepthLuma() const override
+    {
+        return ctu_context_->GetBitDepthLuma();
+    }
+
+    virtual uint32_t GetBitDepthChroma() const override
+    {
+        return ctu_context_->GetBitDepthChroma();
+    }
+
+    virtual uint32_t GetPredictorPaletteMaxSize() const override
+    {
+        return ctu_context_->GetPredictorPaletteMaxSize();
+    }
+
+    virtual bool IsCUQPDeltaCoded() const override
+    {
+        return is_cu_qp_delta_coded_;
+    }
+
+    virtual void SetCUQPDeltaVal(int32_t cu_qp_delta_val) override
+    {
+        assert(!is_cu_qp_delta_coded_);
+        is_cu_qp_delta_coded_ = true;
+        coding_quadtree_->SetCUQPDeltaVal(cu_qp_delta_val);
+    }
+
+    virtual bool IsCUChromaQPOffsetCoded() const override
+    {
+        return is_cu_chroma_qp_offset_coded_;
+    }
+
+    virtual void SetCUChromaQPOffsetCrAndCb(
+        int32_t cu_chroma_qp_offset_cr, int32_t cu_chroma_qp_offset_cb) override
+    {
+        assert(!is_cu_chroma_qp_offset_coded_);
+        is_cu_chroma_qp_offset_coded_ = true;
+        coding_quadtree_->SetCUChromaQPOffsetCr(cu_chroma_qp_offset_cr);
+        coding_quadtree_->SetCUChromaQPOffsetCb(cu_chroma_qp_offset_cb);
+    }
+
+    virtual uint32_t GetChromaQPOffsetListtLen() const override
+    {
+        return ctu_context_->GetChromaQPOffsetListtLen();
+    }
+
+    virtual const std::vector<int32_t>& GetCbQPOffsetList() const override
+    {
+        return ctu_context_->GetCbQPOffsetList();
+    }
+
+    virtual const std::vector<int32_t>& GetCrQPOffsetList() const override
+    {
+        return ctu_context_->GetCrQPOffsetList();
+    }
+
 private:
     ICodingTreeUnitContext* ctu_context_;
     CodingTreeUnit* ctu_;
+    std::shared_ptr<PaletteTable> palette_table_;
+    bool is_cu_qp_delta_coded_;
+    bool is_cu_chroma_qp_offset_coded_;
+    CodingQuadtree* coding_quadtree_;
 };
 
-CodingTreeUnit::CodingTreeUnit(uint32_t tile_scan_index, 
-                               const Coordinate& point, 
+CodingTreeUnit::CodingTreeUnit(uint32_t tile_scan_index,
+                               const Coordinate& point,
                                uint32_t ctb_log2_size_y)
     : tile_scan_index_(tile_scan_index)
     , point_(point)
@@ -324,16 +402,24 @@ bool CodingTreeUnit::Parse(CABACReader* reader, ICodingTreeUnitContext* context)
     if (context->IsSliceSAOLuma() || context->IsSliceSAOChroma())
     {
         sample_adaptive_offset_.reset(new SampleAdaptiveOffset());
-        SampleAdaptiveOffsetContext sao_context(frame_partition, context, 
+        SampleAdaptiveOffsetContext sao_context(frame_partition, context,
                                                 point_, ctb_size_y_);
         if (!sample_adaptive_offset_->Parse(reader, &sao_context))
             return false;
     }
-    CodingQuadtreeContext coding_quadtree_context(context, this);
+    shared_ptr<PaletteTable> predictor_palette_table =
+        context->GetPredictorPaletteTable(point_);
+    CodingQuadtreeContextInCTU coding_quadtree_context(context, this, 
+                                                       coding_quadtree_.get(),
+                                                       predictor_palette_table);
     if (!coding_quadtree_->Parse(reader, &coding_quadtree_context))
         return false;
 
-    return reader->FinishToReadInCTU(&cabac_context_storage_index_);
+    if (!reader->FinishToReadInCTU(&cabac_context_storage_index_))
+        return false;
+
+    context->SavePredictorPaletteTable(point_, predictor_palette_table);
+    return true;
 }
 
 uint32_t CodingTreeUnit::GetCABACContextStorageIndex() const
@@ -346,9 +432,8 @@ const SampleAdaptiveOffset* CodingTreeUnit::GetSampleAdaptiveOffset() const
     return sample_adaptive_offset_.get();
 }
 
-uint32_t CodingTreeUnit::GetNearestCULayerByCoordinate(const Coordinate& point) 
+uint32_t CodingTreeUnit::GetNearestCULayerByCoordinate(const Coordinate& point)
     const
 {
     return coding_quadtree_->GetNearestCULayerByCoordinate(point);
 }
-

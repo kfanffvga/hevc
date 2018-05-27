@@ -21,6 +21,7 @@ public:
     uint32_t GetCurrentLayer() const;
     uint32_t GetCBSizeY() const;
     PredModeType GetPredMode() const;
+    bool IsCUTransquantBypass() const;
 
 private:
     bool ParseDetailInfo(CABACReader* cabac_reader, ICodingUnitContext* context);
@@ -36,6 +37,7 @@ private:
     uint32_t layer_;
     uint32_t cb_size_y_;
     PredModeType pred_mode_;
+    bool is_cu_transquant_bypass_;
 
     // maybe empty
     std::vector<std::shared_ptr<PredictionUnit>> prediction_units_;
