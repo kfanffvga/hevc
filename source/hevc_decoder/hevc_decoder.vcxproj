@@ -79,6 +79,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="base\basic_types.h" />
+    <ClInclude Include="base\color_util.h" />
     <ClInclude Include="partitions\block_scan_order_provider.h" />
     <ClInclude Include="partitions\slice_segment_address_provider.h" />
     <ClInclude Include="base\tile_info.h" />
@@ -203,6 +204,7 @@
     <ClInclude Include="vld_decoder\truncated_rice_value_reader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="base\color_util.cpp" />
     <ClCompile Include="base\tile_info.cpp" />
     <ClCompile Include="partitions\block_scan_order_provider.cpp" />
     <ClCompile Include="partitions\frame_partition.cpp" />

@@ -1,6 +1,7 @@
 ﻿#include "hevc_decoder/syntax/sample_adaptive_offset.h"
 
 #include "hevc_decoder/base/basic_types.h"
+#include "hevc_decoder/base/color_util.h"
 #include "hevc_decoder/syntax/sample_adaptive_offset_context.h"
 #include "hevc_decoder/vld_decoder/sao_merge_flag_reader.h"
 #include "hevc_decoder/vld_decoder/sao_type_index_reader.h"
@@ -86,14 +87,14 @@ uint32_t SampleAdaptiveOffset::GetSAOEoClassChroma() const
 bool SampleAdaptiveOffset::ParseIndependentSAOInfo(
     CABACReader* cabac_reader, ISampleAdaptiveOffsetContext* context)
 {
-    const uint32_t color_count = 
-        ((context->GetChromaFormatType() == MONO_CHROME) || 
-        (context->GetChromaFormatType() == YUV_MONO_CHROME)) ? 1 : 3;
+    const uint32_t color_component_count = 
+        GetColorCompomentCount(context->GetChromaFormatType());
 
-    sao_type_indices_.resize(color_count);
-    sao_offsets_.resize(color_count);
-    sao_band_positions_.resize(color_count);
-    for (uint32_t color_index = 0; color_index < color_count; ++color_index)
+    sao_type_indices_.resize(color_component_count);
+    sao_offsets_.resize(color_component_count);
+    sao_band_positions_.resize(color_component_count);
+    for (uint32_t color_index = 0; color_index < color_component_count; 
+         ++color_index)
     {
         if ((!(context->IsSliceSAOLuma() && (0 == color_index))) && 
             (!(context->IsSliceSAOChroma() && (color_index > 0))))
@@ -198,13 +199,12 @@ bool SampleAdaptiveOffset::CopyDependentSAOInfo(
     }
     else
     {
-        const uint32_t color_count =
-            ((context->GetChromaFormatType() == MONO_CHROME) ||
-            (context->GetChromaFormatType() == YUV_MONO_CHROME)) ? 1 : 3;
-
-        sao_type_indices_.resize(color_count);
-        sao_offsets_.resize(color_count);
-        sao_band_positions_.resize(color_count);
+        const uint32_t color_component_count = 
+            GetColorCompomentCount(context->GetChromaFormatType());
+            
+        sao_type_indices_.resize(color_component_count);
+        sao_offsets_.resize(color_component_count);
+        sao_band_positions_.resize(color_component_count);
         sao_eo_class_luma_ = 0;
         sao_eo_class_chroma_ = 0;
     }

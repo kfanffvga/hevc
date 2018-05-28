@@ -382,6 +382,9 @@
     <ClInclude Include="vld_decoder\palette_escape_val_reader.h">
       <Filter>vld_decoder</Filter>
     </ClInclude>
+    <ClInclude Include="base\color_util.h">
+      <Filter>base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -676,6 +679,9 @@
     </ClCompile>
     <ClCompile Include="vld_decoder\palette_escape_val_reader.cpp">
       <Filter>vld_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="base\color_util.cpp">
+      <Filter>base</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

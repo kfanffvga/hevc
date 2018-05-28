@@ -4,7 +4,7 @@ using std::vector;
 
 PaletteTable::PaletteTable()
     : palette_table_()
-    , color_compoment_count_(0)
+    , color_component_count_(0)
 {
 
 }
@@ -14,17 +14,17 @@ PaletteTable::~PaletteTable()
 
 }
 
-void PaletteTable::Init(uint32_t color_compoment_count)
+void PaletteTable::Init(uint32_t color_component_count)
 {
-    color_compoment_count_ = color_compoment_count;
-    empty_entry_.resize(color_compoment_count);
+    color_component_count_ = color_component_count;
+    empty_entry_.resize(color_component_count);
 }
 
 bool PaletteTable::SetValue(uint32_t entry_index, 
                             uint32_t color_compoment_index, uint32_t value)
 {
     if ((entry_index >= palette_table_.size()) || 
-        (color_compoment_index >= color_compoment_count_))
+        (color_compoment_index >= color_component_count_))
         return false;
 
     palette_table_[entry_index][color_compoment_index] = value;
@@ -35,7 +35,7 @@ uint32_t PaletteTable::GetValue(uint32_t entry_index,
                                 uint32_t color_compoment_index)
 {
     if ((entry_index >= palette_table_.size()) || 
-        (color_compoment_index >= color_compoment_count_))
+        (color_compoment_index >= color_component_count_))
         return 0;
 
     return palette_table_[entry_index][color_compoment_index];
@@ -51,7 +51,7 @@ const vector<uint32_t>& PaletteTable::GetEntry(uint32_t entry_index)
 
 bool PaletteTable::PushEntry(const vector<uint32_t>& entry)
 {
-    if (entry.size() != color_compoment_count_)
+    if (entry.size() != color_component_count_)
         return false;
 
     palette_table_.push_back(entry);
@@ -60,7 +60,7 @@ bool PaletteTable::PushEntry(const vector<uint32_t>& entry)
 
 uint32_t PaletteTable::GetColorCompomentCount()
 {
-    return color_compoment_count_;
+    return color_component_count_;
 }
 
 uint32_t PaletteTable::GetEntriesCount()

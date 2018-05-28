@@ -1,6 +1,7 @@
 ﻿#include "hevc_decoder/syntax/palette_coding.h"
 
 #include "hevc_decoder/base/basic_types.h"
+#include "hevc_decoder/base/color_util.h"
 #include "hevc_decoder/partitions/block_scan_order_provider.h"
 #include "hevc_decoder/syntax/palette_coding_context.h"
 #include "hevc_decoder/syntax/palette_table.h"
@@ -215,17 +216,15 @@ bool PaletteCoding::ParsePredictorPaletteTableReuseEntryIndices(
     shared_ptr<PaletteTable> predictor_palette_table =
         context->GetPredictorPaletteTable();
 
-    uint32_t color_compoment_count = 1;
-    if ((context->GetChromaFormatType() != MONO_CHROME) &&
-        (context->GetChromaFormatType() != YUV_MONO_CHROME))
-        color_compoment_count = 3;
+    uint32_t color_component_count = 
+        GetColorCompomentCount(context->GetChromaFormatType());
 
-    if (color_compoment_count !=
+    if (color_component_count !=
         predictor_palette_table->GetColorCompomentCount())
         return false;
 
     // 从预测调色板处得到当前cu需要用的色彩值
-    current_palette_table_->Init(color_compoment_count);
+    current_palette_table_->Init(color_component_count);
     uint32_t predictor_extries_index = 0;
     while (predictor_extries_index < predictor_palette_table->GetEntriesCount())
     {
@@ -251,10 +250,8 @@ bool PaletteCoding::ParsePaletteTableOfSelfEntries(
     if (!new_palette_entries)
         return false;
 
-    uint32_t color_compoment_count = 3;
-    if ((context->GetChromaFormatType() == MONO_CHROME) || 
-        (context->GetChromaFormatType() == YUV_MONO_CHROME))
-        color_compoment_count = 1;
+    uint32_t color_component_count = 
+        GetColorCompomentCount(context->GetChromaFormatType());
 
     // 读取当前cu自带的调色板的色彩值
     uint32_t num_signalled_palette_entries = 0;
@@ -266,8 +263,8 @@ bool PaletteCoding::ParsePaletteTableOfSelfEntries(
             num_signalled_palette_entries_reader.Read();
 
         new_palette_entries->resize(
-            boost::extents[num_signalled_palette_entries][color_compoment_count]);
-        for (uint32_t i = 0; i < color_compoment_count; ++i)
+            boost::extents[num_signalled_palette_entries][color_component_count]);
+        for (uint32_t i = 0; i < color_component_count; ++i)
         {
             uint32_t bit_depth = 0 == i ? context->GetBitDepthLuma() :
                 context->GetBitDepthChroma();
@@ -577,12 +574,8 @@ bool PaletteCoding::ParseEscapeValueInfo(CABACReader* cabac_reader,
                                          IPaletteCodingContext* context,
                                          bool is_palette_transpose)
 {
-    uint32_t color_compoment_count = 3;
     const ChromaFormatType chroma_format_type = context->GetChromaFormatType();
-    if ((MONO_CHROME == chroma_format_type) || 
-        (YUV_MONO_CHROME == chroma_format_type))
-        color_compoment_count = 1;
-
+    uint32_t color_component_count = GetColorCompomentCount(chroma_format_type);
     BlockScanOrderProvider::BlockSize block_size =
         BlockScanOrderProvider::GetInstance()->GetBlockSizeType(cb_size_y_);
 
@@ -590,7 +583,7 @@ bool PaletteCoding::ParseEscapeValueInfo(CABACReader* cabac_reader,
         return false;
 
     uint32_t max_palette_index = current_palette_table_->GetEntriesCount() - 1;
-    for (uint32_t color_index = 0; color_index < color_compoment_count;
+    for (uint32_t color_index = 0; color_index < color_component_count;
          ++color_index)
     {
         uint32_t cb_area_size = cb_size_y_ * cb_size_y_;
@@ -603,7 +596,7 @@ bool PaletteCoding::ParseEscapeValueInfo(CABACReader* cabac_reader,
             {
                 bool has_palette_escape_val = true;
                 do {
-                    if (0 == color_compoment_count)
+                    if (0 == color_component_count)
                         break;
 
                     if (YUV_MONO_CHROME == chroma_format_type)

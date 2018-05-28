@@ -12,7 +12,7 @@ public:
      PaletteTable();
     ~PaletteTable();
 
-    void Init(uint32_t color_compoment_count);
+    void Init(uint32_t color_component_count);
     bool SetValue(uint32_t entry_index, uint32_t color_compoment_index, 
                   uint32_t value);
 
@@ -25,7 +25,7 @@ public:
 
 private:
     std::vector<std::vector<uint32_t>> palette_table_;
-    uint32_t color_compoment_count_;
+    uint32_t color_component_count_;
     std::vector<uint32_t> empty_entry_;
 
 };
