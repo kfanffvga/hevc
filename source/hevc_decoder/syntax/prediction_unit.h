@@ -7,6 +7,7 @@
 
 class CABACReader;
 struct Coordinate;
+class IPredictionUnitContext;
 
 class PredictionUnit
 {
@@ -14,7 +15,7 @@ public:
     PredictionUnit(const Coordinate& point, uint32_t width, uint32_t height);
     ~PredictionUnit();
 
-    bool Parse(CABACReader* cabac_reader);
+    bool Parse(CABACReader* cabac_reader, IPredictionUnitContext* context);
 
     bool IsMergeMode() const;
 

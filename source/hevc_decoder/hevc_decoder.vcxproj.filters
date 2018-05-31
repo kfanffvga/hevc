@@ -385,6 +385,9 @@
     <ClInclude Include="base\color_util.h">
       <Filter>base</Filter>
     </ClInclude>
+    <ClInclude Include="syntax\prediction_unit_context.h">
+      <Filter>syntax</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />

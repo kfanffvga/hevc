@@ -1,5 +1,7 @@
 #include "hevc_decoder/syntax/prediction_unit.h"
 
+#include "hevc_decoder/syntax/prediction_unit_context.h"
+
 PredictionUnit::PredictionUnit(const Coordinate& point, uint32_t width, 
                                uint32_t height)
     : point_(point)
@@ -14,7 +16,8 @@ PredictionUnit::~PredictionUnit()
 
 }
 
-bool PredictionUnit::Parse(CABACReader* cabac_reader)
+bool PredictionUnit::Parse(CABACReader* cabac_reader,
+                           IPredictionUnitContext* context)
 {
     return false;
 }

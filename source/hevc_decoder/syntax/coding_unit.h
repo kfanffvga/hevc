@@ -24,13 +24,15 @@ public:
     bool IsCUTransquantBypass() const;
 
 private:
-    bool ParseDetailInfo(CABACReader* cabac_reader, ICodingUnitContext* context);
+    bool ParseDetailInfo(CABACReader* cabac_reader, ICodingUnitContext* context, 
+                         bool is_cu_skip);
+
     bool ParseIntraDetailInfo(CABACReader* cabac_reader,
                               ICodingUnitContext* context, 
                               PartModeType part_mode, bool* is_pcm);
 
     bool ParseInterDetailInfo(CABACReader* cabac_reader, 
-                              ICodingUnitContext* context, 
+                              ICodingUnitContext* context, bool is_cu_skip,
                               PartModeType part_mode);
 
     Coordinate point_;

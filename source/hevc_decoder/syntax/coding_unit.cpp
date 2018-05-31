@@ -8,6 +8,7 @@
 #include "hevc_decoder/syntax/palette_coding.h"
 #include "hevc_decoder/syntax/transform_tree.h"
 #include "hevc_decoder/syntax/palette_coding_context.h"
+#include "hevc_decoder/syntax/prediction_unit_context.h"
 #include "hevc_decoder/vld_decoder/cu_skip_flag_reader.h"
 #include "hevc_decoder/vld_decoder/cu_transquant_bypass_flag_reader.h"
 #include "hevc_decoder/vld_decoder/pred_mode_flag_reader.h"
@@ -117,6 +118,29 @@ private:
 
     CodingUnit* cu_;
     ICodingUnitContext* cu_context_;
+};
+
+class PredictionUnitContext : public IPredictionUnitContext
+{
+public:
+    PredictionUnitContext(bool is_cu_skip)
+        : is_cu_skip_(is_cu_skip)
+    {
+
+    }
+
+    virtual ~PredictionUnitContext()
+    {
+
+    }
+
+    virtual bool IsCUSkip() const override
+    {
+        return is_cu_skip_;
+    }
+
+private:
+    bool is_cu_skip_;
 };
 
 class PaletteCodingContext : public IPaletteCodingContext
@@ -247,13 +271,14 @@ bool CodingUnit::Parse(CABACReader* cabac_reader, ICodingUnitContext* context)
     {
         shared_ptr<PredictionUnit> prediction_unit(
             new PredictionUnit(point_, cb_size_y_, cb_size_y_));
-        if (!prediction_unit->Parse(cabac_reader))
+        PredictionUnitContext prediction_unit_context(is_cu_skip);
+        if (!prediction_unit->Parse(cabac_reader, &prediction_unit_context))
             return false;
 
         prediction_units_.push_back(prediction_unit);
         return true;
     }
-    return ParseDetailInfo(cabac_reader, context);
+    return ParseDetailInfo(cabac_reader, context, is_cu_skip);
 }
 
 uint32_t CodingUnit::GetCurrentLayer() const
@@ -277,7 +302,7 @@ bool CodingUnit::IsCUTransquantBypass() const
 }
 
 bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
-                                 ICodingUnitContext* context)
+                                 ICodingUnitContext* context, bool is_cu_skip)
 {
     if (context->GetSliceType() != I_SLICE)
     {
@@ -325,7 +350,8 @@ bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
             }
             else
             {
-                success = ParseInterDetailInfo(cabac_reader, context, part_mode);
+                success = ParseInterDetailInfo(cabac_reader, context, is_cu_skip, 
+                                               part_mode);
             }
 
             if (!success)
@@ -443,8 +469,8 @@ bool CodingUnit::ParseIntraDetailInfo(CABACReader* cabac_reader,
 }
 
 bool CodingUnit::ParseInterDetailInfo(CABACReader* cabac_reader, 
-                                      ICodingUnitContext* context,
-                                      PartModeType part_mode)
+                                      ICodingUnitContext* context, 
+                                      bool is_cu_skip, PartModeType part_mode)
 {
     if (PART_2Nx2N == part_mode)
     {
@@ -559,7 +585,8 @@ bool CodingUnit::ParseInterDetailInfo(CABACReader* cabac_reader,
     }
     for (auto& unit : prediction_units_)
     {
-        if (!unit->Parse(cabac_reader))
+        PredictionUnitContext prediction_unit_context(is_cu_skip);
+        if (!unit->Parse(cabac_reader, &prediction_unit_context))
             return false;
     }
 

@@ -33,10 +33,10 @@ public:
 
     ~BlockScanOrderProvider();
 
-    inline Coordinate GetScanPosition(BlockSize block_size, ScanType scan_type,
-                                      uint32_t index);
+    Coordinate GetScanPosition(BlockSize block_size, ScanType scan_type, 
+                               uint32_t index);
 
-    inline BlockSize GetBlockSizeType(uint32_t block_border_length);
+    BlockSize GetBlockSizeType(uint32_t block_border_length);
 
 private:
     BlockScanOrderProvider();
