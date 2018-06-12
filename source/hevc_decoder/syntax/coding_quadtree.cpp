@@ -154,6 +154,11 @@ public:
         return parent_node_context_->GetMaxTransformBlockSizeY();
     }
 
+    virtual uint32_t GetMinTransformBlockSizeY() const override
+    {
+        return parent_node_context_->GetMinTransformBlockSizeY();
+    }
+
     virtual uint32_t GetMinPCMCodingBlockSizeY() const override
     {
         return parent_node_context_->GetMinPCMCodingBlockSizeY();
@@ -347,6 +352,11 @@ public:
     virtual uint32_t GetMaxTransformBlockSizeY() const override
     {
         return quadtree_context_->GetMaxTransformBlockSizeY();
+    }
+
+    virtual uint32_t GetMinTransformBlockSizeY() const override
+    {
+        return quadtree_context_->GetMinTransformBlockSizeY();
     }
 
     virtual uint32_t GetMinCBSizeY() const override

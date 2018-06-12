@@ -246,6 +246,11 @@ public:
         return ctu_context_->GetMaxTransformBlockSizeY();
     }
 
+    virtual uint32_t GetMinTransformBlockSizeY() const override
+    {
+        return ctu_context_->GetMinTransformBlockSizeY();
+    }
+
     virtual uint32_t GetMinPCMCodingBlockSizeY() const override
     {
         return ctu_context_->GetMinPCMCodingBlockSizeY();

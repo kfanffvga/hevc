@@ -156,11 +156,17 @@
     <ClInclude Include="syntax\frame_syntax_context.h" />
     <ClInclude Include="syntax\syntax_dispatcher.h" />
     <ClInclude Include="syntax\transform_tree.h" />
+    <ClInclude Include="syntax\transform_tree_context.h" />
+    <ClInclude Include="syntax\transform_unit.h" />
+    <ClInclude Include="syntax\transform_unit_context.h" />
     <ClInclude Include="syntax\video_parameter_set.h" />
     <ClInclude Include="syntax\video_usability_infomation_parameters.h" />
     <ClInclude Include="vld_decoder\cabac_context_storage.h" />
     <ClInclude Include="vld_decoder\cabac_context_types.h" />
     <ClInclude Include="vld_decoder\cabac_reader.h" />
+    <ClInclude Include="vld_decoder\cbf_cb_reader.h" />
+    <ClInclude Include="vld_decoder\cbf_cr_reader.h" />
+    <ClInclude Include="vld_decoder\cbf_luma_reader.h" />
     <ClInclude Include="vld_decoder\copy_above_indices_for_final_run_flag_reader.h" />
     <ClInclude Include="vld_decoder\copy_above_palette_indices_flag_reader.h" />
     <ClInclude Include="vld_decoder\cu_chroma_qp_offset_flag_reader.h" />
@@ -201,6 +207,7 @@
     <ClInclude Include="vld_decoder\sao_offset_sign_reader.h" />
     <ClInclude Include="vld_decoder\sao_type_index_reader.h" />
     <ClInclude Include="vld_decoder\split_cu_flag_reader.h" />
+    <ClInclude Include="vld_decoder\split_transform_flag_reader.h" />
     <ClInclude Include="vld_decoder\truncated_binary_reader.h" />
     <ClInclude Include="vld_decoder\truncated_rice_value_reader.h" />
   </ItemGroup>
@@ -261,10 +268,13 @@
     <ClCompile Include="syntax\sub_layer_hrd_parameters.cpp" />
     <ClCompile Include="syntax\syntax_dispatcher.cpp" />
     <ClCompile Include="syntax\transform_tree.cpp" />
+    <ClCompile Include="syntax\transform_unit.cpp" />
     <ClCompile Include="syntax\video_parameter_set.cpp" />
     <ClCompile Include="syntax\video_usability_infomation_parameters.cpp" />
     <ClCompile Include="vld_decoder\cabac_context_storage.cpp" />
     <ClCompile Include="vld_decoder\cabac_reader.cpp" />
+    <ClCompile Include="vld_decoder\cbf_cb_reader.cpp" />
+    <ClCompile Include="vld_decoder\cbf_luma_reader.cpp" />
     <ClCompile Include="vld_decoder\common_cabac_syntax_reader.cpp" />
     <ClCompile Include="vld_decoder\copy_above_indices_for_final_run_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\copy_above_palette_indices_flag_reader.cpp" />
@@ -303,6 +313,7 @@
     <ClCompile Include="vld_decoder\sao_offset_sign_reader.cpp" />
     <ClCompile Include="vld_decoder\sao_type_index_reader.cpp" />
     <ClCompile Include="vld_decoder\split_cu_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\split_transform_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\truncated_binary_reader.cpp" />
     <ClCompile Include="vld_decoder\truncated_rice_value_reader.cpp" />
   </ItemGroup>

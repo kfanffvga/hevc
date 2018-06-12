@@ -39,6 +39,7 @@ SequenceParameterSet::SequenceParameterSet()
     , log2_min_luma_transform_block_size_(0)
     , log2_min_luma_coding_block_size_(0)
     , max_transform_block_size_y_(0)
+    , min_transform_block_size_y_(0)
     , is_amp_enabled_(false)
     , is_pcm_enabled_(false)
     , log2_min_pcm_coding_block_size_y_(0)
@@ -116,6 +117,8 @@ bool SequenceParameterSet::Parse(BitStream* bit_stream)
     slice_segment_address_bit_length_ = CeilLog2(pic_size_in_ctb);
 
     log2_min_luma_transform_block_size_ = golomb_reader.ReadUnsignedValue() + 2;
+    min_transform_block_size_y_ = 1 << log2_min_luma_transform_block_size_;
+
     uint32_t log2_diff_max_min_luma_transform_block_size = 
         golomb_reader.ReadUnsignedValue();
 
@@ -452,4 +455,9 @@ uint32_t SequenceParameterSet::GetMaxTransformHierarchyDepthIntra() const
 uint32_t SequenceParameterSet::GetMaxTransformHierarchyDepthInter() const
 {
     return max_transform_hierarchy_depth_inter_;
+}
+
+uint32_t SequenceParameterSet::GetMinTransformBlockSizeY() const
+{
+    return min_transform_block_size_y_;
 }

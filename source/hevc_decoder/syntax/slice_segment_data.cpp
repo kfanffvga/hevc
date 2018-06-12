@@ -278,6 +278,11 @@ public:
         return header_->GetMaxTransformBlockSizeY();
     }
 
+    virtual uint32_t GetMinTransformBlockSizeY() const override
+    {
+        return header_->GetMinTransformBlockSizeY();
+    }
+
     virtual uint32_t GetMinPCMCodingBlockSizeY() const override
     {
         return header_->GetMinPCMCodingBlockSizeY();

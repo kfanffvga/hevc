@@ -47,6 +47,7 @@ public:
     uint32_t GetCTBHeight() const;
     uint32_t GetMinTBLog2SizeY() const;
     uint32_t GetMaxTransformBlockSizeY() const;
+    uint32_t GetMinTransformBlockSizeY() const;
     SliceType GetSliceType() const;
     uint32_t GetSliceSegmentAddress() const;
     bool IsDependentSliceSegment() const;

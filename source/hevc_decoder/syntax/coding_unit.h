@@ -21,6 +21,7 @@ public:
     uint32_t GetCurrentLayer() const;
     uint32_t GetCBSizeY() const;
     PredModeType GetPredMode() const;
+    PartModeType GetPartMode() const;
     bool IsCUTransquantBypass() const;
 
 private:
@@ -39,6 +40,7 @@ private:
     uint32_t layer_;
     uint32_t cb_size_y_;
     PredModeType pred_mode_;
+    PartModeType part_mode_;
     bool is_cu_transquant_bypass_;
 
     // maybe empty

@@ -9,6 +9,7 @@
 #include "hevc_decoder/syntax/transform_tree.h"
 #include "hevc_decoder/syntax/palette_coding_context.h"
 #include "hevc_decoder/syntax/prediction_unit_context.h"
+#include "hevc_decoder/syntax/transform_tree_context.h"
 #include "hevc_decoder/vld_decoder/cu_skip_flag_reader.h"
 #include "hevc_decoder/vld_decoder/cu_transquant_bypass_flag_reader.h"
 #include "hevc_decoder/vld_decoder/pred_mode_flag_reader.h"
@@ -22,6 +23,7 @@
 #include "hevc_decoder/vld_decoder/intra_chroma_pred_mode_reader.h"
 #include "hevc_decoder/vld_decoder/rqt_root_cbf_reader.h"
 
+using std::array;
 using std::unique_ptr;
 using std::vector;
 using std::shared_ptr;
@@ -233,12 +235,98 @@ private:
     CodingUnit* coding_unit_;
 };
 
+class TransformTreeContextInCU : public ITransformTreeContext
+{
+public:
+    TransformTreeContextInCU(ICodingUnitContext* cu_context,
+                             CodingUnit* cu, uint32_t max_transform_tree_layer, 
+                             bool is_intra_split)
+        : cu_context_(cu_context)
+        , cu_(cu)
+        , max_transform_tree_layer_(max_transform_tree_layer)
+        , is_intra_split_(is_intra_split)
+        , default_transform_coefficient_flag_({true, true})
+    {
+
+    }
+
+    virtual ~TransformTreeContextInCU()
+    {
+
+    }
+
+    virtual uint32_t GetMaxTransformBlockSizeY() const override
+    {
+        return cu_context_->GetMaxTransformBlockSizeY();
+    }
+
+    virtual uint32_t GetMinTransformBlockSizeY() const override
+    {
+        return cu_context_->GetMinTransformBlockSizeY();
+    }
+
+    virtual uint32_t GetMaxTransformTreeDepth() const override
+    {
+        return max_transform_tree_layer_;
+    }
+
+    virtual bool IsAllowIntraSplit() const override
+    {
+        return is_intra_split_;
+    }
+
+    virtual CABACInitType GetCABACInitType() const override
+    {
+        return cu_context_->GetCABACInitType();
+    }
+
+    virtual uint32_t GetMaxTransformHierarchyDepthInter() const override
+    {
+        return cu_context_->GetMaxTransformHierarchyDepthInter();
+    }
+
+    virtual PredModeType GetCUPredMode() const override
+    {
+        return cu_->GetPredMode();
+    }
+
+    virtual PartModeType GetPartMode() const override
+    {
+        return cu_->GetPartMode();
+    }
+
+    virtual ChromaFormatType GetChromaFormatType() const override
+    {
+        return cu_context_->GetChromaFormatType();
+    }
+
+    virtual const array<bool, 2>&
+        IsPreviousCBContainedTransformCoefficientOfColorBlue() const override
+    {
+        return default_transform_coefficient_flag_;
+    }
+
+    virtual const array<bool, 2>&
+        IsPreviousCBContainedTransformCoefficientOfColorRed() const override
+    {
+        return default_transform_coefficient_flag_;
+    }
+
+private:
+    ICodingUnitContext* cu_context_;
+    CodingUnit* cu_;
+    uint32_t max_transform_tree_layer_;
+    bool is_intra_split_;
+    array<bool, 2> default_transform_coefficient_flag_;
+};
+
 CodingUnit::CodingUnit(const Coordinate& point, uint32_t layer, 
                        uint32_t cb_size_y)
     : point_(point)
     , layer_(layer)
     , cb_size_y_(cb_size_y)
     , pred_mode_(MODE_SKIP)
+    , part_mode_(PART_2Nx2N)
     , is_cu_transquant_bypass_(false)
     , prediction_units_()
 {
@@ -296,6 +384,11 @@ PredModeType CodingUnit::GetPredMode() const
     return pred_mode_;
 }
 
+PartModeType CodingUnit::GetPartMode() const
+{
+    return part_mode_;
+}
+
 bool CodingUnit::IsCUTransquantBypass() const
 {
     return is_cu_transquant_bypass_;
@@ -331,7 +424,6 @@ bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
     }
     else
     {
-        PartModeType part_mode = PART_2Nx2N;
         if ((pred_mode_ != MODE_INTRA) || 
             (context->GetMinCBSizeY() == cb_size_y_))
         {
@@ -339,19 +431,19 @@ bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
             PartModeReader part_mode_reader(cabac_reader, 
                                             context->GetCABACInitType(),
                                             &part_mode_reader_context);
-            part_mode = part_mode_reader.Read();
+            part_mode_ = part_mode_reader.Read();
 
             bool success = false;
             bool is_pcm = false;
             if (MODE_INTRA == pred_mode_)
             {
-                success = ParseIntraDetailInfo(cabac_reader, context, part_mode,
+                success = ParseIntraDetailInfo(cabac_reader, context, part_mode_,
                                                &is_pcm);
             }
             else
             {
                 success = ParseInterDetailInfo(cabac_reader, context, is_cu_skip, 
-                                               part_mode);
+                                               part_mode_);
             }
 
             if (!success)
@@ -362,7 +454,7 @@ bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
                 // rqt_root_cbf
                 bool has_transform_tree = true;
                 if ((pred_mode_ != MODE_INTRA) &&
-                    !((PART_2Nx2N == part_mode) && !prediction_units_.empty() &&
+                    !((PART_2Nx2N == part_mode_) && !prediction_units_.empty() &&
                       prediction_units_[0]->IsMergeMode()))
                 {
                     RQTRootCBFReader reader(cabac_reader, 
@@ -373,16 +465,24 @@ bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
                 {
                     uint32_t max_transform_depth = 
                         context->GetMaxTransformHierarchyDepthInter();
+                    bool is_intra_split = false;
                     if (MODE_INTRA == pred_mode_)
                     {
                         max_transform_depth = 
                             context->GetMaxTransformHierarchyDepthIntra();
-                        if (PART_NxN == part_mode)
+                        if (PART_NxN == part_mode_)
+                        {
                             max_transform_depth += 1;
+                            is_intra_split = true;
+                        }
                     }
                     TransformTree transform_tree(point_, point_, cb_size_y_, 0, 
                                                  0);
-                    return transform_tree.Parse(cabac_reader);
+                    TransformTreeContextInCU transform_tree_context(
+                        context, this, max_transform_depth, is_intra_split);
+
+                    return transform_tree.Parse(cabac_reader, 
+                                                &transform_tree_context);
                 }
             }
         }

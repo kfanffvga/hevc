@@ -199,6 +199,11 @@ uint32_t SliceSegmentHeader::GetMaxTransformBlockSizeY() const
     return sps_->GetMaxTransformBlockSizeY();
 }
 
+uint32_t SliceSegmentHeader::GetMinTransformBlockSizeY() const
+{
+    return sps_->GetMinTransformBlockSizeY();
+}
+
 SliceType SliceSegmentHeader::GetSliceType() const
 {
     return slice_type_;

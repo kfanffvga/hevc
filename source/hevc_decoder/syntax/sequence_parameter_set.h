@@ -35,6 +35,7 @@ public:
     uint32_t GetLog2MinLumaTransformBlockSize() const;
     uint32_t GetLog2MinLumaCodingBlockSize() const;
     uint32_t GetMaxTransformBlockSizeY() const;
+    uint32_t GetMinTransformBlockSizeY() const;
     uint32_t GetMinLumaCodingBlockSizeY() const;
 
     uint32_t GetSequenceParameterSetID();
@@ -106,6 +107,7 @@ private:
     uint32_t log2_min_luma_coding_block_size_;
     uint32_t min_luma_coding_block_size_y_;
     uint32_t max_transform_block_size_y_;
+    uint32_t min_transform_block_size_y_;
     bool is_amp_enabled_;
     bool is_pcm_enabled_;
     uint32_t log2_min_pcm_coding_block_size_y_;

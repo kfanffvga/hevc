@@ -16,7 +16,8 @@ enum ChromaFormatType
     YUV_420 = 1,
     YUV_422 = 2,
     YUV_444 = 3,
-    YUV_MONO_CHROME = 0xffff   // 此处可以认为chroma_array_type为0
+    // 以下可以认chroma_format_idc == 3 &&  separate_colour_plane_flag == true
+    YUV_MONO_CHROME = 0xffff   
 };
 
 enum PredModeType

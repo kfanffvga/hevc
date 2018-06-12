@@ -31,6 +31,7 @@ public:
     virtual SliceType GetSliceType() const = 0;
     virtual bool IsPaletteModeEnabled() const = 0;
     virtual uint32_t GetMaxTransformBlockSizeY() const = 0;
+    virtual uint32_t GetMinTransformBlockSizeY() const = 0;
     virtual uint32_t GetMinPCMCodingBlockSizeY() const = 0;
     virtual uint32_t GetMaxPCMCodingBlockSizeY() const = 0;
     virtual bool IsAsymmetricMotionPartitionsEnabled() const = 0;
