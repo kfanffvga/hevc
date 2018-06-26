@@ -5,6 +5,11 @@
 #include <algorithm>
 #include <stdint.h>
 
+template<typename T> inline T Align(T a, uint32_t b)
+{
+    return (a >> b) << b;
+}
+
 template<typename T> inline T UpAlign(T a, uint32_t b)
 {
     return (a + (1 << b) - 1) >> b << b;

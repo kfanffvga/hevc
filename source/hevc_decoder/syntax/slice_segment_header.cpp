@@ -367,6 +367,17 @@ const SPSScreenContentCodingExtension&
     return sps_->GetSPSSCCExtension();
 }
 
+const PPSScreenContentCodingExtension& 
+    SliceSegmentHeader::GetPPSScreenContentCodingExtension() const
+{
+    return pps_->GetPPSSCCExtension();
+}
+
+const PPSRangeExtension& SliceSegmentHeader::GetPPSRangeExtension() const
+{
+    return pps_->GetPPSRangeExtension();
+}
+
 uint32_t SliceSegmentHeader::GetChromaQPOffsetListtLen() const
 {
     return pps_->GetPPSRangeExtension().GetChromaQPOffsetListtLen();

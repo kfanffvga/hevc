@@ -31,6 +31,7 @@ const static vector<int> init_type_to_ctxidx[SYNTAX_ELEMENT_NAME_COUNT - 1][3] =
 
     {vector<int>{}, vector<int>{0}, vector<int>{2}},
     {vector<int>{}, vector<int>{1}, vector<int>{3}},
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
     {vector<int>{0,1}, vector<int>{2,3}, vector<int>{4,5}},
     {vector<int>{0}, vector<int>{1}, vector<int>{2}},
     {vector<int>{0}, vector<int>{1}, vector<int>{2}},

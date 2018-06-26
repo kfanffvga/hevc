@@ -7,6 +7,8 @@
 #include "hevc_decoder/syntax/coding_tree_unit.h"
 #include "hevc_decoder/syntax/coding_tree_unit_context.h"
 #include "hevc_decoder/syntax/sps_screen_content_coding_extension.h"
+#include "hevc_decoder/syntax/pps_screen_content_coding_extension.h"
+#include "hevc_decoder/syntax/pps_range_extension.h"
 #include "hevc_decoder/syntax/byte_alignment.h"
 #include "hevc_decoder/vld_decoder/cabac_reader.h"
 #include "hevc_decoder/vld_decoder/cabac_context_storage.h"
@@ -405,6 +407,22 @@ public:
     virtual const std::vector<int32_t>& GetCrQPOffsetList() const override
     {
         return header_->GetCrQPOffsetList();
+    }
+
+    virtual bool IsResidualAdaptiveColorTransformEnabled() const override
+    {
+        const PPSScreenContentCodingExtension& pps_scc = 
+            header_->GetPPSScreenContentCodingExtension();
+
+        return pps_scc.IsResidualAdaptiveColorTransformEnabled();
+    }
+
+    virtual bool IsCrossComponentPredictionEnabled() const override
+    {
+        const PPSRangeExtension& range_extension = 
+            header_->GetPPSRangeExtension();
+
+        return range_extension.IsCrossComponentPredictionEnabled();
     }
 
 private:

@@ -2,6 +2,7 @@
 #define _TRANSFORM_TREE_CONTEXT_H_
 
 #include <array>
+#include <vector>
 
 enum CABACInitType;
 enum PredModeType;
@@ -25,6 +26,19 @@ public:
     virtual const std::array<bool, 2>& 
         IsPreviousCBContainedTransformCoefficientOfColorRed() const = 0;
 
+    virtual uint32_t GetMinCBLog2SizeY() const = 0;
+    virtual uint32_t GetMinCBSizeY() const = 0;
+    virtual bool IsResidualAdaptiveColorTransformEnabled() const = 0;
+    virtual const std::vector<uint32_t>& GetIntraChromaPredMode() const = 0;
+    virtual bool IsCUQPDeltaEnabled() const = 0;
+    virtual bool IsCUQPDeltaCoded() const = 0;
+    virtual void SetCUQPDeltaVal(int32_t cu_qp_delta_val) = 0;
+    virtual bool IsCUTransquantBypass() const = 0;
+    virtual bool IsCUChromaQPOffsetEnable() const = 0;
+    virtual bool IsCUChromaQPOffsetCoded() const = 0;
+    virtual uint32_t GetChromaQPOffsetListtLen() const = 0;
+    virtual void SetCUChromaQPOffsetIndex(uint32_t cu_chroma_qp_offset_index) = 0;
+    virtual bool IsCrossComponentPredictionEnabled() const = 0;
 };
 
 #endif

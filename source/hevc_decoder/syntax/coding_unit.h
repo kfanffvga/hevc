@@ -23,6 +23,7 @@ public:
     PredModeType GetPredMode() const;
     PartModeType GetPartMode() const;
     bool IsCUTransquantBypass() const;
+    const std::vector<uint32_t>& GetIntraChromaPredMode() const;
 
 private:
     bool ParseDetailInfo(CABACReader* cabac_reader, ICodingUnitContext* context, 
@@ -42,6 +43,7 @@ private:
     PredModeType pred_mode_;
     PartModeType part_mode_;
     bool is_cu_transquant_bypass_;
+    std::vector<uint32_t> intra_chroma_pred_mode_;
 
     // maybe empty
     std::vector<std::shared_ptr<PredictionUnit>> prediction_units_;

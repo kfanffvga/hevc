@@ -108,6 +108,8 @@
     <ClInclude Include="syntax\coding_unit_context.h" />
     <ClInclude Include="syntax\colour_mapping_octants.h" />
     <ClInclude Include="syntax\colour_mapping_table.h" />
+    <ClInclude Include="syntax\cross_comp_pred.h" />
+    <ClInclude Include="syntax\cross_comp_pred_context.h" />
     <ClInclude Include="syntax\delta_dlt.h" />
     <ClInclude Include="syntax\delta_qp.h" />
     <ClInclude Include="syntax\delta_qp_context.h" />
@@ -134,6 +136,8 @@
     <ClInclude Include="syntax\predictor_palette_table_storage.h" />
     <ClInclude Include="syntax\profile_tier_level.h" />
     <ClInclude Include="syntax\reference_picture_lists_modification.h" />
+    <ClInclude Include="syntax\residual_coding.h" />
+    <ClInclude Include="syntax\residual_coding_context.h" />
     <ClInclude Include="syntax\sample_adaptive_offset.h" />
     <ClInclude Include="syntax\sample_adaptive_offset_context.h" />
     <ClInclude Include="syntax\scaling_list_data.h" />
@@ -210,6 +214,7 @@
     <ClInclude Include="vld_decoder\split_transform_flag_reader.h" />
     <ClInclude Include="vld_decoder\truncated_binary_reader.h" />
     <ClInclude Include="vld_decoder\truncated_rice_value_reader.h" />
+    <ClInclude Include="vld_decoder\tu_residual_act_flag_reader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\color_util.cpp" />
@@ -233,6 +238,7 @@
     <ClCompile Include="syntax\coding_unit.cpp" />
     <ClCompile Include="syntax\colour_mapping_octants.cpp" />
     <ClCompile Include="syntax\colour_mapping_table.cpp" />
+    <ClCompile Include="syntax\cross_comp_pred.cpp" />
     <ClCompile Include="syntax\delta_dlt.cpp" />
     <ClCompile Include="syntax\delta_qp.cpp" />
     <ClCompile Include="syntax\frame_syntax.cpp" />
@@ -253,6 +259,7 @@
     <ClCompile Include="syntax\predictor_palette_table_storage.cpp" />
     <ClCompile Include="syntax\profile_tier_level.cpp" />
     <ClCompile Include="syntax\reference_picture_lists_modification.cpp" />
+    <ClCompile Include="syntax\residual_coding.cpp" />
     <ClCompile Include="syntax\sample_adaptive_offset.cpp" />
     <ClCompile Include="syntax\scaling_list_data.cpp" />
     <ClCompile Include="syntax\sequence_parameter_set.cpp" />
@@ -316,6 +323,7 @@
     <ClCompile Include="vld_decoder\split_transform_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\truncated_binary_reader.cpp" />
     <ClCompile Include="vld_decoder\truncated_rice_value_reader.cpp" />
+    <ClCompile Include="vld_decoder\tu_residual_act_flag_reader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

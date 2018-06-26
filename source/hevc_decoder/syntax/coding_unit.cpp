@@ -169,6 +169,11 @@ public:
         return cu_context_->GetPaletteMaxSize();
     }
 
+    virtual ChromaFormatType GetChromaFormatType() const override
+    {
+        return cu_context_->GetChromaFormatType();
+    }
+
     virtual uint32_t GetBitDepthLuma() const override
     {
         return cu_context_->GetBitDepthLuma();
@@ -312,6 +317,72 @@ public:
         return default_transform_coefficient_flag_;
     }
 
+    virtual uint32_t GetMinCBLog2SizeY() const override
+    {
+        return cu_context_->GetMinCBLog2SizeY();
+    }
+
+    virtual uint32_t GetMinCBSizeY() const override
+    {
+        return cu_context_->GetMinCBSizeY();
+    }
+
+    virtual bool IsResidualAdaptiveColorTransformEnabled() const override
+    {
+        return cu_context_->IsResidualAdaptiveColorTransformEnabled();
+    }
+
+    virtual const vector<uint32_t>& GetIntraChromaPredMode() const override
+    {
+        return cu_->GetIntraChromaPredMode();
+    }
+
+    virtual bool IsCUQPDeltaEnabled() const override
+    {
+        return cu_context_->IsCUQPDeltaEnabled();
+    }
+
+    virtual bool IsCUQPDeltaCoded() const override
+    {
+        return cu_context_->IsCUQPDeltaCoded();
+    }
+
+    virtual void SetCUQPDeltaVal(int32_t cu_qp_delta_val) override
+    {
+        cu_context_->SetCUQPDeltaVal(cu_qp_delta_val);
+    }
+
+    virtual bool IsCUTransquantBypass() const override
+    {
+        return cu_->IsCUTransquantBypass();
+    }
+
+    virtual bool IsCUChromaQPOffsetEnable() const override
+    {
+        return cu_context_->IsCUChromaQPOffsetEnable();
+    }
+
+    virtual bool IsCUChromaQPOffsetCoded() const override
+    {
+        return cu_context_->IsCUChromaQPOffsetCoded();
+    }
+
+    virtual uint32_t GetChromaQPOffsetListtLen() const override
+    {
+        return cu_context_->GetChromaQPOffsetListtLen();
+    }
+
+    virtual void SetCUChromaQPOffsetIndex(uint32_t cu_chroma_qp_offset_index)
+        override
+    {
+        cu_context_->SetCUChromaQPOffsetIndex(cu_chroma_qp_offset_index);
+    }
+
+    virtual bool IsCrossComponentPredictionEnabled() const override
+    {
+        return cu_context_->IsCrossComponentPredictionEnabled();
+    }
+
 private:
     ICodingUnitContext* cu_context_;
     CodingUnit* cu_;
@@ -328,6 +399,7 @@ CodingUnit::CodingUnit(const Coordinate& point, uint32_t layer,
     , pred_mode_(MODE_SKIP)
     , part_mode_(PART_2Nx2N)
     , is_cu_transquant_bypass_(false)
+    , intra_chroma_pred_mode_()
     , prediction_units_()
 {
 
@@ -394,6 +466,11 @@ bool CodingUnit::IsCUTransquantBypass() const
     return is_cu_transquant_bypass_;
 }
 
+const vector<uint32_t>& CodingUnit::GetIntraChromaPredMode() const
+{
+    return intra_chroma_pred_mode_;
+}
+
 bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
                                  ICodingUnitContext* context, bool is_cu_skip)
 {
@@ -419,8 +496,8 @@ bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
     if (is_palette_mode)
     {
         PaletteCoding palette_coding(cb_size_y_);
-        // return palette_coding.Parse(cabac_reader);
-        return true;
+        PaletteCodingContext palette_coding_context(context);
+        return palette_coding.Parse(cabac_reader, &palette_coding_context);
     }
     else
     {
@@ -544,8 +621,7 @@ bool CodingUnit::ParseIntraDetailInfo(CABACReader* cabac_reader,
             rem_intra_luma_pred_mode[i] = luma_pred_mode;
         }
     }
-    vector<uint32_t> intra_chroma_pred_mode;
-    intra_chroma_pred_mode.resize(block_count);
+    intra_chroma_pred_mode_.resize(block_count);
     // 如果是444模式，则每个块都有相对应的帧内预测模式
     if (context->GetChromaFormatType() == YUV_444)
     {
@@ -554,16 +630,15 @@ bool CodingUnit::ParseIntraDetailInfo(CABACReader* cabac_reader,
             IntraChromaPredModeReader reader(cabac_reader, 
                                              context->GetCABACInitType());
             uint32_t chroma_pred_mode = reader.Read();
-            intra_chroma_pred_mode[i] = chroma_pred_mode;
+            intra_chroma_pred_mode_[i] = chroma_pred_mode;
         }
     }
-    else if ((context->GetChromaFormatType() != MONO_CHROME) &&
-        (context->GetChromaFormatType() != YUV_MONO_CHROME))
+    else if (context->GetChromaFormatType() != MONO_CHROME)
     {
         IntraChromaPredModeReader reader(cabac_reader,
                                          context->GetCABACInitType());
         uint32_t chroma_pred_mode = reader.Read();
-        intra_chroma_pred_mode[0] = chroma_pred_mode;
+        intra_chroma_pred_mode_[0] = chroma_pred_mode;
     }
     return true;
 }

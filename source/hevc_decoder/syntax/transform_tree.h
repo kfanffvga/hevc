@@ -8,6 +8,7 @@
 
 class CABACReader;
 class ITransformTreeContext;
+struct Coordinate;
 
 class TransformTree
 {
@@ -25,6 +26,13 @@ public:
     const std::array<bool, 2>& IsCBContainedTransformCoefficientOfColorRed() 
         const;
 
+    bool IsCBContainedTransformCoefficientOfLuma() const;
+
+    uint32_t GetBlockSize() const;
+    uint32_t GetTreeDepth() const;
+    const Coordinate& GetBaseCoordinate() const;
+    const Coordinate& GetCurrentCoordinate() const;
+
 private:
     bool ParseCBFCBValues(CABACReader* cabac_reader, 
                           ITransformTreeContext* context, 
@@ -36,8 +44,8 @@ private:
     bool ParseTransformUnit(CABACReader* cabac_reader, 
                             ITransformTreeContext* context);
 
-    Coordinate current_point_;
-    Coordinate base_point_;
+    Coordinate current_coordinate_;
+    Coordinate base_coordinate_;
     uint32_t transform_unit_size_y_;
     uint32_t log2_transform_unit_size_y_;
     uint32_t depth_;
@@ -45,6 +53,9 @@ private:
 
     std::array<bool, 2> cbf_cb_;
     std::array<bool, 2> cbf_cr_;
+    bool cbf_luma_;
+
+    // may be null, if null then have unit
     std::array<std::unique_ptr<TransformTree>, 4> sub_transform_trees_;
 };
 

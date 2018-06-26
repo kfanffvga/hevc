@@ -18,6 +18,7 @@ public:
     virtual uint32_t GetMaxTransformBlockSizeY() const = 0;
     virtual uint32_t GetMinTransformBlockSizeY() const = 0;
     virtual uint32_t GetMinCBSizeY() const = 0;
+    virtual uint32_t GetMinCBLog2SizeY() const = 0;
     virtual uint32_t GetMinPCMCodingBlockSizeY() const = 0;
     virtual uint32_t GetMaxPCMCodingBlockSizeY() const = 0;
     virtual bool IsAsymmetricMotionPartitionsEnabled() const = 0;
@@ -44,6 +45,9 @@ public:
     virtual uint32_t GetChromaQPOffsetListtLen() const = 0;
     virtual void SetCUChromaQPOffsetIndex(uint32_t cu_chroma_qp_offset_index) 
         = 0;
+
+    virtual bool IsResidualAdaptiveColorTransformEnabled() const = 0;
+    virtual bool IsCrossComponentPredictionEnabled() const = 0;
 };
 
 #endif

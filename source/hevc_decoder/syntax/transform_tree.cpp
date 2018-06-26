@@ -10,6 +10,7 @@
 #include "hevc_decoder/vld_decoder/cbf_luma_reader.h"
 
 using std::array;
+using std::vector;
 
 class TransformTreeContextInMySelf : public ITransformTreeContext
 {
@@ -86,6 +87,72 @@ public:
             transform_tree_node_->IsCBContainedTransformCoefficientOfColorRed();
     }
 
+    virtual uint32_t GetMinCBLog2SizeY() const override
+    {
+        return parent_node_context_->GetMinCBLog2SizeY();
+    }
+
+    virtual uint32_t GetMinCBSizeY() const override
+    {
+        return parent_node_context_->GetMinCBLog2SizeY();
+    }
+
+    virtual bool IsResidualAdaptiveColorTransformEnabled() const override
+    {
+        return parent_node_context_->IsResidualAdaptiveColorTransformEnabled();
+    }
+
+    virtual const vector<uint32_t>& GetIntraChromaPredMode() const override
+    {
+        return parent_node_context_->GetIntraChromaPredMode();
+    }
+
+    virtual bool IsCUQPDeltaEnabled() const override
+    {
+        return parent_node_context_->IsCUQPDeltaEnabled();
+    }
+
+    virtual bool IsCUQPDeltaCoded() const override
+    {
+        return parent_node_context_->IsCUQPDeltaCoded();
+    }
+
+    virtual void SetCUQPDeltaVal(int32_t cu_qp_delta_val) override
+    {
+        parent_node_context_->SetCUQPDeltaVal(cu_qp_delta_val);
+    }
+
+    virtual bool IsCUTransquantBypass() const override
+    {
+        return parent_node_context_->IsCUTransquantBypass();
+    }
+
+    virtual bool IsCUChromaQPOffsetEnable() const override
+    {
+        return parent_node_context_->IsCUChromaQPOffsetEnable();
+    }
+
+    virtual bool IsCUChromaQPOffsetCoded() const override
+    {
+        return parent_node_context_->IsCUChromaQPOffsetCoded();
+    }
+
+    virtual uint32_t GetChromaQPOffsetListtLen() const override
+    {
+        return parent_node_context_->GetChromaQPOffsetListtLen();
+    }
+
+    virtual void SetCUChromaQPOffsetIndex(uint32_t cu_chroma_qp_offset_index)
+        override
+    {
+        parent_node_context_->SetCUChromaQPOffsetIndex(cu_chroma_qp_offset_index);
+    }
+
+    virtual bool IsCrossComponentPredictionEnabled() const override
+    {
+        return parent_node_context_->IsCrossComponentPredictionEnabled();
+    }
+
 private:
     ITransformTreeContext* parent_node_context_;
     TransformTree* transform_tree_node_;
@@ -94,7 +161,10 @@ private:
 class TransformUnitContext : public ITransformUnitContext
 {
 public:
-    TransformUnitContext()
+    TransformUnitContext(TransformTree* tree, 
+                         ITransformTreeContext* tree_context)
+        : tree_(tree)
+        , tree_context_(tree_context)
     {
 
     }
@@ -103,19 +173,160 @@ public:
     {
 
     }
+
+    virtual uint32_t GetTransformBlockSize() const override
+    {
+        return tree_->GetBlockSize();
+    }
+
+    virtual uint32_t GetTransformBlockDepth() const override
+    {
+        return tree_->GetTreeDepth();
+    }
+
+    virtual const Coordinate& GetBaseCoordinate() const override
+    {
+        return tree_->GetBaseCoordinate();
+    }
+
+    virtual const Coordinate& GetCurrentCoordinate() const override
+    {
+        return tree_->GetCurrentCoordinate();
+    }
+
+    virtual ChromaFormatType GetChromaFormatType() const override
+    {
+        return tree_context_->GetChromaFormatType();
+    }
+
+    virtual bool GetCBFColorBlueValue(uint32_t index, uint32_t depth) const
+        override
+    {
+        assert(index < 2);
+        if (tree_->GetTreeDepth() == depth)
+            return tree_->IsCBContainedTransformCoefficientOfColorBlue()[index];
+
+        auto coef_value = 
+            tree_context_->IsPreviousCBContainedTransformCoefficientOfColorBlue();
+        return coef_value[index];
+    }
+
+    virtual bool GetCBFColorRedValue(uint32_t index, uint32_t depth) const
+        override
+    {
+        assert(index < 2);
+        if (tree_->GetTreeDepth() == depth)
+            return tree_->IsCBContainedTransformCoefficientOfColorRed()[index];
+
+        auto coef_value =
+            tree_context_->IsPreviousCBContainedTransformCoefficientOfColorRed();
+        return coef_value[index];
+
+    }
+
+    virtual bool GetCBFLumaValue() const override
+    {
+        return tree_->IsCBContainedTransformCoefficientOfLuma();
+    }
+
+    virtual uint32_t GetMinCBLog2SizeY() const override
+    {
+        return tree_context_->GetMinCBLog2SizeY();
+    }
+
+    virtual uint32_t GetMinCBSizeY() const override
+    {
+        return tree_context_->GetMinCBSizeY();
+    }
+
+    virtual bool IsResidualAdaptiveColorTransformEnabled() const override
+    {
+        return tree_context_->IsResidualAdaptiveColorTransformEnabled();
+    }
+
+    virtual PredModeType GetCUPredMode() const override
+    {
+        return tree_context_->GetCUPredMode();
+    }
+
+    virtual PartModeType GetPartMode() const override
+    {
+        return tree_context_->GetPartMode();
+    }
+
+    virtual const vector<uint32_t>& GetIntraChromaPredMode() const override
+    {
+        return tree_context_->GetIntraChromaPredMode();
+    }
+
+    virtual CABACInitType GetCABACInitType() const override
+    {
+        return tree_context_->GetCABACInitType();
+    }
+
+    virtual bool IsCUQPDeltaEnabled() const override
+    {
+        return tree_context_->IsCUQPDeltaEnabled();
+    }
+
+    virtual bool IsCUQPDeltaCoded() const override
+    {
+        return tree_context_->IsCUQPDeltaCoded();
+    }
+
+    virtual void SetCUQPDeltaVal(int32_t cu_qp_delta_val) override
+    {
+        tree_context_->SetCUQPDeltaVal(cu_qp_delta_val);
+    }
+
+    virtual bool IsCUTransquantBypass() const override
+    {
+        return tree_context_->IsCUTransquantBypass();
+    }
+
+    virtual bool IsCUChromaQPOffsetEnable() const override
+    {
+        return tree_context_->IsCUChromaQPOffsetEnable();
+    }
+
+    virtual bool IsCUChromaQPOffsetCoded() const override
+    {
+        return tree_context_->IsCUChromaQPOffsetCoded();
+    }
+
+    virtual uint32_t GetChromaQPOffsetListtLen() const override
+    {
+        return tree_context_->GetChromaQPOffsetListtLen();
+    }
+
+    virtual void SetCUChromaQPOffsetIndex(uint32_t cu_chroma_qp_offset_index)
+        override
+    {
+        return tree_context_->SetCUChromaQPOffsetIndex(cu_chroma_qp_offset_index);
+    }
+
+    virtual bool IsCrossComponentPredictionEnabled() const override
+    {
+        return tree_context_->IsCrossComponentPredictionEnabled();
+    }
+
+private:
+    TransformTree* tree_;
+    ITransformTreeContext* tree_context_;
 };
 
 TransformTree::TransformTree(const Coordinate& current, const Coordinate& base, 
                              uint32_t transform_unit_size_y, uint32_t depth, 
                              uint32_t block_index)
-    : current_point_(current)
-    , base_point_(base)
+    : current_coordinate_(current)
+    , base_coordinate_(base)
     , transform_unit_size_y_(transform_unit_size_y)
     , log2_transform_unit_size_y_(Log2(transform_unit_size_y))
     , depth_(depth)
     , block_index_(block_index)
     , cbf_cb_()
     , cbf_cr_()
+    , cbf_luma_(false)
     , sub_transform_trees_()
 {
 
@@ -186,6 +397,31 @@ const array<bool, 2>&
     return cbf_cr_;
 }
 
+bool TransformTree::IsCBContainedTransformCoefficientOfLuma() const
+{
+    return cbf_luma_;
+}
+
+uint32_t TransformTree::GetBlockSize() const
+{
+    return transform_unit_size_y_;
+}
+
+uint32_t TransformTree::GetTreeDepth() const
+{
+    return depth_;
+}
+
+const Coordinate& TransformTree::GetBaseCoordinate() const
+{
+    return base_coordinate_;
+}
+
+const Coordinate& TransformTree::GetCurrentCoordinate() const
+{
+    return current_coordinate_;
+}
+
 bool TransformTree::ParseCBFCBValues(CABACReader* cabac_reader,
                                      ITransformTreeContext* context, 
                                      bool is_split_transform)
@@ -234,18 +470,20 @@ bool TransformTree::ParseSubTransformTree(CABACReader* cabac_reader,
                                           ITransformTreeContext* context)
 {
     uint32_t sub_transform_tree_size_y = transform_unit_size_y_ >> 1;
-    uint32_t x = current_point_.x + sub_transform_tree_size_y;
-    uint32_t y = current_point_.y + sub_transform_tree_size_y;
+    uint32_t x = current_coordinate_.x + sub_transform_tree_size_y;
+    uint32_t y = current_coordinate_.y + sub_transform_tree_size_y;
     array<Coordinate, 4> sub_transform_trees_coordinate = 
     {
-        current_point_, {x, current_point_.y}, {current_point_.x, y}, {x, y}
+        current_coordinate_, {x, current_coordinate_.y}, 
+        {current_coordinate_.x, y}, {x, y}
     };
     uint32_t sub_layer = depth_ + 1;
     for (uint32_t i = 0; i < sub_transform_trees_coordinate.size(); ++i)
     {
         sub_transform_trees_[i].reset(
-            new TransformTree(sub_transform_trees_coordinate[i], current_point_,
-                              sub_transform_tree_size_y, sub_layer, i));
+            new TransformTree(sub_transform_trees_coordinate[i], 
+                              current_coordinate_, sub_transform_tree_size_y, 
+                              sub_layer, i));
 
         TransformTreeContextInMySelf sub_transform_tree_context(context, this);
         bool success = 
@@ -265,9 +503,9 @@ bool TransformTree::ParseTransformUnit(CABACReader* cabac_reader,
         ((context->GetChromaFormatType() == YUV_422) && cbf_cr_[1] && cbf_cb_[1]))
     {
         CBFLumaReader reader(cabac_reader, context->GetCABACInitType(), depth_);
-        bool cbf_luma = reader.Read();
+        cbf_luma_ = reader.Read();
     }
-    TransformUnit transform_unit;
-    TransformUnitContext transform_unit_context;
+    TransformUnit transform_unit(block_index_);
+    TransformUnitContext transform_unit_context(this, context);
     return transform_unit.Parse(cabac_reader, &transform_unit_context);
 }

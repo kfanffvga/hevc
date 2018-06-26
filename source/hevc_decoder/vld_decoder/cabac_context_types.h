@@ -46,6 +46,7 @@ enum SyntaxElementName
     CBF_CHROMA, // cbf_cr, cbf_cb
     ABS_MVD_GREATER0,
     ABS_MVD_GREATER1,
+    TU_RESIDUAL_ACT_FLAG,
     CU_QP_DELTA_ABS,
     CU_CHROMA_QP_OFFSET_FLAG,
     CU_CHROMA_QP_OFFSET_IDX,

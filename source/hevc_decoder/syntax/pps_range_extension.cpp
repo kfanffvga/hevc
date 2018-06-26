@@ -12,6 +12,7 @@ PPSRangeExtension::PPSRangeExtension()
     , diff_cu_chroma_qp_offset_depth_(0)
     , cb_qp_offset_list_()
     , cr_qp_offset_list_()
+    , is_cross_component_prediction_enabled_(false)
 {
 
 }
@@ -33,7 +34,7 @@ bool PPSRangeExtension::Parse(BitStream* bit_stream,
         uint32_t log2_max_transform_skip_block_size = 
             golomb_reader.ReadUnsignedValue();
     }
-    bool is_cross_component_prediction_enabled = bit_stream->ReadBool();
+    is_cross_component_prediction_enabled_ = bit_stream->ReadBool();
     is_chroma_qp_offset_list_enabled_ = bit_stream->ReadBool();
     if (is_chroma_qp_offset_list_enabled_)
     {
@@ -75,4 +76,9 @@ const vector<int32_t>& PPSRangeExtension::GetCbQPOffsetList() const
 const vector<int32_t>& PPSRangeExtension::GetCrQPOffsetList() const
 {
     return cr_qp_offset_list_;
+}
+
+bool PPSRangeExtension::IsCrossComponentPredictionEnabled() const
+{
+    return is_cross_component_prediction_enabled_;
 }

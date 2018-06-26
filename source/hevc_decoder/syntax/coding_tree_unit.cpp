@@ -159,7 +159,7 @@ private:
 
 // 此处的is_cu_qp_delta_coded_直接设置为false是因为一在一个ctu开始的时候，本来就应该要
 // 初始化is_cu_qp_delta_coded_的值，但在CodingQuadtreeContextInMyself就需要考虑是否
-// 满足条件了, is_cu_chroma_qp_offset_coded_ 同理
+// 满足is_cu_qp_delta_coded_为true的条件了, is_cu_chroma_qp_offset_coded_ 同理
 class CodingQuadtreeContextInCTU : public ICodingQuadtreeContext
 {
 public:
@@ -362,6 +362,16 @@ public:
     virtual const std::vector<int32_t>& GetCrQPOffsetList() const override
     {
         return ctu_context_->GetCrQPOffsetList();
+    }
+
+    virtual bool IsResidualAdaptiveColorTransformEnabled() const override
+    {
+        return ctu_context_->IsResidualAdaptiveColorTransformEnabled();
+    }
+
+    virtual bool IsCrossComponentPredictionEnabled() const override
+    {
+        return ctu_context_->IsCrossComponentPredictionEnabled();
     }
 
 private:

@@ -9,6 +9,7 @@ PPSScreenContentCodingExtension::PPSScreenContentCodingExtension()
     , has_pps_slice_act_qp_offsets_present_(false)
     , has_pps_palette_predictor_initializer_present_(false)
     , palette_predictor_initializer_(new PaletteTable())
+    , is_residual_adaptive_colour_transform_enabled_(false)
 {
 
 }
@@ -24,10 +25,10 @@ bool PPSScreenContentCodingExtension::Parse(BitStream* bit_stream)
         return false;
 
     is_pps_curr_pic_ref_enabled_ = bit_stream->ReadBool();
-    bool is_residual_adaptive_colour_transform_enabled = bit_stream->ReadBool();
+    is_residual_adaptive_colour_transform_enabled_ = bit_stream->ReadBool();
 
     GolombReader golomb_reader(bit_stream);
-    if (is_residual_adaptive_colour_transform_enabled)
+    if (is_residual_adaptive_colour_transform_enabled_)
     {
         has_pps_slice_act_qp_offsets_present_ = bit_stream->ReadBool();
         int32_t pps_act_y_qp_offset = golomb_reader.ReadSignedValue() - 5;
@@ -91,4 +92,9 @@ const PaletteTable&
     PPSScreenContentCodingExtension::GetPalettePredictorInitializer() const
 {
     return *palette_predictor_initializer_;
+}
+
+bool PPSScreenContentCodingExtension::IsResidualAdaptiveColorTransformEnabled() const
+{
+    return is_residual_adaptive_colour_transform_enabled_;
 }

@@ -19,12 +19,14 @@ public:
     uint32_t GetChromaQPOffsetListtLen() const;
     const std::vector<int32_t>& GetCbQPOffsetList() const;
     const std::vector<int32_t>& GetCrQPOffsetList() const;
+    bool IsCrossComponentPredictionEnabled() const;
 
 private:
     bool is_chroma_qp_offset_list_enabled_;
     uint32_t diff_cu_chroma_qp_offset_depth_;
     std::vector<int32_t> cb_qp_offset_list_;
     std::vector<int32_t> cr_qp_offset_list_;
+    bool is_cross_component_prediction_enabled_;
 };
 
 #endif

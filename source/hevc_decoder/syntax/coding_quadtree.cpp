@@ -307,6 +307,16 @@ public:
         return parent_node_context_->GetCrQPOffsetList();
     }
 
+    virtual bool IsResidualAdaptiveColorTransformEnabled() const override
+    {
+        return parent_node_context_->IsResidualAdaptiveColorTransformEnabled();
+    }
+
+    virtual bool IsCrossComponentPredictionEnabled() const override
+    {
+        return parent_node_context_->IsCrossComponentPredictionEnabled();
+    }
+
 private:
     ICodingQuadtreeContext* parent_node_context_;
     CodingQuadtree* coding_quadtree_node_;
@@ -362,6 +372,11 @@ public:
     virtual uint32_t GetMinCBSizeY() const override
     {
         return quadtree_context_->GetMinCBSizeY();
+    }
+
+    virtual uint32_t GetMinCBLog2SizeY() const override
+    {
+        return quadtree_context_->GetMinCBLog2SizeY();
     }
 
     virtual uint32_t GetMinPCMCodingBlockSizeY() const override
@@ -475,6 +490,16 @@ public:
         quadtree_context_->SetCUChromaQPOffsetCrAndCb(
             quadtree_context_->GetCrQPOffsetList()[cu_chroma_qp_offset_index],
             quadtree_context_->GetCbQPOffsetList()[cu_chroma_qp_offset_index]);
+    }
+
+    virtual bool IsResidualAdaptiveColorTransformEnabled() const override
+    {
+        return quadtree_context_->IsResidualAdaptiveColorTransformEnabled();
+    }
+
+    virtual bool IsCrossComponentPredictionEnabled() const override
+    {
+        return quadtree_context_->IsCrossComponentPredictionEnabled();
     }
 
 private:

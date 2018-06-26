@@ -56,6 +56,8 @@ public:
     virtual uint32_t GetChromaQPOffsetListtLen() const = 0;
     virtual const std::vector<int32_t>& GetCbQPOffsetList() const = 0;
     virtual const std::vector<int32_t>& GetCrQPOffsetList() const = 0;
+    virtual bool IsResidualAdaptiveColorTransformEnabled() const = 0;
+    virtual bool IsCrossComponentPredictionEnabled() const = 0;
 };
 
 #endif

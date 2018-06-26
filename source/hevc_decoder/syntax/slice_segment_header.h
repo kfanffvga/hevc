@@ -14,6 +14,8 @@ class ReferencePictureListsModification;
 class ShortTermReferencePictureSet;
 class ISliceSegmentHeaderContext;
 class SPSScreenContentCodingExtension;
+class PPSScreenContentCodingExtension;
+class PPSRangeExtension;
 class PaletteTable;
 enum NalUnitType;
 enum SliceType;
@@ -81,6 +83,10 @@ public:
     const SPSScreenContentCodingExtension& GetSPSScreenContentCodingExtension()
         const;
 
+    const PPSScreenContentCodingExtension& GetPPSScreenContentCodingExtension()
+        const;
+
+    const PPSRangeExtension& GetPPSRangeExtension() const;
     uint32_t GetChromaQPOffsetListtLen() const;
     const std::vector<int32_t>& GetCbQPOffsetList() const;
     const std::vector<int32_t>& GetCrQPOffsetList() const;
