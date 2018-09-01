@@ -25,6 +25,8 @@ protected:
     };
 
     uint8_t ReadBit();
+    CABACReader* GetCABACReader();
+
     // TODO: 将来要考虑此处改为得到inc，而把最小值的获取放在基类
     virtual uint32_t GetArithmeticContextIndex(uint16_t bin_idx) = 0;
     virtual SyntaxElementName GetSyntaxElementName() = 0;

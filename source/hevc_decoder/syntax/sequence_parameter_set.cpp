@@ -381,7 +381,7 @@ const SPSRangeExtension& SequenceParameterSet::GetSPSRangeExtension() const
     return *sps_range_extension_;
 }
 
-uint32_t SequenceParameterSet::GetBitDepthChroma() const
+uint32_t SequenceParameterSet::GetBitDepthOfChroma() const
 {
     return bit_depth_chroma_;
 }
@@ -397,7 +397,7 @@ uint32_t SequenceParameterSet::GetCTBHeight() const
     return ctb_height_;
 }
 
-uint32_t SequenceParameterSet::GetBitDepthLuma() const
+uint32_t SequenceParameterSet::GetBitDepthOfLuma() const
 {
     return bit_depth_luma_;
 }

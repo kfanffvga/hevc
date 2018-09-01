@@ -23,7 +23,7 @@ uint32_t IntraChromaPredModeReader::Read()
 {
     uint32_t r = ReadBit();
     if (0 == r)
-        return r;
+        return 4;
 
     for (uint32_t i = 0; i < 2; ++i)
         r = (r << 1) | ReadBit();

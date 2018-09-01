@@ -51,8 +51,8 @@ public:
     bool IsAMPEnabled() const;
     bool IsPCMEnabled() const;
     ChromaFormatType GetChromaFormatType() const;
-    uint32_t GetBitDepthLuma() const;
-    uint32_t GetBitDepthChroma() const;
+    uint32_t GetBitDepthOfLuma() const;
+    uint32_t GetBitDepthOfChroma() const;
 
     uint32_t GetLog2MinPCMCodingBlockSizeY() const;
     uint32_t GetLog2MaxPCMCodingBlockSizeY() const;

@@ -266,8 +266,8 @@ bool PaletteCoding::ParsePaletteTableOfSelfEntries(
             boost::extents[num_signalled_palette_entries][color_component_count]);
         for (uint32_t i = 0; i < color_component_count; ++i)
         {
-            uint32_t bit_depth = 0 == i ? context->GetBitDepthLuma() :
-                context->GetBitDepthChroma();
+            uint32_t bit_depth = 0 == i ? context->GetBitDepthOfLuma() :
+                context->GetBitDepthOfChroma();
 
             for (uint32_t j = 0; j < num_signalled_palette_entries; ++j)
             {
@@ -413,7 +413,7 @@ bool PaletteCoding::ParseSampleIndexMapInfo(
         }
         // 对应于标准上的PaletteRun
         uint32_t remain_max_palette_run = total_scan_size - palette_scan_pos - 1;
-        is_copy_above_indices_[begin.y][begin.x] = false;
+        is_copy_above_indices_[begin.GetY()][begin.GetX()] = false;
 
         if (max_palette_index > 0)
         {
@@ -425,14 +425,14 @@ bool PaletteCoding::ParseSampleIndexMapInfo(
             bool success = DeriveCopyAbovePaletteIndicesFlag(
                 cabac_reader, context, has_remaining_palette_index_idc,
                 palette_scan_pos, total_scan_size, previous,
-                &is_copy_above_indices_[begin.y][begin.x]);
+                &is_copy_above_indices_[begin.GetY()][begin.GetX()]);
 
             if (!success)
                 return false;
         }
 
         uint32_t current_palette_index = 0;
-        if (!is_copy_above_indices_[begin.y][begin.x])
+        if (!is_copy_above_indices_[begin.GetY()][begin.GetX()])
         {
             current_palette_index =
                 palette_index_idc_values[current_use_palette_index_idc_index];
@@ -442,15 +442,15 @@ bool PaletteCoding::ParseSampleIndexMapInfo(
         uint32_t adjusted_ref_palette_index = max_palette_index + 1;
         if (palette_scan_pos > 0)
         {
-            if (!is_copy_above_indices_[previous.y][previous.x])
+            if (!is_copy_above_indices_[previous.GetY()][previous.GetX()])
             {
                 adjusted_ref_palette_index = 
-                    palette_index_map_[previous.y][previous.x];
+                    palette_index_map_[previous.GetY()][previous.GetX()];
             }
             else
             {
                 adjusted_ref_palette_index = 
-                    palette_index_map_[begin.y][begin.x];
+                    palette_index_map_[begin.GetY()][begin.GetX()];
             }
         }
         if (current_palette_index >= adjusted_ref_palette_index)
@@ -466,7 +466,7 @@ bool PaletteCoding::ParseSampleIndexMapInfo(
             bool success = ParsePaletteRunValue(
                 cabac_reader, context, total_scan_size, palette_scan_pos, 
                 current_palette_index, remaining_palette_index_idc_count,
-                is_copy_above_indices_[begin.y][begin.x], 
+                is_copy_above_indices_[begin.GetY()][begin.GetX()], 
                 is_copy_above_indices_for_final_run, &palette_run);
 
             if (!success)
@@ -479,15 +479,16 @@ bool PaletteCoding::ParseSampleIndexMapInfo(
                 BlockScanOrderProvider::GetInstance()->GetScanPosition(
                     block_size, BlockScanOrderProvider::TRAVERSE_SCAN, pos);
 
-            if (!is_copy_above_indices_[begin.y][begin.x])
+            if (!is_copy_above_indices_[begin.GetY()][begin.GetX()])
             {
-                is_copy_above_indices_[c.y][c.x] = false;
-                palette_index_map_[c.y][c.x] = current_palette_index;
+                is_copy_above_indices_[c.GetY()][c.GetX()] = false;
+                palette_index_map_[c.GetY()][c.GetX()] = current_palette_index;
             }
             else
             {
-                is_copy_above_indices_[c.y][c.x] = true;
-                palette_index_map_[c.y][c.x] = palette_index_map_[c.y - 1][c.x];
+                is_copy_above_indices_[c.GetY()][c.GetX()] = true;
+                palette_index_map_[c.GetY()][c.GetX()] = 
+                    palette_index_map_[c.GetY() - 1][c.GetX()];
             }
         }
         palette_scan_pos = last_pos;
@@ -506,7 +507,7 @@ bool PaletteCoding::DeriveCopyAbovePaletteIndicesFlag(
 
     *is_copy_above_palette_indices = false;
     if ((palette_scan_pos < cb_size_y_) || 
-        is_copy_above_indices_[previous.y][previous.x])
+        is_copy_above_indices_[previous.GetY()][previous.GetX()])
         return true;
 
     if (has_remaining_palette_index_idc)
@@ -592,7 +593,7 @@ bool PaletteCoding::ParseEscapeValueInfo(CABACReader* cabac_reader,
             Coordinate c = 
                 BlockScanOrderProvider::GetInstance()->GetScanPosition(
                     block_size, BlockScanOrderProvider::TRAVERSE_SCAN, i);
-            if (palette_index_map_[c.y][c.x] == max_palette_index)
+            if (palette_index_map_[c.GetY()][c.GetX()] == max_palette_index)
             {
                 bool has_palette_escape_val = true;
                 do {
@@ -602,16 +603,16 @@ bool PaletteCoding::ParseEscapeValueInfo(CABACReader* cabac_reader,
                     if (YUV_MONO_CHROME == chroma_format_type)
                         break;
 
-                    if (((c.x & 0x1) == 0) && ((c.y & 0x1) == 0) && 
+                    if (((c.GetX() & 0x1) == 0) && ((c.GetY() & 0x1) == 0) && 
                         (YUV_420 == chroma_format_type))
                         break;
 
                     if (YUV_422 == chroma_format_type)
                     {
-                        if (!is_palette_transpose && ((c.x & 0x1) == 0))
+                        if (!is_palette_transpose && ((c.GetX() & 0x1) == 0))
                             break;
 
-                        if (is_palette_transpose && ((c.y & 0x1) == 0))
+                        if (is_palette_transpose && ((c.GetY() & 0x1) == 0))
                             break;
                     }
                     has_palette_escape_val = false;
@@ -619,8 +620,8 @@ bool PaletteCoding::ParseEscapeValueInfo(CABACReader* cabac_reader,
                 if (has_palette_escape_val)
                 {
                     uint32_t color_bit_depth = 
-                        0 == color_index ? context->GetBitDepthLuma() : 
-                        context->GetBitDepthChroma();
+                        0 == color_index ? context->GetBitDepthOfLuma() : 
+                        context->GetBitDepthOfChroma();
 
                     PaletteEscapeValReader reader(cabac_reader);
                     uint32_t palette_escape_val = 
@@ -628,7 +629,7 @@ bool PaletteCoding::ParseEscapeValueInfo(CABACReader* cabac_reader,
                                     color_bit_depth);
                     
                     uint64_t key = (static_cast<uint64_t>(color_index) << 32) || 
-                        (c.y << 16) || c.x;
+                        (c.GetY() << 16) || c.GetX();
                     palette_escape_values_.insert(
                         make_pair(key, palette_escape_val));
                 }

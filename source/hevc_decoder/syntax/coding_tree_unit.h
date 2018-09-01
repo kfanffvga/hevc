@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "hevc_decoder/base/basic_types.h"
+#include "hevc_decoder/base/coordinate.h"
 
 // 考虑到将来的硬解上是以ctu作为线程处理单元，以线程组作为tile处理单元，
 // 因此除slice_segment_header之外，所有的其他数据，应该是ctu自备
@@ -14,6 +15,7 @@ class CABACReader;
 class CodingQuadtree;
 class ICodingTreeUnitContext;
 class SampleAdaptiveOffset;
+class CodingUnit;
 
 class CodingTreeUnit
 {
@@ -27,6 +29,8 @@ public:
     uint32_t GetCABACContextStorageIndex() const;
     const SampleAdaptiveOffset* GetSampleAdaptiveOffset() const;
     uint32_t GetNearestCULayerByCoordinate(const Coordinate& point) const;
+    const std::shared_ptr<CodingUnit> GetCodingUnit(const Coordinate& point) 
+        const;
 
 private:
     uint32_t tile_scan_index_;

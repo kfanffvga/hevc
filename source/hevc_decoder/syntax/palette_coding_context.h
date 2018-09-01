@@ -13,8 +13,8 @@ public:
     virtual std::shared_ptr<PaletteTable> GetPredictorPaletteTable() const = 0;
     virtual uint32_t GetPaletteMaxSize() const = 0;
     virtual ChromaFormatType GetChromaFormatType() const = 0;
-    virtual uint32_t GetBitDepthLuma() const = 0;
-    virtual uint32_t GetBitDepthChroma() const = 0;
+    virtual uint32_t GetBitDepthOfLuma() const = 0;
+    virtual uint32_t GetBitDepthOfChroma() const = 0;
     virtual uint32_t GetPredictorPaletteMaxSize() const = 0;
     virtual CABACInitType GetCABACInitType() const = 0;
     virtual bool IsCUQPDeltaEnabled() const = 0;

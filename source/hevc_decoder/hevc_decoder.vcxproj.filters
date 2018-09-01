@@ -424,6 +424,60 @@
     <ClInclude Include="syntax\cross_comp_pred_context.h">
       <Filter>syntax</Filter>
     </ClInclude>
+    <ClInclude Include="vld_decoder\transform_skip_flag_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\explicit_rdpcm_flag_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\explicit_rdpcm_dir_flag_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\last_sig_coeff_prefix_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\last_sig_coeff_x_prefix_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\last_sig_coeff_y_prefix_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\last_sig_coeff_suffix_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\last_sig_coeff_x_suffix_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\last_sig_coeff_y_suffix_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="base\plane_util.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="base\coordinate.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\coded_sub_block_flag_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\sig_coeff_flag_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\coeff_abs_level_greater_1_flag_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\coeff_abs_level_greater_2_flag_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\coeff_abs_level_greater_number_flag_reader_context.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\coeff_sign_flag_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\coeff_abs_level_remaining_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -742,6 +796,45 @@
     </ClCompile>
     <ClCompile Include="syntax\cross_comp_pred.cpp">
       <Filter>syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\transform_skip_flag_reader.cpp">
+      <Filter>vld_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\explicit_rdpcm_flag_reader.cpp">
+      <Filter>vld_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\explicit_rdpcm_dir_flag_reader.cpp">
+      <Filter>vld_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\last_sig_coeff_prefix_reader.cpp">
+      <Filter>vld_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\last_sig_coeff_suffix_reader.cpp">
+      <Filter>vld_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="base\coordinate.cpp">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\coded_sub_block_flag_reader.cpp">
+      <Filter>vld_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\sig_coeff_flag_reader.cpp">
+      <Filter>vld_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\coeff_abs_level_greater_1_flag_reader.cpp">
+      <Filter>vld_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\coeff_abs_level_greater_2_flag_reader.cpp">
+      <Filter>vld_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\coeff_abs_level_greater_number_flag_reader_context.cpp">
+      <Filter>vld_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\coeff_sign_flag_reader.cpp">
+      <Filter>vld_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\coeff_abs_level_remaining_reader.cpp">
+      <Filter>vld_decoder</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

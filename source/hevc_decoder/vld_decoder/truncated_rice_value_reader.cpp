@@ -27,7 +27,8 @@ uint32_t TruncatedRiceValueReader::Read(uint32_t max_value, uint32_t rice_param)
         if (prefix_value >= max_prefix_value)
             break;
     }
-    if ((0 == rice_param) || (prefix_value < max_prefix_value))
+    if ((0 == rice_param) || (prefix_value < max_prefix_value) || 
+        ((prefix_value << rice_param) >= max_value))
         return prefix_value;
 
     FixedLengthValueReader fixed_length_value_reader(bit_reader_);

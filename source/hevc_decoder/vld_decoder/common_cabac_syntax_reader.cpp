@@ -33,6 +33,11 @@ uint8_t CommonCABACSyntaxReader::ReadBit()
     return value;
 }
 
+CABACReader* CommonCABACSyntaxReader::GetCABACReader()
+{
+    return reader_;
+}
+
 uint8_t CommonCABACSyntaxReader::ArithmeticRead()
 {
     assert(GetSyntaxElementName() != SYNTAX_ELEMENT_NAME_COUNT);

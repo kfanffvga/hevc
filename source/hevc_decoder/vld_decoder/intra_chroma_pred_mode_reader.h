@@ -3,6 +3,8 @@
 
 #include "hevc_decoder/vld_decoder/common_cabac_syntax_reader.h"
 
+enum IntraPredModeType;
+
 class IntraChromaPredModeReader : public CommonCABACSyntaxReader
 {
 public:

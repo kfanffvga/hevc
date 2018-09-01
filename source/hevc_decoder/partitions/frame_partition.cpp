@@ -216,7 +216,7 @@ bool FramePartition::Init(
  }
 
  bool FramePartition::GetTileScanIndexByCTBCoordinate(const Coordinate& block, 
-                                       uint32_t* tile_scan_index)
+                                                      uint32_t* tile_scan_index)
  {
      if (!tile_scan_index)
          return false;
@@ -420,7 +420,7 @@ bool FramePartition::Init(
 
  bool FramePartition::IsTheFirstCTBInRowOfFrame(const Coordinate& block)
  {
-     return 0 == block.x;
+     return 0 == block.GetX();
  }
 
  bool FramePartition::IsTheFirstCTBInRowOfTileByRasterScanIndex(uint32_t index)

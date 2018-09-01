@@ -56,6 +56,20 @@ bool SliceSyntax::GetSliceSegmentAddressByCTUTileScanIndex(uint32_t index,
     return false;
 }
 
+const shared_ptr<SliceSegmentSyntax> SliceSyntax::GetSliceSegmentSyntax(
+    uint32_t tile_scan_index) const
+{
+    for (const auto& slice_segment : slice_segments_)
+    {
+        const SliceSegmentData& slice_segment_data = 
+            slice_segment->GetSliceSegmentData();
+
+        if (slice_segment_data.GetCodingTreeUnit(tile_scan_index))
+            return slice_segment;
+    }
+    return shared_ptr<SliceSegmentSyntax>();
+}
+
 uint32_t SliceSyntax::GetCABACContextIndexInLastParsedSliceSegment()
 {
     assert(!slice_segments_.empty());

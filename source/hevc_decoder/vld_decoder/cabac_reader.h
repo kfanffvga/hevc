@@ -9,6 +9,7 @@
 class BitStream;
 class CABACContextStorage;
 class IFrameInfoProviderForCABAC;
+class Coordinate;
 
 class CABACReader
 {
@@ -27,7 +28,13 @@ public:
     uint8_t ReadNormalBit(SyntaxElementName syntax_name, uint32_t ctxidx);
 
     void Reset();
+    void Align();
     BitStream* GetSourceBitStream();
+
+    // 此函数为了解释coeff_abs_level_remaining句法而添加，暂时性找不到有更好的方法去让这个
+    // 函数不成为公有函数
+    void UpdateStateCoefficient(uint32_t index, uint32_t value);
+    uint32_t GetStateCoefficient(uint32_t index) const;
 
 private:
     void InitReader(const Coordinate& current_ctb);

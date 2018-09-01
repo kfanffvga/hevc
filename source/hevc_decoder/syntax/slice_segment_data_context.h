@@ -8,6 +8,7 @@ class FramePartition;
 class CABACContextStorage;
 class SliceSegmentHeader;
 class PaletteTable;
+class Coordinate;
 
 class ISliceSegmentDataContext
 {
@@ -28,5 +29,8 @@ public:
     virtual void SavePredictorPaletteTable(
         const Coordinate& point, 
         const std::shared_ptr<PaletteTable>& palette_table) = 0;
+
+    virtual const std::shared_ptr<CodingTreeUnit> GetCodingTreeUnit(
+        uint32_t tile_scan_index) const = 0;
 };
 #endif

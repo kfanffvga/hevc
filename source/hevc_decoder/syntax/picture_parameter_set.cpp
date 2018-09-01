@@ -35,11 +35,13 @@ PictureParameterSet::PictureParameterSet()
     , is_entropy_coding_sync_enabled_(false)
     , is_cu_qp_delta_enabled_(false)
     , is_transquant_bypass_enabled_(false)
+    , is_transform_skip_enabled_(false)
     , diff_cu_qp_delta_depth_(0)
     , tile_info_(new TileInfo())
     , num_ref_idx_negative_default_active_(0)
     , num_ref_idx_positive_default_active_(0)
     , init_qp_(0)
+    , is_sign_data_hiding_enabled_(false)
 {
     memset(&deblocking_filter_control_info_, 0, 
            sizeof(deblocking_filter_control_info_));
@@ -61,7 +63,7 @@ bool PictureParameterSet::Parse(BitStream* bit_stream)
     is_dependent_slice_segments_enabled_ = bit_stream->ReadBool();
     has_output_flag_present_ = bit_stream->ReadBool();
     num_extra_slice_header_bits_ = bit_stream->Read<uint8_t>(3);
-    bool is_sign_data_hiding_enabled = bit_stream->ReadBool();
+    is_sign_data_hiding_enabled_ = bit_stream->ReadBool();
     has_cabac_init_present_ = bit_stream->ReadBool();
 
     uint32_t num_ref_idx_negative_default_active_ = 
@@ -71,7 +73,7 @@ bool PictureParameterSet::Parse(BitStream* bit_stream)
 
     init_qp_ = golomb_reader.ReadSignedValue() + 26;
     bool is_constrained_intra_pred = bit_stream->ReadBool();
-    bool is_transform_skip_enabled = bit_stream->ReadBool();
+    is_transform_skip_enabled_ = bit_stream->ReadBool();
     is_cu_qp_delta_enabled_ = bit_stream->ReadBool();
     if (is_cu_qp_delta_enabled_)
         diff_cu_qp_delta_depth_ = golomb_reader.ReadUnsignedValue();
@@ -105,7 +107,7 @@ bool PictureParameterSet::Parse(BitStream* bit_stream)
     bool has_slice_segment_header_extension_present = bit_stream->ReadBool();
     bool has_pps_extension_present = bit_stream->ReadBool();
     if (has_pps_extension_present)
-        if (!ParsePPSExtensionInfo(is_transform_skip_enabled, bit_stream))
+        if (!ParsePPSExtensionInfo(is_transform_skip_enabled_, bit_stream))
             return false;
 
     return true;
@@ -290,6 +292,11 @@ bool PictureParameterSet::IsTransquantBypassEnabled() const
     return is_transquant_bypass_enabled_;
 }
 
+bool PictureParameterSet::IsTransformSkipEnabled() const
+{
+    return is_transform_skip_enabled_;
+}
+
 uint32_t PictureParameterSet::GetDiffCUQPDeltaDepth() const
 {
     return diff_cu_qp_delta_depth_;
@@ -313,4 +320,9 @@ uint32_t PictureParameterSet::GetNumRefIdxPositiveDefaultActive() const
 uint32_t PictureParameterSet::GetInitQuantizationParameter() const
 {
     return init_qp_;
+}
+
+bool PictureParameterSet::IsSignDataHidingEnabled() const
+{
+    return is_sign_data_hiding_enabled_;
 }

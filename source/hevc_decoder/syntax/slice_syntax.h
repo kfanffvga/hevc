@@ -17,6 +17,9 @@ public:
     bool GetSliceSegmentAddressByCTUTileScanIndex(uint32_t index, 
                                                   uint32_t* address);
 
+    const std::shared_ptr<SliceSegmentSyntax> GetSliceSegmentSyntax(
+        uint32_t tile_scan_index) const;
+
     uint32_t GetCABACContextIndexInLastParsedSliceSegment();
 
 private:

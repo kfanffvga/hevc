@@ -8,6 +8,7 @@
 #include <boost/multi_index/ordered_index.hpp>
 
 #include "hevc_decoder/base/basic_types.h"
+#include "hevc_decoder/base/coordinate.h"
 
 class ISliceSegmentAddressProvider;
 class IFramePartitionCreatorInfoProvider;
@@ -113,7 +114,7 @@ private:
     {
         bool operator()(const Coordinate& a, const Coordinate& b) const
         {
-           return b.y == a.y ? b.x < a.x : b.y < a.y;
+           return b < a;
         }
     };
 

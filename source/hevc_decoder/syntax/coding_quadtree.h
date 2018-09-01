@@ -6,8 +6,10 @@
 #include <array>
 
 #include "hevc_decoder/base/basic_types.h"
+#include "hevc_decoder/base/coordinate.h"
 
 class CABACReader;
+class CodingUnit;
 class ICodingQuadtreeContext;
 
 class CodingQuadtree
@@ -26,6 +28,7 @@ public:
     void SetCUQPDeltaVal(int32_t cu_qp_delta_val);
     void SetCUChromaQPOffsetCb(int32_t cu_chroma_qp_offset_cb);
     void SetCUChromaQPOffsetCr(int32_t cu_chroma_qp_offset_cr);
+    const std::shared_ptr<CodingUnit> GetCodingUnit(const Coordinate& p) const;
 
 private:
     Coordinate point_;
@@ -35,8 +38,13 @@ private:
     int32_t cu_qp_delta_val_;
     int32_t cu_chroma_qp_offset_cb_;
     int32_t cu_chroma_qp_offset_cr_;
-    // maybe null 假如是null，代表是有cu或者有越界
+
+    // maybe null 假如sub_coding_quadtrees_是null，代表是有cu或者有越界,
+    // 假如cu_是null， 代表是有sub_coding_quadtrees_
     std::array<std::unique_ptr<CodingQuadtree>, 4> sub_coding_quadtrees_;
+
+    // 此处之所以是用shared_ptr 是因为cu有可能给其他线程使用
+    std::shared_ptr<CodingUnit> cu_;
     
 };
 

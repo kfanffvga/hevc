@@ -62,11 +62,13 @@ public:
     bool IsCUQPDeltaEnabled() const;
     bool IsCUChromaQPOffsetEnabled() const;
     bool IsTransquantBypassEnabled() const;
+    bool IsTransformSkipEnabled() const;
     bool IsAMPEnabled() const;
     bool IsPCMEnabled() const;
+    bool IsExplicitRDPCMEnabled() const;
     ChromaFormatType GetChromaFormatType() const;
-    uint32_t GetBitDepthLuma() const;
-    uint32_t GetBitDepthChroma() const;
+    uint32_t GetBitDepthOfLuma() const;
+    uint32_t GetBitDepthOfChroma() const;
     uint32_t GetMinCBLog2SizeY() const;
     uint32_t GetMinCBSizeY() const;
     uint32_t GetLog2MinCUQPDeltaSize() const;
@@ -75,6 +77,7 @@ public:
     uint32_t GetMaxPCMCodingBlockSizeY() const;
     uint32_t GetMaxTransformHierarchyDepthIntra() const;
     uint32_t GetMaxTransformHierarchyDepthInter() const;
+    uint32_t GetMaxTransformSkipSize() const;
     PaletteTable GetPalettePredictorInitializer() const;
     uint32_t GetPaletteMaxSize() const;
     uint32_t GetPredictorPaletteMaxSize() const;
@@ -90,6 +93,12 @@ public:
     uint32_t GetChromaQPOffsetListtLen() const;
     const std::vector<int32_t>& GetCbQPOffsetList() const;
     const std::vector<int32_t>& GetCrQPOffsetList() const;
+    bool IsTransformSkipContextEnabled() const;
+    bool IsImplicitRDPCMEnabled() const;
+    bool IsCABACBypassAlignmentEnabled() const;
+    bool IsSignDataHidingEnabled() const;
+    bool IsPersistentRiceAdaptationEnabled() const;
+    bool HasExtendedPrecisionProcessing() const;
 
 private:
     struct LongTermReferencePictureOrderCountInfo

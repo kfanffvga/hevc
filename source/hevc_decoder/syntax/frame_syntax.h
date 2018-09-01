@@ -43,6 +43,9 @@ public:
     bool IsZScanOrderNeighbouringBlockAvailable(
         const Coordinate& current_block, const Coordinate& neighbouring_block);
 
+    const std::shared_ptr<SliceSegmentSyntax> GetSliceSegmentSyntax(
+        uint32_t tile_scan_index) const;
+
 private:
     friend class SliceSegmentContext;
 

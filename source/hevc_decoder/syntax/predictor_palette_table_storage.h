@@ -4,7 +4,7 @@
 #include <memory>
 #include <map>
 
-struct Coordinate;
+class Coordinate;
 class PaletteTable;
 class FrameSyntax;
 

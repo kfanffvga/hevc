@@ -102,9 +102,10 @@ public:
         return parent_node_context_->IsResidualAdaptiveColorTransformEnabled();
     }
 
-    virtual const vector<uint32_t>& GetIntraChromaPredMode() const override
+    virtual const vector<uint32_t>& GetIntraChromaPredModeIdentification() const
+        override
     {
-        return parent_node_context_->GetIntraChromaPredMode();
+        return parent_node_context_->GetIntraChromaPredModeIdentification();
     }
 
     virtual bool IsCUQPDeltaEnabled() const override
@@ -152,6 +153,73 @@ public:
     {
         return parent_node_context_->IsCrossComponentPredictionEnabled();
     }
+    
+    virtual bool IsTransformSkipEnabled() const override
+    {
+        return parent_node_context_->IsTransformSkipEnabled();
+    }
+
+    virtual uint32_t GetMaxTransformSkipSize() const override
+    {
+        return parent_node_context_->GetMaxTransformSkipSize();
+    }
+
+    virtual bool IsExplicitRDPCMEnabled() const override
+    {
+        return parent_node_context_->IsExplicitRDPCMEnabled();
+    }
+
+    virtual IntraPredModeType GetIntraLumaPredMode(const Coordinate& c) const
+        override
+    {
+        return parent_node_context_->GetIntraLumaPredMode(c);
+    }
+
+    virtual IntraPredModeType GetIntraChromaPredMode(const Coordinate& c) const
+        override
+    {
+        return parent_node_context_->GetIntraChromaPredMode(c);
+    }
+
+    virtual bool IsTransformSkipContextEnabled() const override
+    {
+        return parent_node_context_->IsTransformSkipContextEnabled();
+    }
+
+    virtual bool IsImplicitRDPCMEnabled() const override
+    {
+        return parent_node_context_->IsImplicitRDPCMEnabled();
+    }
+
+    virtual bool IsCABACBypassAlignmentEnabled() const override
+    {
+        return parent_node_context_->IsCABACBypassAlignmentEnabled();
+    }
+
+    virtual bool IsSignDataHidingEnabled() const override
+    {
+        return parent_node_context_->IsSignDataHidingEnabled();
+    }
+
+    virtual bool IsPersistentRiceAdaptationEnabled() const override
+    {
+        return parent_node_context_->IsPersistentRiceAdaptationEnabled();
+    }
+
+    virtual uint32_t GetBitDepthOfLuma() const override
+    {
+        return parent_node_context_->GetBitDepthOfLuma();
+    }
+
+    virtual uint32_t GetBitDepthOfChroma() const override
+    {
+        return parent_node_context_->GetBitDepthOfChroma();
+    }
+    
+    virtual bool HasExtendedPrecisionProcessing() const override
+    {
+        return parent_node_context_->HasExtendedPrecisionProcessing();
+    }
 
 private:
     ITransformTreeContext* parent_node_context_;
@@ -172,11 +240,6 @@ public:
     virtual ~TransformUnitContext()
     {
 
-    }
-
-    virtual uint32_t GetTransformBlockSize() const override
-    {
-        return tree_->GetBlockSize();
     }
 
     virtual uint32_t GetTransformBlockDepth() const override
@@ -254,9 +317,10 @@ public:
         return tree_context_->GetPartMode();
     }
 
-    virtual const vector<uint32_t>& GetIntraChromaPredMode() const override
+    virtual const vector<uint32_t>& GetIntraChromaPredModeIdentification() const 
+        override
     {
-        return tree_context_->GetIntraChromaPredMode();
+        return tree_context_->GetIntraChromaPredModeIdentification();
     }
 
     virtual CABACInitType GetCABACInitType() const override
@@ -310,18 +374,85 @@ public:
         return tree_context_->IsCrossComponentPredictionEnabled();
     }
 
+    virtual bool IsTransformSkipEnabled() const override
+    {
+        return tree_context_->IsTransformSkipEnabled();
+    }
+
+    virtual uint32_t GetMaxTransformSkipSize() const override
+    {
+        return tree_context_->GetMaxTransformSkipSize();
+    }
+
+    virtual bool IsExplicitRDPCMEnabled() const override
+    {
+        return  tree_context_->IsExplicitRDPCMEnabled();
+    }
+
+    virtual IntraPredModeType GetIntraLumaPredMode(const Coordinate& c) const
+        override
+    {
+        return tree_context_->GetIntraLumaPredMode(c);
+    }
+
+    virtual IntraPredModeType GetIntraChromaPredMode(const Coordinate& c) const
+        override
+    {
+        return tree_context_->GetIntraChromaPredMode(c);
+    }
+    
+    virtual bool IsTransformSkipContextEnabled() const override
+    {
+        return tree_context_->IsTransformSkipContextEnabled();
+    }
+
+    virtual bool IsImplicitRDPCMEnabled() const override
+    {
+        return tree_context_->IsImplicitRDPCMEnabled();
+    }
+
+    virtual bool IsCABACBypassAlignmentEnabled() const override
+    {
+        return tree_context_->IsCABACBypassAlignmentEnabled();
+    }
+
+    virtual bool IsSignDataHidingEnabled() const override
+    {
+        return tree_context_->IsSignDataHidingEnabled();
+    }
+
+    virtual bool IsPersistentRiceAdaptationEnabled() const override
+    {
+        return tree_context_->IsPersistentRiceAdaptationEnabled();
+    }
+
+    virtual uint32_t GetBitDepthOfLuma() const override
+    {
+        return tree_context_->GetBitDepthOfLuma();
+    }
+
+    virtual uint32_t GetBitDepthOfChroma() const override
+    {
+        return tree_context_->GetBitDepthOfChroma();
+    }
+
+    virtual bool HasExtendedPrecisionProcessing() const override
+    {
+        return tree_context_->HasExtendedPrecisionProcessing();
+    }
+
 private:
     TransformTree* tree_;
     ITransformTreeContext* tree_context_;
 };
 
 TransformTree::TransformTree(const Coordinate& current, const Coordinate& base, 
-                             uint32_t transform_unit_size_y, uint32_t depth, 
+                             uint32_t log2_transform_unit_size_y, uint32_t depth, 
                              uint32_t block_index)
     : current_coordinate_(current)
     , base_coordinate_(base)
-    , transform_unit_size_y_(transform_unit_size_y)
-    , log2_transform_unit_size_y_(Log2(transform_unit_size_y))
+    , transform_unit_size_y_(1 << log2_transform_unit_size_y)
+    , log2_transform_unit_size_y_(log2_transform_unit_size_y)
     , depth_(depth)
     , block_index_(block_index)
     , cbf_cb_()
@@ -470,20 +601,20 @@ bool TransformTree::ParseSubTransformTree(CABACReader* cabac_reader,
                                           ITransformTreeContext* context)
 {
     uint32_t sub_transform_tree_size_y = transform_unit_size_y_ >> 1;
-    uint32_t x = current_coordinate_.x + sub_transform_tree_size_y;
-    uint32_t y = current_coordinate_.y + sub_transform_tree_size_y;
+    uint32_t x = current_coordinate_.GetX() + sub_transform_tree_size_y;
+    uint32_t y = current_coordinate_.GetY() + sub_transform_tree_size_y;
     array<Coordinate, 4> sub_transform_trees_coordinate = 
     {
-        current_coordinate_, {x, current_coordinate_.y}, 
-        {current_coordinate_.x, y}, {x, y}
+        current_coordinate_, {x, current_coordinate_.GetY()}, 
+        {current_coordinate_.GetX(), y}, {x, y}
     };
     uint32_t sub_layer = depth_ + 1;
     for (uint32_t i = 0; i < sub_transform_trees_coordinate.size(); ++i)
     {
         sub_transform_trees_[i].reset(
             new TransformTree(sub_transform_trees_coordinate[i], 
-                              current_coordinate_, sub_transform_tree_size_y, 
-                              sub_layer, i));
+                              current_coordinate_, 
+                              log2_transform_unit_size_y_ - 1, sub_layer, i));
 
         TransformTreeContextInMySelf sub_transform_tree_context(context, this);
         bool success = 
@@ -505,7 +636,7 @@ bool TransformTree::ParseTransformUnit(CABACReader* cabac_reader,
         CBFLumaReader reader(cabac_reader, context->GetCABACInitType(), depth_);
         cbf_luma_ = reader.Read();
     }
-    TransformUnit transform_unit(block_index_);
+    TransformUnit transform_unit(block_index_, log2_transform_unit_size_y_);
     TransformUnitContext transform_unit_context(this, context);
     return transform_unit.Parse(cabac_reader, &transform_unit_context);
 }

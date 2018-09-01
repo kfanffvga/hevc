@@ -2,6 +2,7 @@
 
 #include "hevc_decoder/base/basic_types.h"
 #include "hevc_decoder/base/color_util.h"
+#include "hevc_decoder/base/coordinate.h"
 #include "hevc_decoder/syntax/sample_adaptive_offset_context.h"
 #include "hevc_decoder/vld_decoder/sao_merge_flag_reader.h"
 #include "hevc_decoder/vld_decoder/sao_type_index_reader.h"
@@ -36,7 +37,7 @@ bool SampleAdaptiveOffset::Parse(CABACReader* cabac_reader,
 
     bool is_allow_sao_merge_left = false;
     
-    if ((context->GetCurrentCoordinate().x > 0) &&
+    if ((context->GetCurrentCoordinate().GetX() > 0) &&
         context->HasLeftCTBInSliceSegment() && context->HasLeftCTBInTile())
     {
         SAOMergeFlagReader reader(cabac_reader, context->GetCABACInitType());
@@ -44,8 +45,9 @@ bool SampleAdaptiveOffset::Parse(CABACReader* cabac_reader,
     }
 
     bool is_allow_sao_merge_up = false;
-    if ((context->GetCurrentCoordinate().y > 0) && is_allow_sao_merge_left &&
-        context->HasUpCTBInSliceSegment() && context->HasUpCTBInTile())
+    if ((context->GetCurrentCoordinate().GetY() > 0) && 
+        is_allow_sao_merge_left && context->HasUpCTBInSliceSegment() && 
+        context->HasUpCTBInTile())
     {
         SAOMergeFlagReader reader(cabac_reader, context->GetCABACInitType());
         is_allow_sao_merge_up = reader.Read();
@@ -121,8 +123,8 @@ bool SampleAdaptiveOffset::ParseIndependentSAOInfo(
         if (sao_type_indices_[color_index] != NOT_APPLIED)
         {
             uint32_t sample_bit_depth = 
-                (0 == color_index) ? context->GetBitDepthLuma() : 
-                context->GetBitDepthChroma();
+                (0 == color_index) ? context->GetBitDepthOfLuma() : 
+                context->GetBitDepthOfChroma();
 
             bool success = ParseSingleColorSAODetailInfo(
                 cabac_reader, sample_bit_depth, color_index, 

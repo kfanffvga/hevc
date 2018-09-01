@@ -1,5 +1,7 @@
 ﻿#include "hevc_decoder/syntax/coding_tree_unit.h"
 
+#include "hevc_decoder/base/plane_util.h"
+#include "hevc_decoder/base/coordinate.h"
 #include "hevc_decoder/partitions/frame_partition.h"
 #include "hevc_decoder/vld_decoder/cabac_reader.h"
 #include "hevc_decoder/syntax/coding_tree_unit_context.h"
@@ -51,8 +53,8 @@ public:
         if (!success)
             return false;
 
-        Coordinate left_neighbour_ctb_point =
-        {ctb_point_.x - ctb_size_y_, ctb_point_.y};
+        Coordinate left_neighbour_ctb_point(ctb_point_.GetX() - ctb_size_y_, 
+                                            ctb_point_.GetY());
 
         uint32_t left_neighbour_ctb_tile_index = 0;
         success = frame_partition_->GetTileIndexByCTBCoordinate(
@@ -65,8 +67,8 @@ public:
 
     virtual bool HasUpCTBInSliceSegment() const override
     {
-        Coordinate up_neighbour_ctb_point =
-        {ctb_point_.x, ctb_point_.y - ctb_size_y_};
+        Coordinate up_neighbour_ctb_point(ctb_point_.GetX(), 
+                                          ctb_point_.GetY() - ctb_size_y_);
 
         uint32_t neighbour_raster_scan_index = 0;
         bool success = frame_partition_->GetRasterScanIndexByCTBCoordinate(
@@ -86,8 +88,8 @@ public:
         if (!success)
             return false;
 
-        Coordinate up_neighbour_ctb_point =
-        {ctb_point_.x, ctb_point_.y - ctb_size_y_};
+        Coordinate up_neighbour_ctb_point(ctb_point_.GetX(), 
+                                          ctb_point_.GetY() - ctb_size_y_);
         uint32_t neighbour_tile_index = 0;
         success = frame_partition_->GetTileIndexByCTBCoordinate(
             up_neighbour_ctb_point, &neighbour_tile_index);
@@ -122,14 +124,14 @@ public:
         return ctu_context_->IsSliceSAOChroma();
     }
 
-    virtual uint32_t GetBitDepthLuma() const
+    virtual uint32_t GetBitDepthOfLuma() const
     {
-        return ctu_context_->GetBitDepthLuma();
+        return ctu_context_->GetBitDepthOfLuma();
     }
 
-    virtual uint32_t GetBitDepthChroma() const
+    virtual uint32_t GetBitDepthOfChroma() const
     {
-        return ctu_context_->GetBitDepthChroma();
+        return ctu_context_->GetBitDepthOfChroma();
     }
 
     virtual const SampleAdaptiveOffset* GetLeftNeighbourSAO() const override
@@ -308,14 +310,14 @@ public:
         return ctu_context_->GetPaletteMaxSize();
     }
 
-    virtual uint32_t GetBitDepthLuma() const override
+    virtual uint32_t GetBitDepthOfLuma() const override
     {
-        return ctu_context_->GetBitDepthLuma();
+        return ctu_context_->GetBitDepthOfLuma();
     }
 
-    virtual uint32_t GetBitDepthChroma() const override
+    virtual uint32_t GetBitDepthOfChroma() const override
     {
-        return ctu_context_->GetBitDepthChroma();
+        return ctu_context_->GetBitDepthOfChroma();
     }
 
     virtual uint32_t GetPredictorPaletteMaxSize() const override
@@ -372,6 +374,70 @@ public:
     virtual bool IsCrossComponentPredictionEnabled() const override
     {
         return ctu_context_->IsCrossComponentPredictionEnabled();
+    }
+
+    virtual bool IsTransformSkipEnabled() const override
+    {
+        return ctu_context_->IsTransformSkipEnabled();
+    }
+
+    virtual uint32_t GetMaxTransformSkipSize() const override
+    {
+        return ctu_context_->GetMaxTransformSkipSize();
+    }
+
+    virtual bool IsExplicitRDPCMEnabled() const override
+    {
+        return ctu_context_->IsExplicitRDPCMEnabled();
+    }
+
+    virtual bool IsZScanOrderNeighbouringBlockAvailable(
+        const Coordinate& current_block,
+        const Coordinate& neighbouring_block) override
+    {
+        return ctu_context_->IsZScanOrderNeighbouringBlockAvailable(
+            current_block, neighbouring_block);
+    }
+
+    virtual const shared_ptr<CodingUnit> GetCodingUnit(const Coordinate& p) 
+        const override
+    {
+        const shared_ptr<CodingUnit> cu = ctu_->GetCodingUnit(p);
+        if (cu)
+            return cu;
+
+        auto ctu = ctu_context_->GetCodingTreeUnit(p);
+        return ctu ? ctu->GetCodingUnit(p) : shared_ptr<CodingUnit>();
+    }
+
+    virtual bool IsTransformSkipContextEnabled() const override
+    {
+        return ctu_context_->IsTransformSkipContextEnabled();
+    }
+
+    virtual bool IsImplicitRDPCMEnabled() const override
+    {
+        return ctu_context_->IsImplicitRDPCMEnabled();
+    }
+
+    virtual bool IsCABACBypassAlignmentEnabled() const override
+    {
+        return ctu_context_->IsCABACBypassAlignmentEnabled();
+    }
+
+    virtual bool IsSignDataHidingEnabled() const override
+    {
+        return ctu_context_->IsSignDataHidingEnabled();
+    }
+
+    virtual bool IsPersistentRiceAdaptationEnabled() const override
+    {
+        return ctu_context_->IsPersistentRiceAdaptationEnabled();
+    }
+
+    virtual bool HasExtendedPrecisionProcessing() const override
+    {
+        return ctu_context_->HasExtendedPrecisionProcessing();
     }
 
 private:
@@ -451,4 +517,10 @@ uint32_t CodingTreeUnit::GetNearestCULayerByCoordinate(const Coordinate& point)
     const
 {
     return coding_quadtree_->GetNearestCULayerByCoordinate(point);
+}
+
+const shared_ptr<CodingUnit> CodingTreeUnit::GetCodingUnit(
+    const Coordinate& point) const
+{
+    return coding_quadtree_->GetCodingUnit(point);
 }

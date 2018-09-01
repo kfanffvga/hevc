@@ -28,10 +28,10 @@ uint32_t LimitedExponentialGolombReader::Read(uint32_t log2_transform_range,
         suffix_bit_count = prefix_bit_count + rice_param;
         bit_reader_();
     }
-    uint32_t ret = ((1 << prefix_bit_count) - 1) << rice_param;
+    uint32_t ret = 0;
     for (uint32_t i = 0; i < suffix_bit_count; ++i)
         ret = (ret << 1) | bit_reader_();
 
-    return ret;
+    return ret + (((1 << prefix_bit_count) - 1) << rice_param);
 }
 

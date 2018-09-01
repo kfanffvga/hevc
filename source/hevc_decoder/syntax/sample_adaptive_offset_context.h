@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-struct Coordinate;
+class Coordinate;
 enum CABACInitType;
 enum ChromaFormatType;
 class SampleAdaptiveOffset;
@@ -20,8 +20,8 @@ public:
     virtual CABACInitType GetCABACInitType() const = 0;
     virtual bool IsSliceSAOLuma() const = 0;
     virtual bool IsSliceSAOChroma() const = 0;
-    virtual uint32_t GetBitDepthLuma() const = 0;
-    virtual uint32_t GetBitDepthChroma() const = 0;
+    virtual uint32_t GetBitDepthOfLuma() const = 0;
+    virtual uint32_t GetBitDepthOfChroma() const = 0;
     // 同一个slice_segment和tile之内
     virtual const SampleAdaptiveOffset* GetLeftNeighbourSAO() const = 0;
     virtual const SampleAdaptiveOffset* GetUpNeighbourSAO() const = 0;

@@ -80,6 +80,8 @@
   <ItemGroup>
     <ClInclude Include="base\basic_types.h" />
     <ClInclude Include="base\color_util.h" />
+    <ClInclude Include="base\coordinate.h" />
+    <ClInclude Include="base\plane_util.h" />
     <ClInclude Include="partitions\block_scan_order_provider.h" />
     <ClInclude Include="partitions\slice_segment_address_provider.h" />
     <ClInclude Include="base\tile_info.h" />
@@ -171,6 +173,12 @@
     <ClInclude Include="vld_decoder\cbf_cb_reader.h" />
     <ClInclude Include="vld_decoder\cbf_cr_reader.h" />
     <ClInclude Include="vld_decoder\cbf_luma_reader.h" />
+    <ClInclude Include="vld_decoder\coded_sub_block_flag_reader.h" />
+    <ClInclude Include="vld_decoder\coeff_abs_level_greater_1_flag_reader.h" />
+    <ClInclude Include="vld_decoder\coeff_abs_level_greater_2_flag_reader.h" />
+    <ClInclude Include="vld_decoder\coeff_abs_level_greater_number_flag_reader_context.h" />
+    <ClInclude Include="vld_decoder\coeff_abs_level_remaining_reader.h" />
+    <ClInclude Include="vld_decoder\coeff_sign_flag_reader.h" />
     <ClInclude Include="vld_decoder\copy_above_indices_for_final_run_flag_reader.h" />
     <ClInclude Include="vld_decoder\copy_above_palette_indices_flag_reader.h" />
     <ClInclude Include="vld_decoder\cu_chroma_qp_offset_flag_reader.h" />
@@ -179,7 +187,15 @@
     <ClInclude Include="vld_decoder\cu_qp_delta_sign_flag_reader.h" />
     <ClInclude Include="vld_decoder\cu_skip_flag_reader.h" />
     <ClInclude Include="vld_decoder\cu_transquant_bypass_flag_reader.h" />
+    <ClInclude Include="vld_decoder\explicit_rdpcm_dir_flag_reader.h" />
+    <ClInclude Include="vld_decoder\explicit_rdpcm_flag_reader.h" />
     <ClInclude Include="vld_decoder\exponential_golomb_reader.h" />
+    <ClInclude Include="vld_decoder\last_sig_coeff_prefix_reader.h" />
+    <ClInclude Include="vld_decoder\last_sig_coeff_suffix_reader.h" />
+    <ClInclude Include="vld_decoder\last_sig_coeff_x_prefix_reader.h" />
+    <ClInclude Include="vld_decoder\last_sig_coeff_x_suffix_reader.h" />
+    <ClInclude Include="vld_decoder\last_sig_coeff_y_prefix_reader.h" />
+    <ClInclude Include="vld_decoder\last_sig_coeff_y_suffix_reader.h" />
     <ClInclude Include="vld_decoder\limited_exponential_golomb_reader.h" />
     <ClInclude Include="vld_decoder\fixed_length_value_reader.h" />
     <ClInclude Include="vld_decoder\frame_info_provider_for_cabac.h" />
@@ -210,14 +226,17 @@
     <ClInclude Include="vld_decoder\sao_offset_abs_reader.h" />
     <ClInclude Include="vld_decoder\sao_offset_sign_reader.h" />
     <ClInclude Include="vld_decoder\sao_type_index_reader.h" />
+    <ClInclude Include="vld_decoder\sig_coeff_flag_reader.h" />
     <ClInclude Include="vld_decoder\split_cu_flag_reader.h" />
     <ClInclude Include="vld_decoder\split_transform_flag_reader.h" />
+    <ClInclude Include="vld_decoder\transform_skip_flag_reader.h" />
     <ClInclude Include="vld_decoder\truncated_binary_reader.h" />
     <ClInclude Include="vld_decoder\truncated_rice_value_reader.h" />
     <ClInclude Include="vld_decoder\tu_residual_act_flag_reader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\color_util.cpp" />
+    <ClCompile Include="base\coordinate.cpp" />
     <ClCompile Include="base\tile_info.cpp" />
     <ClCompile Include="partitions\block_scan_order_provider.cpp" />
     <ClCompile Include="partitions\frame_partition.cpp" />
@@ -282,6 +301,12 @@
     <ClCompile Include="vld_decoder\cabac_reader.cpp" />
     <ClCompile Include="vld_decoder\cbf_cb_reader.cpp" />
     <ClCompile Include="vld_decoder\cbf_luma_reader.cpp" />
+    <ClCompile Include="vld_decoder\coded_sub_block_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\coeff_abs_level_greater_1_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\coeff_abs_level_greater_2_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\coeff_abs_level_greater_number_flag_reader_context.cpp" />
+    <ClCompile Include="vld_decoder\coeff_abs_level_remaining_reader.cpp" />
+    <ClCompile Include="vld_decoder\coeff_sign_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\common_cabac_syntax_reader.cpp" />
     <ClCompile Include="vld_decoder\copy_above_indices_for_final_run_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\copy_above_palette_indices_flag_reader.cpp" />
@@ -292,7 +317,11 @@
     <ClCompile Include="vld_decoder\cu_skip_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\cu_transquant_bypass_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\end_of_slice_segment_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\explicit_rdpcm_dir_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\explicit_rdpcm_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\exponential_golomb_reader.cpp" />
+    <ClCompile Include="vld_decoder\last_sig_coeff_prefix_reader.cpp" />
+    <ClCompile Include="vld_decoder\last_sig_coeff_suffix_reader.cpp" />
     <ClCompile Include="vld_decoder\limited_exponential_golomb_reader.cpp" />
     <ClCompile Include="vld_decoder\fixed_length_value_reader.cpp" />
     <ClCompile Include="vld_decoder\intra_chroma_pred_mode_reader.cpp" />
@@ -319,8 +348,10 @@
     <ClCompile Include="vld_decoder\sao_offset_abs_reader.cpp" />
     <ClCompile Include="vld_decoder\sao_offset_sign_reader.cpp" />
     <ClCompile Include="vld_decoder\sao_type_index_reader.cpp" />
+    <ClCompile Include="vld_decoder\sig_coeff_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\split_cu_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\split_transform_flag_reader.cpp" />
+    <ClCompile Include="vld_decoder\transform_skip_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\truncated_binary_reader.cpp" />
     <ClCompile Include="vld_decoder\truncated_rice_value_reader.cpp" />
     <ClCompile Include="vld_decoder\tu_residual_act_flag_reader.cpp" />

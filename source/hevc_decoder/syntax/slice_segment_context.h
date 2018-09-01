@@ -6,7 +6,10 @@
 struct PictureOrderCount;
 class SliceSegmentHeader;
 class CABACContextStorage;
+class CodingTreeUnit;
 class FramePartition;
+class SliceSegmentSyntax;
+class Coordinate;
 
 class ISliceSegmentContext
 {
@@ -39,5 +42,8 @@ public:
     virtual void SavePredictorPaletteTable(
         const Coordinate& point,
         const std::shared_ptr<PaletteTable>& palette_table) = 0;
+
+    virtual const std::shared_ptr<SliceSegmentSyntax> GetSliceSegmentSyntax(
+        uint32_t tile_scan_index) const = 0;
 };
 #endif

@@ -5,16 +5,17 @@
 #include <memory>
 
 #include "hevc_decoder/base/basic_types.h"
+#include "hevc_decoder/base/coordinate.h"
 
 class CABACReader;
 class ITransformTreeContext;
-struct Coordinate;
+class Coordinate;
 
 class TransformTree
 {
 public:
     TransformTree(const Coordinate& current, const Coordinate& base, 
-                  uint32_t transform_unit_size_y, uint32_t depth, 
+                  uint32_t log2_transform_unit_size_y, uint32_t depth, 
                   uint32_t block_index);
     ~TransformTree();
 

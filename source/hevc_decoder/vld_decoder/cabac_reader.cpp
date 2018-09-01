@@ -2,9 +2,10 @@
 
 #include <cassert>
 
-#include "hevc_decoder/vld_decoder/frame_info_provider_for_cabac.h"
 #include "hevc_decoder/base/stream/bit_stream.h"
+#include "hevc_decoder/base/coordinate.h"
 #include "hevc_decoder/vld_decoder/cabac_context_storage.h"
+#include "hevc_decoder/vld_decoder/frame_info_provider_for_cabac.h"
 
 namespace
 {
@@ -131,8 +132,8 @@ void CABACReader::InitContext(const Coordinate& current_ctb)
         {
             Coordinate neighbouring_ctb = 
             {
-                current_ctb.x + frame_info_provider_->GetCTBHeight(),
-                current_ctb.y - frame_info_provider_->GetCTBHeight()
+                current_ctb.GetX() + frame_info_provider_->GetCTBHeight(),
+                current_ctb.GetY() - frame_info_provider_->GetCTBHeight()
             };
             bool is_available = 
                 frame_info_provider_->IsZScanOrderNeighbouringBlockAvailable(
@@ -221,9 +222,32 @@ void CABACReader::Reset()
     offset_ = stream_->Read<uint16_t>(9);
 }
 
+void CABACReader::Align()
+{
+    current_range_ = 256;
+}
+
 BitStream* CABACReader::GetSourceBitStream()
 {
     return stream_;
+}
+
+void CABACReader::UpdateStateCoefficient(uint32_t index, uint32_t value)
+{
+    assert((index >= 0) && (index < 4));
+    if ((index >= 0) && (index < 4))
+        return;
+
+    context_.state_coefficient[index] = value;
+}
+
+uint32_t CABACReader::GetStateCoefficient(uint32_t index) const
+{
+    assert((index >= 0) && (index < 4));
+    if ((index >= 0) && (index < 4))
+        return 0;
+
+    return context_.state_coefficient[index];
 }
 
 void CABACReader::Renormalize()

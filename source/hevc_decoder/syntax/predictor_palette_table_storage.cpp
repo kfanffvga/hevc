@@ -62,7 +62,8 @@ void PredictorPaletteTableStorage::SaveCTUPredictorPaletteTable(
     const Coordinate& c, const shared_ptr<PaletteTable>& palette_table)
 {
     // 此处可以不用全部保存
-    palette_tables_.insert(make_pair(make_pair(c.x, c.y), palette_table));
+    palette_tables_.insert(
+        make_pair(make_pair(c.GetX(), c.GetY()), palette_table));
 }
 
 void PredictorPaletteTableStorage::Clear()
@@ -93,13 +94,14 @@ shared_ptr<PaletteTable>
         (frame_partition->IsTheFirstCTBInRowOfFrame(c) ||
          frame_partition->IsTheFirstCTBInRowOfTile(c)))
     {
-        Coordinate neighbour_ctb = {c.x + ctb_size_y, c.y - ctb_size_y};
+        Coordinate neighbour_ctb = {c.GetX() + ctb_size_y, 
+                                    c.GetY() - ctb_size_y};
         bool available = frame_syntax_->IsZScanOrderNeighbouringBlockAvailable(
             c, neighbour_ctb);
         if (available)
         {
             auto predictor_palette_table = palette_tables_.find(
-                make_pair(neighbour_ctb.x, neighbour_ctb.y));
+                make_pair(neighbour_ctb.GetX(), neighbour_ctb.GetY()));
             if (predictor_palette_table != palette_tables_.end())
                 return predictor_palette_table->second;
         }

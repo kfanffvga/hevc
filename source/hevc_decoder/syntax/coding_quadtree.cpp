@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+#include "hevc_decoder/base/plane_util.h"
 #include "hevc_decoder/syntax/coding_quadtree_context.h"
 #include "hevc_decoder/vld_decoder/split_cu_flag_reader.h"
 #include "hevc_decoder/syntax/coding_unit.h"
@@ -30,14 +31,14 @@ public:
 private:
     virtual bool IsLeftBlockAvailable() const override
     {
-        Coordinate left_neighbour = {point_.x - 1, point_.y};
+        Coordinate left_neighbour = {point_.GetX() - 1, point_.GetY()};
         return coding_quadtree_context_->IsNeighbourBlockAvailable(
             point_, left_neighbour);
     }
 
     virtual bool IsUpBlockAvailable() const override
     {
-        Coordinate up_neighbour = {point_.x, point_.y - 1};
+        Coordinate up_neighbour = {point_.GetX(), point_.GetY() - 1};
         return coding_quadtree_context_->IsNeighbourBlockAvailable(
             point_, up_neighbour);
     }
@@ -49,14 +50,14 @@ private:
 
     virtual uint32_t GetLeftBlockLayer() const override
     {
-        Coordinate left_neighbour = {point_.x - 1, point_.y};
+        Coordinate left_neighbour = {point_.GetX() - 1, point_.GetY()};
         return coding_quadtree_context_->GetNearestCULayerByCoordinate(
             left_neighbour);
     }
 
     virtual uint32_t GetUpBlockLayer() const override
     {
-        Coordinate up_neighbour = {point_.x, point_.y - 1};
+        Coordinate up_neighbour = {point_.GetX(), point_.GetY() - 1};
         return coding_quadtree_context_->GetNearestCULayerByCoordinate(
             up_neighbour);
     }
@@ -218,14 +219,14 @@ public:
         return parent_node_context_->GetPaletteMaxSize();
     }
 
-    virtual uint32_t GetBitDepthLuma() const override
+    virtual uint32_t GetBitDepthOfLuma() const override
     {
-        return parent_node_context_->GetBitDepthLuma();
+        return parent_node_context_->GetBitDepthOfLuma();
     }
 
-    virtual uint32_t GetBitDepthChroma() const override
+    virtual uint32_t GetBitDepthOfChroma() const override
     {
-        return parent_node_context_->GetBitDepthChroma();
+        return parent_node_context_->GetBitDepthOfChroma();
     }
 
     virtual uint32_t GetPredictorPaletteMaxSize() const override
@@ -317,6 +318,66 @@ public:
         return parent_node_context_->IsCrossComponentPredictionEnabled();
     }
 
+    virtual bool IsTransformSkipEnabled() const override
+    {
+        return parent_node_context_->IsTransformSkipEnabled();
+    }
+
+    virtual uint32_t GetMaxTransformSkipSize() const override
+    {
+        return parent_node_context_->GetMaxTransformSkipSize();
+    }
+
+    virtual bool IsExplicitRDPCMEnabled() const override
+    {
+        return parent_node_context_->IsExplicitRDPCMEnabled();
+    }
+
+    virtual bool IsZScanOrderNeighbouringBlockAvailable(
+        const Coordinate& current_block,
+        const Coordinate& neighbouring_block)
+    {
+        return parent_node_context_->IsZScanOrderNeighbouringBlockAvailable(
+            current_block, neighbouring_block);
+    }
+
+    virtual const shared_ptr<CodingUnit> GetCodingUnit(const Coordinate& p) 
+        const override
+    {
+        shared_ptr<CodingUnit> cu = coding_quadtree_node_->GetCodingUnit(p);
+        return cu ? cu : parent_node_context_->GetCodingUnit(p);
+    }
+
+    virtual bool IsTransformSkipContextEnabled() const override
+    {
+        return parent_node_context_->IsTransformSkipContextEnabled();
+    }
+
+    virtual bool IsImplicitRDPCMEnabled() const override
+    {
+        return parent_node_context_->IsImplicitRDPCMEnabled();
+    }
+
+    virtual bool IsCABACBypassAlignmentEnabled() const override
+    {
+        return parent_node_context_->IsCABACBypassAlignmentEnabled();
+    }
+
+    virtual bool IsSignDataHidingEnabled() const override
+    {
+        return parent_node_context_->IsSignDataHidingEnabled();
+    }
+
+    virtual bool IsPersistentRiceAdaptationEnabled() const override
+    {
+        return parent_node_context_->IsPersistentRiceAdaptationEnabled();
+    }
+
+    virtual bool HasExtendedPrecisionProcessing() const override
+    {
+        return parent_node_context_->HasExtendedPrecisionProcessing();
+    }
+
 private:
     ICodingQuadtreeContext* parent_node_context_;
     CodingQuadtree* coding_quadtree_node_;
@@ -328,8 +389,10 @@ private:
 class CodingUnitContext : public ICodingUnitContext
 {
 public:
-    CodingUnitContext(ICodingQuadtreeContext* quadtree_context)
+    CodingUnitContext(ICodingQuadtreeContext* quadtree_context,
+                      CodingQuadtree* node_contained_coding_unit)
         : quadtree_context_(quadtree_context)
+        , node_contained_coding_unit_(node_contained_coding_unit)
     {
 
     }
@@ -436,14 +499,14 @@ public:
         return quadtree_context_->GetPaletteMaxSize();
     }
 
-    virtual uint32_t GetBitDepthLuma() const override
+    virtual uint32_t GetBitDepthOfLuma() const override
     {
-        return quadtree_context_->GetBitDepthLuma();
+        return quadtree_context_->GetBitDepthOfLuma();
     }
 
-    virtual uint32_t GetBitDepthChroma() const override
+    virtual uint32_t GetBitDepthOfChroma() const override
     {
-        return quadtree_context_->GetBitDepthChroma();
+        return quadtree_context_->GetBitDepthOfChroma();
     }
 
     virtual uint32_t GetPredictorPaletteMaxSize() const override
@@ -502,8 +565,70 @@ public:
         return quadtree_context_->IsCrossComponentPredictionEnabled();
     }
 
+    virtual bool IsTransformSkipEnabled() const override
+    {
+        return quadtree_context_->IsTransformSkipEnabled();
+    }
+
+    virtual uint32_t GetMaxTransformSkipSize() const override
+    {
+        return quadtree_context_->GetMaxTransformSkipSize();
+    }
+
+    virtual bool IsExplicitRDPCMEnabled() const override
+    {
+        return quadtree_context_->IsExplicitRDPCMEnabled();
+    }
+
+    virtual bool IsZScanOrderNeighbouringBlockAvailable(
+        const Coordinate& current_block,
+        const Coordinate& neighbouring_block) override
+    {
+        return quadtree_context_->IsZScanOrderNeighbouringBlockAvailable(
+            current_block, neighbouring_block);
+    }
+
+    virtual shared_ptr<CodingUnit> GetCodingUnit(const Coordinate& p) const
+        override
+    {
+        // 因为该类只有coding unit 解释时候才会用到，因此认为解释coding unit不会通过自己的
+        // context去调用自身
+        return quadtree_context_->GetCodingUnit(p);
+    }
+
+    virtual bool IsTransformSkipContextEnabled() const override
+    {
+        return quadtree_context_->IsTransformSkipContextEnabled();
+    }
+
+    virtual bool IsImplicitRDPCMEnabled() const override
+    {
+        return quadtree_context_->IsImplicitRDPCMEnabled();
+    }
+
+    virtual bool IsCABACBypassAlignmentEnabled() const override
+    {
+        return quadtree_context_->IsCABACBypassAlignmentEnabled();
+    }
+
+    virtual bool IsSignDataHidingEnabled() const override
+    {
+        return quadtree_context_->IsSignDataHidingEnabled();
+    }
+
+    virtual bool IsPersistentRiceAdaptationEnabled() const override
+    {
+        return quadtree_context_->IsPersistentRiceAdaptationEnabled();
+    }
+
+    virtual bool HasExtendedPrecisionProcessing() const override
+    {
+        return quadtree_context_->HasExtendedPrecisionProcessing();
+    }
+
 private:
     ICodingQuadtreeContext* quadtree_context_;
+    CodingQuadtree* node_contained_coding_unit_;
 };
 
 CodingQuadtree::CodingQuadtree(const Coordinate& point, uint32_t cb_log2_size_y, 
@@ -516,6 +641,7 @@ CodingQuadtree::CodingQuadtree(const Coordinate& point, uint32_t cb_log2_size_y,
     , cu_chroma_qp_offset_cb_(0)
     , cu_chroma_qp_offset_cr_(0)
     , sub_coding_quadtrees_()
+    , cu_()
 {
 
 }
@@ -532,8 +658,8 @@ bool CodingQuadtree::Parse(CABACReader* cabac_reader,
         return false;
 
     bool is_split_cu = cb_log2_size_y_ > context->GetMinCBLog2SizeY();
-    if (((point_.x + cb_size_y_) <= context->GetFrameWidthInLumaSamples()) &&
-        ((point_.y + cb_size_y_) <= context->GetFrameHeightInLumaSamples()) &&
+    if (((point_.GetX() + cb_size_y_) <= context->GetFrameWidthInLumaSamples()) &&
+        ((point_.GetY() + cb_size_y_) <= context->GetFrameHeightInLumaSamples()) &&
         (cb_log2_size_y_ > context->GetMinCBLog2SizeY()))
     {
         SplitCUFlagReaderContext split_cu_flag_reader_context(point_, context, 
@@ -545,8 +671,8 @@ bool CodingQuadtree::Parse(CABACReader* cabac_reader,
 
     if (is_split_cu)
     {
-        uint32_t x = point_.x + (cb_size_y_ >> 1);
-        uint32_t y = point_.y + (cb_size_y_ >> 1);
+        uint32_t x = point_.GetX() + (cb_size_y_ >> 1);
+        uint32_t y = point_.GetY() + (cb_size_y_ >> 1);
         uint32_t sub_cb_log2_size_y = cb_log2_size_y_ - 1;
         uint32_t sub_layer = layer_ + 1;
         sub_coding_quadtrees_[0].reset(
@@ -554,14 +680,14 @@ bool CodingQuadtree::Parse(CABACReader* cabac_reader,
         if (x < context->GetFrameWidthInLumaSamples())
         {
             sub_coding_quadtrees_[1].reset(
-                new CodingQuadtree({x, point_.y}, sub_cb_log2_size_y,
-                                    sub_layer));
+                new CodingQuadtree(Coordinate(x, point_.GetY()), 
+                                   sub_cb_log2_size_y, sub_layer));
         }
         if (y < context->GetFrameHeightInLumaSamples())
         {
             sub_coding_quadtrees_[2].reset(
-                new CodingQuadtree({point_.x, y}, sub_cb_log2_size_y,
-                                   sub_layer));
+                new CodingQuadtree(Coordinate(point_.GetX(), y), 
+                                   sub_cb_log2_size_y, sub_layer));
         }
         if ((x < context->GetFrameWidthInLumaSamples()) &&
             (y < context->GetFrameHeightInLumaSamples()))
@@ -584,9 +710,9 @@ bool CodingQuadtree::Parse(CABACReader* cabac_reader,
     }
     else
     {
-        CodingUnit cu(point_, layer_, cb_size_y_);
-        CodingUnitContext cu_context(context);
-        if (!cu.Parse(cabac_reader, &cu_context))
+        cu_.reset(new CodingUnit(point_, layer_, cb_size_y_));
+        CodingUnitContext cu_context(context, this);
+        if (!cu_->Parse(cabac_reader, &cu_context))
             return false;
     }
     return true;
@@ -595,14 +721,14 @@ bool CodingQuadtree::Parse(CABACReader* cabac_reader,
 uint32_t CodingQuadtree::GetNearestCULayerByCoordinate(const Coordinate& point)
     const
 {
-    if ((point.x < point_.x) || (point.x > point_.x + cb_size_y_) ||
-        (point.y < point_.y) || (point.y > point_.y + cb_size_y_))
+    if (!IsPointInSquare(point, point_, cb_size_y_))
         return 0;
 
-    Coordinate reference_point = {point.x - point_.x, point.y - point_.y};
+    Coordinate reference_point = {point.GetX() - point_.GetX(), 
+                                  point.GetY() - point_.GetY()};
     uint32_t sub_cb_size_y = cb_size_y_ >> 1;
-    uint32_t index = ((reference_point.x & sub_cb_size_y) > 0 ? 1 : 0) | 
-        (((reference_point.y & sub_cb_size_y) > 0 ? 1 : 0) << 1);
+    uint32_t index = ((reference_point.GetX() & sub_cb_size_y) > 0 ? 1 : 0) | 
+        (((reference_point.GetY() & sub_cb_size_y) > 0 ? 1 : 0) << 1);
 
     if (!sub_coding_quadtrees_[index])
         return layer_;
@@ -638,4 +764,22 @@ void CodingQuadtree::SetCUChromaQPOffsetCb(int32_t cu_chroma_qp_offset_cb)
 void CodingQuadtree::SetCUChromaQPOffsetCr(int32_t cu_chroma_qp_offset_cr)
 {
     cu_chroma_qp_offset_cr_ = cu_chroma_qp_offset_cr;
+}
+
+const shared_ptr<CodingUnit> CodingQuadtree::GetCodingUnit(
+    const Coordinate& p) const
+{
+    if (!IsPointInSquare(p, point_, cb_size_y_))
+        return shared_ptr<CodingUnit>();
+
+    if (cu_)
+        return cu_;
+
+    for (uint32_t i = 0; i < 4; ++i)
+    {
+        auto cu = sub_coding_quadtrees_[i]->GetCodingUnit(p);
+        if (cu)
+            return cu;
+    }
+    return shared_ptr<CodingUnit>();
 }

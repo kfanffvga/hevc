@@ -4,9 +4,9 @@
 #include <stdint.h>
 
 #include "hevc_decoder/base/basic_types.h"
+#include "hevc_decoder/base/coordinate.h"
 
 class CABACReader;
-struct Coordinate;
 class IPredictionUnitContext;
 
 class PredictionUnit

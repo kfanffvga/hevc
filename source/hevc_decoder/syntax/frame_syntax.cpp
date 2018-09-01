@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+#include "hevc_decoder/base/plane_util.h"
 #include "hevc_decoder/syntax/slice_segment_syntax.h"
 #include "hevc_decoder/syntax/slice_segment_header.h"
 #include "hevc_decoder/syntax/slice_syntax.h"
@@ -139,6 +140,12 @@ public:
             return;
 
         storage->SaveCTUPredictorPaletteTable(point, palette_table);
+    }
+
+    virtual const std::shared_ptr<SliceSegmentSyntax> GetSliceSegmentSyntax(
+        uint32_t tile_scan_index) const override
+    {
+        return frame_syntax_->GetSliceSegmentSyntax(tile_scan_index);
     }
 
 private:
@@ -335,15 +342,15 @@ uint32_t FrameSyntax::GetCABACContextIndexInLastParsedSliceSegment()
 bool FrameSyntax::IsZScanOrderNeighbouringBlockAvailable(
     const Coordinate& current_block, const Coordinate& neighbouring_block)
 {
-    if ((current_block.x > frame_partition_->GetWidth()) ||
-        (current_block.y > frame_partition_->GetHeight()) ||
-        (neighbouring_block.x > frame_partition_->GetWidth()) ||
-        (neighbouring_block.y > frame_partition_->GetWidth()))
+    uint32_t width = frame_partition_->GetWidth();
+    uint32_t height = frame_partition_->GetHeight();
+    if (!IsPointInRect(current_block, Coordinate(), width, height) ||
+        !IsPointInRect(neighbouring_block, Coordinate(), width, height))
         return false;
 
     uint32_t min_tb_log2_size_y = frame_partition_->GetMinTBLog2SizeY();
-    Coordinate c = {current_block.x >> min_tb_log2_size_y,
-        current_block.y >> min_tb_log2_size_y};
+    Coordinate c = {current_block.GetX() >> min_tb_log2_size_y,
+                    current_block.GetY() >> min_tb_log2_size_y};
 
     TransformBlockIndexInfo index_of_current = {};
     bool success = frame_partition_->GetIndexInfoByTransformBlockCoordinate(
@@ -351,8 +358,8 @@ bool FrameSyntax::IsZScanOrderNeighbouringBlockAvailable(
     if (!success)
         return false;
 
-    c.x = neighbouring_block.x >> min_tb_log2_size_y;
-    c.y = neighbouring_block.y >> min_tb_log2_size_y;
+    c.SetX(neighbouring_block.GetX() >> min_tb_log2_size_y);
+    c.SetY(neighbouring_block.GetY() >> min_tb_log2_size_y);
     TransformBlockIndexInfo index_of_neighbouring = {};
     success = frame_partition_->GetIndexInfoByTransformBlockCoordinate(
         c, &index_of_neighbouring);
@@ -369,8 +376,8 @@ bool FrameSyntax::IsZScanOrderNeighbouringBlockAvailable(
     return false;
 
     uint32_t slice_address_of_current_block = 0;
-    success =GetSliceSegmentAddress(index_of_current.raster_scan_index, 
-                                    &slice_address_of_current_block);
+    success = GetSliceSegmentAddress(index_of_current.raster_scan_index, 
+                                     &slice_address_of_current_block);
     if (!success)
         return false;
 
@@ -381,6 +388,19 @@ bool FrameSyntax::IsZScanOrderNeighbouringBlockAvailable(
         return false;
 
     return slice_address_of_current_block == slice_address_of_neighbouring_block;
+}
+
+const shared_ptr<SliceSegmentSyntax> FrameSyntax::GetSliceSegmentSyntax(
+    uint32_t tile_scan_index) const
+{
+    for (const auto& slice : slices_)
+    {
+        auto slice_segment = slice->GetSliceSegmentSyntax(tile_scan_index);
+        if (slice_segment)
+            return slice_segment;
+    }
+
+    return shared_ptr<SliceSegmentSyntax>();
 }
 
 PictureOrderCount FrameSyntax::CalcPictureOrderCount(uint32_t previous_msb,

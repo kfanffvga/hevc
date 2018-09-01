@@ -13,6 +13,7 @@ PPSRangeExtension::PPSRangeExtension()
     , cb_qp_offset_list_()
     , cr_qp_offset_list_()
     , is_cross_component_prediction_enabled_(false)
+    , max_transform_skip_block_size_(1 << 2)
 {
 
 }
@@ -32,7 +33,9 @@ bool PPSRangeExtension::Parse(BitStream* bit_stream,
     if (is_transform_skip_enabled)
     {
         uint32_t log2_max_transform_skip_block_size = 
-            golomb_reader.ReadUnsignedValue();
+            golomb_reader.ReadUnsignedValue() + 2;
+
+        max_transform_skip_block_size_ = 1 << log2_max_transform_skip_block_size;
     }
     is_cross_component_prediction_enabled_ = bit_stream->ReadBool();
     is_chroma_qp_offset_list_enabled_ = bit_stream->ReadBool();
@@ -81,4 +84,9 @@ const vector<int32_t>& PPSRangeExtension::GetCrQPOffsetList() const
 bool PPSRangeExtension::IsCrossComponentPredictionEnabled() const
 {
     return is_cross_component_prediction_enabled_;
+}
+
+uint32_t PPSRangeExtension::GetMaxTransformSkipBlockSize() const
+{
+    return max_transform_skip_block_size_;
 }

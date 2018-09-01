@@ -87,7 +87,7 @@ public:
     virtual uint32_t GetWPOffsetHalfRange() const override
     {
         return sps_->GetSPSRangeExtension().IsHighPrecisionOffsetsEnabled() ?
-            (1 << (sps_->GetBitDepthChroma() - 1)) : (1 << 7);
+            (1 << (sps_->GetBitDepthOfChroma() - 1)) : (1 << 7);
     }
 
 private:
@@ -264,6 +264,11 @@ bool SliceSegmentHeader::IsTransquantBypassEnabled() const
     return pps_->IsTransquantBypassEnabled();
 }
 
+bool SliceSegmentHeader::IsTransformSkipEnabled() const
+{
+    return pps_->IsTransformSkipEnabled();
+}
+
 bool SliceSegmentHeader::IsAMPEnabled() const
 {
     return sps_->IsAMPEnabled();
@@ -274,19 +279,24 @@ bool SliceSegmentHeader::IsPCMEnabled() const
     return sps_->IsPCMEnabled();
 }
 
+bool SliceSegmentHeader::IsExplicitRDPCMEnabled() const
+{
+    return sps_->GetSPSRangeExtension().IsExplicitRDPCMEnabled();
+}
+
 ChromaFormatType SliceSegmentHeader::GetChromaFormatType() const
 {
     return sps_->GetChromaFormatType();
 }
 
-uint32_t SliceSegmentHeader::GetBitDepthLuma() const
+uint32_t SliceSegmentHeader::GetBitDepthOfLuma() const
 {
-    return sps_->GetBitDepthLuma();
+    return sps_->GetBitDepthOfLuma();
 }
 
-uint32_t SliceSegmentHeader::GetBitDepthChroma() const
+uint32_t SliceSegmentHeader::GetBitDepthOfChroma() const
 {
-    return sps_->GetBitDepthChroma();
+    return sps_->GetBitDepthOfChroma();
 }
 
 uint32_t SliceSegmentHeader::GetMinCBLog2SizeY() const
@@ -328,6 +338,11 @@ uint32_t SliceSegmentHeader::GetMaxTransformHierarchyDepthIntra() const
 uint32_t SliceSegmentHeader::GetMaxTransformHierarchyDepthInter() const
 {
     return sps_->GetMaxTransformHierarchyDepthInter();
+}
+
+uint32_t SliceSegmentHeader::GetMaxTransformSkipSize() const
+{
+    return pps_->GetPPSRangeExtension().GetMaxTransformSkipBlockSize();
 }
 
 PaletteTable SliceSegmentHeader::GetPalettePredictorInitializer() const
@@ -391,6 +406,36 @@ const vector<int32_t>& SliceSegmentHeader::GetCbQPOffsetList() const
 const vector<int32_t>& SliceSegmentHeader::GetCrQPOffsetList() const
 {
     return pps_->GetPPSRangeExtension().GetCrQPOffsetList();
+}
+
+bool SliceSegmentHeader::IsTransformSkipContextEnabled() const
+{
+    return sps_->GetSPSRangeExtension().IsTransformSkipContextEnabled();
+}
+
+bool SliceSegmentHeader::IsImplicitRDPCMEnabled() const
+{
+    return sps_->GetSPSRangeExtension().IsImplicitRDPCMEnabled();
+}
+
+bool SliceSegmentHeader::IsCABACBypassAlignmentEnabled() const
+{
+    return sps_->GetSPSRangeExtension().IsCABACBypassAlignmentEnabled();
+}
+
+bool SliceSegmentHeader::IsSignDataHidingEnabled() const
+{
+    return pps_->IsSignDataHidingEnabled();
+}
+
+bool SliceSegmentHeader::IsPersistentRiceAdaptationEnabled() const
+{
+    return sps_->GetSPSRangeExtension().IsPersistentRiceAdaptationEnabled();
+}
+
+bool SliceSegmentHeader::HasExtendedPrecisionProcessing() const
+{
+    return sps_->GetSPSRangeExtension().HasExtendedPrecisionProcessing();
 }
 
 bool SliceSegmentHeader::ParseIndependentSyntax(

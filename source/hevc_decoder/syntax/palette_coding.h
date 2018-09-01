@@ -5,7 +5,7 @@
 #include <map>
 #include <boost/multi_array.hpp>
 
-struct Coordinate;
+class Coordinate;
 class CABACReader;
 class PaletteTable;
 class IPaletteCodingContext;

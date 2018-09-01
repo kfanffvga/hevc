@@ -5,6 +5,7 @@
 
 #include "hevc_decoder/base/math.h"
 #include "hevc_decoder/base/basic_types.h"
+#include "hevc_decoder/base/coordinate.h"
 #include "hevc_decoder/syntax/transform_unit_context.h"
 #include "hevc_decoder/syntax/delta_qp.h"
 #include "hevc_decoder/syntax/delta_qp_context.h"
@@ -104,7 +105,8 @@ private:
 class ResidualCodingContext : public IResidualCodingContext
 {
 public:
-    ResidualCodingContext()
+    ResidualCodingContext(ITransformUnitContext* tu_context)
+        : tu_context_(tu_context)
     {
 
     }
@@ -113,6 +115,96 @@ public:
     {
 
     }
+
+    virtual bool IsTransformSkipEnabled() const override
+    {
+        return tu_context_->IsTransformSkipEnabled();
+    }
+
+    virtual bool IsCUTransquantBypass() const override
+    {
+        return tu_context_->IsCUTransquantBypass();
+    }
+
+    virtual uint32_t GetMaxTransformSkipSize() const override
+    {
+        return tu_context_->GetMaxTransformSkipSize();
+    }
+
+    virtual CABACInitType GetCABACInitType() const override
+    {
+        return tu_context_->GetCABACInitType();
+    }
+
+    virtual PredModeType GetCUPredMode() const override
+    {
+        return tu_context_->GetCUPredMode();
+    }
+
+    virtual bool IsExplicitRDPCMEnabled() const override
+    {
+        return tu_context_->IsExplicitRDPCMEnabled();
+    }
+
+    virtual ChromaFormatType GetChromaFormatType() const override
+    {
+        return tu_context_->GetChromaFormatType();
+    }
+
+    virtual IntraPredModeType GetIntraLumaPredMode(const Coordinate& c) const
+        override
+    {
+        return tu_context_->GetIntraLumaPredMode(c);
+    }
+
+    virtual IntraPredModeType GetIntraChromaPredMode(const Coordinate& c) const
+        override
+    {
+        return tu_context_->GetIntraChromaPredMode(c);
+    }
+
+    virtual bool IsTransformSkipContextEnabled() const override
+    {
+        return tu_context_->IsTransformSkipContextEnabled();
+    }
+
+    virtual bool IsImplicitRDPCMEnabled() const override
+    {
+        return tu_context_->IsImplicitRDPCMEnabled();
+    }
+
+    virtual bool IsCABACBypassAlignmentEnabled() const override
+    {
+        return tu_context_->IsCABACBypassAlignmentEnabled();
+    }
+
+    virtual bool IsSignDataHidingEnabled() const override
+    {
+        return tu_context_->IsSignDataHidingEnabled();
+    }
+
+    virtual bool IsPersistentRiceAdaptationEnabled() const override
+    {
+        return tu_context_->IsPersistentRiceAdaptationEnabled();
+    }
+
+    virtual uint32_t GetBitDepthOfLuma() const override
+    {
+        return tu_context_->GetBitDepthOfLuma();
+    }
+
+    virtual uint32_t GetBitDepthOfChroma() const override
+    {
+        return tu_context_->GetBitDepthOfChroma();
+    }
+
+    virtual bool HasExtendedPrecisionProcessing() const override
+    {
+        return tu_context_->HasExtendedPrecisionProcessing();
+    }
+
+private:
+    ITransformUnitContext* tu_context_;
 };
 
 class CrossCompPredContext : public ICrossCompPredContext
@@ -129,10 +221,13 @@ public:
     }
 };
 
-TransformUnit::TransformUnit(uint32_t block_index)
+TransformUnit::TransformUnit(uint32_t block_index, 
+                             uint32_t log2_transform_size_y)
     : block_index_(block_index)
+    , transform_size_y_(1 << log2_transform_size_y)
+    , log2_transform_size_y_(log2_transform_size_y)
 {
-
+    
 }
 
 TransformUnit::~TransformUnit()
@@ -143,18 +238,22 @@ TransformUnit::~TransformUnit()
 bool TransformUnit::Parse(CABACReader* cabac_reader, 
                           ITransformUnitContext* context)
 {
-    uint32_t chroma_transform_size = context->GetTransformBlockSize();
+    if (!cabac_reader || !context)
+        return false;
+
+    uint32_t log2_chroma_transform_size = log2_transform_size_y_;
     ChromaFormatType chroma_format_type = context->GetChromaFormatType();
     if ((YUV_444 == chroma_format_type) || 
         (YUV_MONO_CHROME == chroma_format_type))
-        chroma_transform_size >>= 1;
+        --log2_chroma_transform_size;
 
-    chroma_transform_size = max(4ui32, chroma_transform_size);
+    log2_chroma_transform_size = max(2ui32, log2_chroma_transform_size);
 
     uint32_t cbf_depth_chroma = context->GetTransformBlockDepth();
     Coordinate coordinate_for_chroma = context->GetCurrentCoordinate();
     if (((YUV_444 == chroma_format_type) ||
-        (YUV_MONO_CHROME == chroma_format_type)) && (4 == chroma_transform_size))
+        (YUV_MONO_CHROME == chroma_format_type)) && 
+         (2 == log2_chroma_transform_size))
     {
         cbf_depth_chroma -= 1;
         coordinate_for_chroma = context->GetBaseCoordinate();
@@ -171,6 +270,7 @@ bool TransformUnit::Parse(CABACReader* cabac_reader,
     if (has_coef_for_luma || has_coef_for_chroma)
     {
         return ParseResidualOfTransformCoefficient(cabac_reader, context, 
+                                                   log2_chroma_transform_size,
                                                    has_coef_for_chroma, 
                                                    has_coef_for_luma);
     }
@@ -180,7 +280,8 @@ bool TransformUnit::Parse(CABACReader* cabac_reader,
 
 bool TransformUnit::ParseResidualOfTransformCoefficient(
     CABACReader* cabac_reader, ITransformUnitContext* context, 
-    bool has_coef_for_chroma, bool has_coef_for_luma)
+    uint32_t log2_chroma_transform_size, bool has_coef_for_chroma, 
+    bool has_coef_for_luma)
 {
     if (context->IsResidualAdaptiveColorTransformEnabled())
     {
@@ -188,7 +289,7 @@ bool TransformUnit::ParseResidualOfTransformCoefficient(
         if (context->GetCUPredMode() != MODE_INTER)
         {
             const vector<uint32_t>& intra_chroma_pred_mode =
-                context->GetIntraChromaPredMode();
+                context->GetIntraChromaPredModeIdentification();
 
             assert(!intra_chroma_pred_mode.empty());
             if (intra_chroma_pred_mode.empty())
@@ -225,24 +326,28 @@ bool TransformUnit::ParseResidualOfTransformCoefficient(
             return false;
     }
     
-    return ParseResidualDetailInfo(cabac_reader, context, has_coef_for_luma);
+    return ParseResidualDetailInfo(cabac_reader, context, 
+                                   log2_chroma_transform_size, 
+                                   has_coef_for_luma);
 }
 
 bool TransformUnit::ParseResidualDetailInfo(CABACReader* cabac_reader, 
                                             ITransformUnitContext* context, 
+                                            uint32_t log2_chroma_transform_size,
                                             bool has_coef_for_luma)
 {
     if (has_coef_for_luma)
     {
-        ResidualCoding residual_coding_for_luma;
-        ResidualCodingContext residual_coding_context;
+        ResidualCoding residual_coding_for_luma(
+            context->GetCurrentCoordinate(), log2_transform_size_y_, 0);
+        ResidualCodingContext residual_coding_context(context);
         bool success = residual_coding_for_luma.Parse(cabac_reader, 
                                                       &residual_coding_context);
         if (!success)
             return false;
     }
     ChromaFormatType chroma_format_type = context->GetChromaFormatType();
-    if ((context->GetTransformBlockSize() > 4) ||
+    if ((transform_size_y_ > 4) || 
         ((YUV_444 == chroma_format_type) ||
         (YUV_MONO_CHROME == chroma_format_type)))
     {
@@ -255,9 +360,9 @@ bool TransformUnit::ParseResidualDetailInfo(CABACReader* cabac_reader,
         vector<unique_ptr<ResidualCoding>> chroma_blue_residual_codings;
         bool success = 
             ParseSingleChromaResidualInfoWithCrossCompomentPrediction(
-                cabac_reader, context, has_coef_for_luma, 
-                cbf_chroma_blue_value_getter, &chroma_blue_cross_comp_pred, 
-                &chroma_blue_residual_codings);
+                cabac_reader, context, log2_chroma_transform_size, 
+                has_coef_for_luma, cbf_chroma_blue_value_getter, 1 , 
+                &chroma_blue_cross_comp_pred, &chroma_blue_residual_codings);
         if (!success)
             return false;
 
@@ -269,8 +374,8 @@ bool TransformUnit::ParseResidualDetailInfo(CABACReader* cabac_reader,
         CrossCompPred chroma_red_cross_comp_pred;
         vector<unique_ptr<ResidualCoding>> chroma_red_residual_codings;
         success = ParseSingleChromaResidualInfoWithCrossCompomentPrediction(
-            cabac_reader, context, has_coef_for_luma,
-            cbf_chroma_red_value_getter, &chroma_red_cross_comp_pred,
+            cabac_reader, context, log2_chroma_transform_size, has_coef_for_luma, 
+            cbf_chroma_red_value_getter, 2, &chroma_red_cross_comp_pred, 
             &chroma_red_residual_codings);
         if (!success)
             return false;
@@ -281,12 +386,21 @@ bool TransformUnit::ParseResidualDetailInfo(CABACReader* cabac_reader,
         uint32_t depth = context->GetTransformBlockDepth();
         vector<unique_ptr<ResidualCoding>> chroma_blue_residual_codings;
         chroma_blue_residual_codings.resize(residual_coding_count);
+        const Coordinate& base_coordinate = context->GetBaseCoordinate();
+        uint32_t chroma_transform_size_y = 1 << log2_chroma_transform_size;
+
         for (uint32_t i = 0; i < residual_coding_count; ++i)
         {
             if (!context->GetCBFColorBlueValue(i, depth - 1))
             {
-                chroma_blue_residual_codings[i].reset(new ResidualCoding());
-                ResidualCodingContext residual_coding_context;
+                Coordinate c = {
+                    base_coordinate.GetX(), 
+                    base_coordinate.GetY() + chroma_transform_size_y};
+
+                chroma_blue_residual_codings[i].reset(
+                    new ResidualCoding(c, log2_transform_size_y_, 1));
+
+                ResidualCodingContext residual_coding_context(context);
                 bool success = chroma_blue_residual_codings[i]->Parse(
                     cabac_reader, &residual_coding_context);
                 if (!success)
@@ -300,8 +414,14 @@ bool TransformUnit::ParseResidualDetailInfo(CABACReader* cabac_reader,
         {
             if (!context->GetCBFColorRedValue(i, depth - 1))
             {
-                chroma_red_residual_codings[i].reset(new ResidualCoding());
-                ResidualCodingContext residual_coding_context;
+                Coordinate c = {
+                    base_coordinate.GetX(),
+                    base_coordinate.GetY() + chroma_transform_size_y};
+
+                chroma_red_residual_codings[i].reset(
+                    new ResidualCoding(c, log2_transform_size_y_, 2));
+
+                ResidualCodingContext residual_coding_context(context);
                 bool success = chroma_red_residual_codings[i]->Parse(
                     cabac_reader, &residual_coding_context);
                 if (!success)
@@ -314,7 +434,8 @@ bool TransformUnit::ParseResidualDetailInfo(CABACReader* cabac_reader,
 
 bool TransformUnit::ParseSingleChromaResidualInfoWithCrossCompomentPrediction(
     CABACReader* cabac_reader, ITransformUnitContext* context, 
-    bool has_coef_for_luma, const CBFChromaGetter& get_cbf_chroma_value,
+    uint32_t log2_chroma_transform_size, bool has_coef_for_luma, 
+    const CBFChromaGetter& get_cbf_chroma_value, uint32_t color_index, 
     CrossCompPred* cross_comp_pred, 
     vector<unique_ptr<ResidualCoding>>* residual_codings)
 {
@@ -323,8 +444,8 @@ bool TransformUnit::ParseSingleChromaResidualInfoWithCrossCompomentPrediction(
 
     if (context->IsCrossComponentPredictionEnabled() && has_coef_for_luma &&
         ((context->GetCUPredMode() == MODE_INTER) ||
-        (!context->GetIntraChromaPredMode().empty() &&
-         (4 == context->GetIntraChromaPredMode()[0]))))
+        (!context->GetIntraChromaPredModeIdentification().empty() &&
+         (4 == context->GetIntraChromaPredModeIdentification()[0]))))
     {
         CrossCompPredContext cross_comp_pred_context;
         if (!cross_comp_pred->Parse(cabac_reader, &cross_comp_pred_context))
@@ -334,12 +455,16 @@ bool TransformUnit::ParseSingleChromaResidualInfoWithCrossCompomentPrediction(
     ChromaFormatType chroma_format_type = context->GetChromaFormatType();
     uint32_t residual_coding_count = (YUV_422 == chroma_format_type) ? 2 : 1;
     residual_codings->resize(residual_coding_count);
+
     for (uint32_t i = 0; i < residual_coding_count; ++i)
     {
         if (get_cbf_chroma_value(i, context->GetTransformBlockDepth()))
         {
-            (*residual_codings)[i].reset(new ResidualCoding());
-            ResidualCodingContext residual_coding_context;
+            (*residual_codings)[i].reset(
+                new ResidualCoding(context->GetCurrentCoordinate(), 
+                                   log2_chroma_transform_size, color_index));
+
+            ResidualCodingContext residual_coding_context(context);
             bool success = (*residual_codings)[i]->Parse(
                 cabac_reader, &residual_coding_context);
 

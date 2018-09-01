@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "hevc_decoder/base/basic_types.h"
+#include "hevc_decoder/base/coordinate.h"
 
 class CABACReader;
 class ICodingUnitContext;
@@ -23,7 +24,11 @@ public:
     PredModeType GetPredMode() const;
     PartModeType GetPartMode() const;
     bool IsCUTransquantBypass() const;
-    const std::vector<uint32_t>& GetIntraChromaPredMode() const;
+    bool IsPCM() const;
+    const std::vector<uint32_t>& GetIntraChromaPredModeIdentification() const;
+    IntraPredModeType GetIntraLumaPredMode(const Coordinate& c) const;
+    IntraPredModeType GetIntraChromaPredMode(const Coordinate& c) const;
+    const Coordinate& GetCoordinate() const;
 
 private:
     bool ParseDetailInfo(CABACReader* cabac_reader, ICodingUnitContext* context, 
@@ -31,11 +36,37 @@ private:
 
     bool ParseIntraDetailInfo(CABACReader* cabac_reader,
                               ICodingUnitContext* context, 
-                              PartModeType part_mode, bool* is_pcm);
+                              PartModeType part_mode);
 
     bool ParseInterDetailInfo(CABACReader* cabac_reader, 
                               ICodingUnitContext* context, bool is_cu_skip,
                               PartModeType part_mode);
+
+    bool ParseIntraLumaPredictedMode(CABACReader* cabac_reader, 
+                                     ICodingUnitContext* context, 
+                                     uint32_t block_count);
+
+    std::vector<IntraPredModeType> DeriveIntraLumaPredictedModes(
+        ICodingUnitContext* context, const bool* is_prev_intra_luma_pred, 
+        const std::vector<uint32_t>& mpm_idx,
+        const std::vector<uint32_t>& rem_intra_luma_pred_mode);
+
+    IntraPredModeType DeriveSingleIntraLumaPredictedMode(
+        ICodingUnitContext* context, bool is_prev_intra_luma_pred, 
+        uint32_t mpm_idx, uint32_t rem_intra_luma_pred_mode, 
+        const Coordinate& left_pb_point, const Coordinate& up_pb_point);
+
+    IntraPredModeType GetNeighbourBlockIntraPredModeType(
+        ICodingUnitContext* context, const Coordinate& neighbour_point);
+
+    std::array<IntraPredModeType, 3> GetCandidateIntraPredModes(
+        IntraPredModeType left_pb_intra_luma_pred_mode, 
+        IntraPredModeType up_pb_intra_luma_pred_mode);
+
+    std::vector<IntraPredModeType> DeriveIntraChromaPredictedModes(
+        ICodingUnitContext* context, 
+        const std::vector<IntraPredModeType>& intra_luma_pred_modes,
+        const std::vector<uint32_t>& intra_chroma_pred_mode_identification);
 
     Coordinate point_;
     uint32_t layer_;
@@ -43,7 +74,10 @@ private:
     PredModeType pred_mode_;
     PartModeType part_mode_;
     bool is_cu_transquant_bypass_;
-    std::vector<uint32_t> intra_chroma_pred_mode_;
+    std::vector<uint32_t> intra_chroma_pred_mode_identification_;
+    std::vector<IntraPredModeType> intra_luma_pred_modes_;
+    std::vector<IntraPredModeType> intra_chroma_pred_modes_;
+    bool is_pcm_;
 
     // maybe empty
     std::vector<std::shared_ptr<PredictionUnit>> prediction_units_;

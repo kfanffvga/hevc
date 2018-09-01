@@ -34,8 +34,8 @@ public:
 
     virtual std::shared_ptr<PaletteTable> GetPredictorPaletteTable() const = 0;
     virtual uint32_t GetPaletteMaxSize() const = 0;
-    virtual uint32_t GetBitDepthLuma() const = 0;
-    virtual uint32_t GetBitDepthChroma() const = 0;
+    virtual uint32_t GetBitDepthOfLuma() const = 0;
+    virtual uint32_t GetBitDepthOfChroma() const = 0;
     virtual uint32_t GetPredictorPaletteMaxSize() const = 0;
     virtual bool IsCUQPDeltaEnabled() const = 0;
     virtual bool IsCUQPDeltaCoded() const = 0;
@@ -48,6 +48,23 @@ public:
 
     virtual bool IsResidualAdaptiveColorTransformEnabled() const = 0;
     virtual bool IsCrossComponentPredictionEnabled() const = 0;
+    virtual bool IsTransformSkipEnabled() const = 0;
+    virtual uint32_t GetMaxTransformSkipSize() const = 0;
+    virtual bool IsExplicitRDPCMEnabled() const = 0;
+
+    virtual bool IsZScanOrderNeighbouringBlockAvailable(
+        const Coordinate& current_block, 
+        const Coordinate& neighbouring_block) = 0;
+
+    virtual std::shared_ptr<CodingUnit> GetCodingUnit(const Coordinate& p) const 
+        = 0;
+
+    virtual bool IsTransformSkipContextEnabled() const = 0;
+    virtual bool IsImplicitRDPCMEnabled() const = 0;
+    virtual bool IsCABACBypassAlignmentEnabled() const = 0;
+    virtual bool IsSignDataHidingEnabled() const = 0;
+    virtual bool IsPersistentRiceAdaptationEnabled() const = 0;
+    virtual bool HasExtendedPrecisionProcessing() const = 0;
 };
 
 #endif

@@ -178,7 +178,7 @@ public:
 
     }
 
-    virtual std::shared_ptr<FramePartition> GetFramePartition() override
+    virtual shared_ptr<FramePartition> GetFramePartition() override
     {
         return frame_partition_;
     }
@@ -208,14 +208,14 @@ public:
         return header_->GetChromaFormatType();
     }
 
-    virtual uint32_t GetBitDepthLuma() const
+    virtual uint32_t GetBitDepthOfLuma() const
     {
-        return header_->GetBitDepthLuma();
+        return header_->GetBitDepthOfLuma();
     }
 
-    virtual uint32_t GetBitDepthChroma() const
+    virtual uint32_t GetBitDepthOfChroma() const
     {
-        return header_->GetBitDepthChroma();
+        return header_->GetBitDepthOfChroma();
     }
 
     virtual uint32_t GetFrameHeightInLumaSamples() const override
@@ -331,8 +331,8 @@ public:
         if (!success)
             return nullptr;
 
-        c.x -= header_->GetCTBHeight();
-        if (c.x < 0)
+        c.OffsetX(-static_cast<int32_t>(header_->GetCTBHeight()));
+        if (c.GetX() < 0)
             return nullptr;
 
         uint32_t neighbour_tile_scan_index = 0;
@@ -341,8 +341,7 @@ public:
         if (!success)
             return nullptr;
         
-        auto ctu = 
-            data_->GetCodingTreeUnitByTileScanIndex(neighbour_tile_scan_index);
+        auto ctu = data_->GetCodingTreeUnit(neighbour_tile_scan_index);
         return ctu.get();
     }
 
@@ -354,8 +353,8 @@ public:
         if (!success)
             return nullptr;
 
-        c.y -= header_->GetCTBHeight();
-        if (c.y < 0)
+        c.OffsetY(-static_cast<int32_t>(header_->GetCTBHeight()));
+        if (c.GetY() < 0)
             return nullptr;
 
         uint32_t neighbour_tile_scan_index = 0;
@@ -364,8 +363,7 @@ public:
         if (!success)
             return nullptr;
 
-        auto ctu =
-            data_->GetCodingTreeUnitByTileScanIndex(neighbour_tile_scan_index);
+        auto ctu = data_->GetCodingTreeUnit(neighbour_tile_scan_index);
         return ctu.get();
     }
 
@@ -423,6 +421,81 @@ public:
             header_->GetPPSRangeExtension();
 
         return range_extension.IsCrossComponentPredictionEnabled();
+    }
+
+    virtual bool IsTransformSkipEnabled() const override
+    {
+        return header_->IsTransformSkipEnabled();
+    }
+
+    virtual uint32_t GetMaxTransformSkipSize() const override
+    {
+        return header_->GetMaxTransformSkipSize();
+    }
+
+    virtual bool IsExplicitRDPCMEnabled() const override
+    {
+        return header_->IsExplicitRDPCMEnabled();
+    }
+
+    virtual bool IsZScanOrderNeighbouringBlockAvailable(
+        const Coordinate& current_block,
+        const Coordinate& neighbouring_block) override
+    {
+        return slice_segment_data_context_->IsZScanOrderNeighbouringBlockAvailable(
+            current_block, neighbouring_block);
+    }
+
+    virtual const shared_ptr<CodingTreeUnit> GetCodingTreeUnit(
+        const Coordinate& p) const override
+    {
+        uint32_t log2_ctb_size_y = header_->GetCTBLog2SizeY();
+        Coordinate c = 
+        {
+            (p.GetX() >> log2_ctb_size_y) << log2_ctb_size_y,
+            (p.GetY() >> log2_ctb_size_y) << log2_ctb_size_y
+        };
+        uint32_t title_scan_index = 0;
+        bool located = frame_partition_->GetTileScanIndexByCTBCoordinate(
+            c, &title_scan_index);
+        if (!located)
+            return shared_ptr<CodingTreeUnit>();
+
+        auto ctu = data_->GetCodingTreeUnit(title_scan_index);
+        if (ctu)
+            return ctu;
+
+        return slice_segment_data_context_->GetCodingTreeUnit(title_scan_index);
+    }
+
+    virtual bool IsTransformSkipContextEnabled() const override
+    {
+        return header_->IsTransformSkipContextEnabled();
+    }
+
+    virtual bool IsImplicitRDPCMEnabled() const override
+    {
+        return header_->IsImplicitRDPCMEnabled();
+    }
+
+    virtual bool IsCABACBypassAlignmentEnabled() const override
+    {
+        return header_->IsCABACBypassAlignmentEnabled();
+    }
+
+    virtual bool IsSignDataHidingEnabled() const override
+    {
+        return header_->IsSignDataHidingEnabled();
+    }
+
+    virtual bool IsPersistentRiceAdaptationEnabled() const override
+    {
+        return header_->IsPersistentRiceAdaptationEnabled();
+    }
+
+    virtual bool HasExtendedPrecisionProcessing() const override
+    {
+        return header_->HasExtendedPrecisionProcessing();
     }
 
 private:
@@ -592,8 +665,9 @@ bool SliceSegmentData::IsInnerCTUByTileScanIndex(uint32_t index) const
 }
 
 const shared_ptr<CodingTreeUnit>
-    SliceSegmentData::GetCodingTreeUnitByTileScanIndex(uint32_t index) const
+    SliceSegmentData::GetCodingTreeUnit(uint32_t index) const
 {
+    index -= start_ctu_index_of_tile_scan_;
     if (index >= ctus_.size())
         return nullptr;
 

@@ -142,9 +142,22 @@ public:
                                                                  palette_table);
     }
 
+    virtual const shared_ptr<CodingTreeUnit> GetCodingTreeUnit(
+        uint32_t tile_scan_index) const override
+    {
+        auto slice_segment_syntax = 
+            slice_segment_context_->GetSliceSegmentSyntax(tile_scan_index);
+        if (!slice_segment_syntax)
+            return shared_ptr<CodingTreeUnit>();
+
+        return slice_segment_syntax->GetSliceSegmentData().GetCodingTreeUnit(
+            tile_scan_index);
+    }
+
 private:
     ISliceSegmentContext* slice_segment_context_;
     SliceSegmentHeader* header_;
+    SliceSegmentSyntax* slice_segment_;
 };
 
 SliceSegmentSyntax::SliceSegmentSyntax()

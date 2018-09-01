@@ -11,3 +11,9 @@ uint32_t GetColorCompomentCount(ChromaFormatType chroma_format_type)
 
     return color_component_count;
 }
+
+bool IsSingleChromaPerPixel(ChromaFormatType chroma_format_type)
+{
+    return (YUV_444 == chroma_format_type) || 
+        (YUV_MONO_CHROME == chroma_format_type);
+}

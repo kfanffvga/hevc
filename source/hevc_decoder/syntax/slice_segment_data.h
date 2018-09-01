@@ -28,8 +28,8 @@ public:
 
     uint32_t GetCABACContextStorageIndex() const;
     bool IsInnerCTUByTileScanIndex(uint32_t index) const;
-    const std::shared_ptr<CodingTreeUnit> GetCodingTreeUnitByTileScanIndex(
-        uint32_t index) const;
+    const std::shared_ptr<CodingTreeUnit> GetCodingTreeUnit(uint32_t index) 
+        const;
 
     const PaletteTable& GetSliceSegmentPaletteTable() const;
 

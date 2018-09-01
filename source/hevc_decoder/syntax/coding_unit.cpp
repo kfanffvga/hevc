@@ -1,6 +1,10 @@
 #include "hevc_decoder/syntax/coding_unit.h"
 
+#include <algorithm>
+
 #include "hevc_decoder/base/basic_types.h"
+#include "hevc_decoder/base/math.h"
+#include "hevc_decoder/base/plane_util.h"
 #include "hevc_decoder/base/stream/bit_stream.h"
 #include "hevc_decoder/syntax/coding_unit_context.h"
 #include "hevc_decoder/syntax/pcm_sample.h"
@@ -27,6 +31,7 @@ using std::array;
 using std::unique_ptr;
 using std::vector;
 using std::shared_ptr;
+using std::sort;
 
 class CUSkipFlagReaderContext : public ICUSkipFlagReaderContext
 {
@@ -49,13 +54,13 @@ public:
 private:
     virtual bool IsLeftBlockAvailable() const override
     {
-        Coordinate left_neighbour = {point_.x - 1, point_.y};
+        Coordinate left_neighbour = {point_.GetX() - 1, point_.GetY()};
         return cu_context_->IsNeighbourBlockAvailable(point_, left_neighbour);
     }
 
     virtual bool IsUpBlockAvailable() const override
     {
-        Coordinate up_neighbour = {point_.x, point_.y - 1};
+        Coordinate up_neighbour = {point_.GetX(), point_.GetY() - 1};
         return cu_context_->IsNeighbourBlockAvailable(point_, up_neighbour);
     }
 
@@ -66,13 +71,13 @@ private:
 
     virtual uint32_t GetLeftBlockLayer() const override
     {
-        Coordinate left_neighbour = {point_.x - 1, point_.y};
+        Coordinate left_neighbour = {point_.GetX() - 1, point_.GetY()};
         return cu_context_->GetNearestCULayerByCoordinate(left_neighbour);
     }
 
     virtual uint32_t GetUpBlockLayer() const override
     {
-        Coordinate up_neighbour = {point_.x, point_.y - 1};
+        Coordinate up_neighbour = {point_.GetX(), point_.GetY() - 1};
         return cu_context_->GetNearestCULayerByCoordinate(up_neighbour);
     }
 
@@ -174,14 +179,14 @@ public:
         return cu_context_->GetChromaFormatType();
     }
 
-    virtual uint32_t GetBitDepthLuma() const override
+    virtual uint32_t GetBitDepthOfLuma() const override
     {
-        return cu_context_->GetBitDepthLuma();
+        return cu_context_->GetBitDepthOfLuma();
     }
 
-    virtual uint32_t GetBitDepthChroma() const override
+    virtual uint32_t GetBitDepthOfChroma() const override
     {
-        return cu_context_->GetBitDepthChroma();
+        return cu_context_->GetBitDepthOfChroma();
     }
 
     virtual uint32_t GetPredictorPaletteMaxSize() const override
@@ -332,9 +337,10 @@ public:
         return cu_context_->IsResidualAdaptiveColorTransformEnabled();
     }
 
-    virtual const vector<uint32_t>& GetIntraChromaPredMode() const override
+    virtual const vector<uint32_t>& GetIntraChromaPredModeIdentification() const 
+        override
     {
-        return cu_->GetIntraChromaPredMode();
+        return cu_->GetIntraChromaPredModeIdentification();
     }
 
     virtual bool IsCUQPDeltaEnabled() const override
@@ -383,6 +389,73 @@ public:
         return cu_context_->IsCrossComponentPredictionEnabled();
     }
 
+    virtual bool IsTransformSkipEnabled() const override
+    {
+        return cu_context_->IsTransformSkipEnabled();
+    }
+
+    virtual uint32_t GetMaxTransformSkipSize() const override
+    {
+        return cu_context_->GetMaxTransformSkipSize();
+    }
+
+    virtual bool IsExplicitRDPCMEnabled() const override
+    {
+        return cu_context_->IsExplicitRDPCMEnabled();
+    }
+
+    virtual IntraPredModeType GetIntraLumaPredMode(const Coordinate& c) const
+        override
+    {
+        return cu_->GetIntraLumaPredMode(c);
+    }
+
+    virtual IntraPredModeType GetIntraChromaPredMode(const Coordinate& c) const
+        override
+    {
+        return cu_->GetIntraChromaPredMode(c);
+    }
+
+    virtual bool IsTransformSkipContextEnabled() const override
+    {
+        return cu_context_->IsTransformSkipContextEnabled();
+    }
+
+    virtual bool IsImplicitRDPCMEnabled() const override
+    {
+        return cu_context_->IsImplicitRDPCMEnabled();
+    }
+
+    virtual bool IsCABACBypassAlignmentEnabled() const override
+    {
+        return cu_context_->IsCABACBypassAlignmentEnabled();
+    }
+
+    virtual bool IsSignDataHidingEnabled() const override
+    {
+        return cu_context_->IsSignDataHidingEnabled();
+    }
+
+    virtual bool IsPersistentRiceAdaptationEnabled() const override
+    {
+        return cu_context_->IsPersistentRiceAdaptationEnabled();
+    }
+
+    virtual uint32_t GetBitDepthOfLuma() const override
+    {
+        return cu_context_->GetBitDepthOfLuma();
+    }
+
+    virtual uint32_t GetBitDepthOfChroma() const override
+    {
+        return cu_context_->GetBitDepthOfChroma();
+    }
+
+    virtual bool HasExtendedPrecisionProcessing() const override
+    {
+        return cu_context_->HasExtendedPrecisionProcessing();
+    }
+
 private:
     ICodingUnitContext* cu_context_;
     CodingUnit* cu_;
@@ -399,7 +472,10 @@ CodingUnit::CodingUnit(const Coordinate& point, uint32_t layer,
     , pred_mode_(MODE_SKIP)
     , part_mode_(PART_2Nx2N)
     , is_cu_transquant_bypass_(false)
-    , intra_chroma_pred_mode_()
+    , intra_chroma_pred_mode_identification_()
+    , intra_luma_pred_modes_()
+    , intra_chroma_pred_modes_()
+    , is_pcm_(false)
     , prediction_units_()
 {
 
@@ -466,9 +542,45 @@ bool CodingUnit::IsCUTransquantBypass() const
     return is_cu_transquant_bypass_;
 }
 
-const vector<uint32_t>& CodingUnit::GetIntraChromaPredMode() const
+bool CodingUnit::IsPCM() const
 {
-    return intra_chroma_pred_mode_;
+    return is_pcm_;
+}
+
+const vector<uint32_t>& CodingUnit::GetIntraChromaPredModeIdentification() const
+{
+    return intra_chroma_pred_mode_identification_;
+}
+
+IntraPredModeType CodingUnit::GetIntraLumaPredMode(const Coordinate& c) const
+{
+    assert(IsPointInSquare(c, point_, cb_size_y_));
+    if (!IsPointInSquare(c, point_, cb_size_y_))
+        return INTRA_DC;
+
+    if (intra_luma_pred_modes_.size() == 1)
+        return intra_luma_pred_modes_[0];
+
+    Coordinate relative_c = {c.GetX() - point_.GetX(), c.GetY() - point_.GetY()};
+    return intra_chroma_pred_modes_[GetQuadrant(relative_c, cb_size_y_)];
+}
+
+IntraPredModeType CodingUnit::GetIntraChromaPredMode(const Coordinate& c) const
+{
+    assert(IsPointInSquare(c, point_, cb_size_y_));
+    if (!IsPointInSquare(c, point_, cb_size_y_))
+        return INTRA_DC;
+
+    if (intra_chroma_pred_modes_.size() == 1)
+        return intra_chroma_pred_modes_[0];
+
+    Coordinate relative_c = {c.GetX() - point_.GetX(), c.GetY() - point_.GetY()};
+    return intra_chroma_pred_modes_[GetQuadrant(relative_c, cb_size_y_)];
+}
+
+const Coordinate& CodingUnit::GetCoordinate() const
+{
+    return point_;
 }
 
 bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
@@ -509,13 +621,11 @@ bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
                                             context->GetCABACInitType(),
                                             &part_mode_reader_context);
             part_mode_ = part_mode_reader.Read();
-
             bool success = false;
-            bool is_pcm = false;
             if (MODE_INTRA == pred_mode_)
             {
-                success = ParseIntraDetailInfo(cabac_reader, context, part_mode_,
-                                               &is_pcm);
+                success = 
+                    ParseIntraDetailInfo(cabac_reader, context, part_mode_);
             }
             else
             {
@@ -526,7 +636,7 @@ bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
             if (!success)
                 return false;
 
-            if (!is_pcm)
+            if (!is_pcm_)
             {
                 // rqt_root_cbf
                 bool has_transform_tree = true;
@@ -553,8 +663,9 @@ bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
                             is_intra_split = true;
                         }
                     }
-                    TransformTree transform_tree(point_, point_, cb_size_y_, 0, 
-                                                 0);
+                    uint32_t log2_cb_size_y = Log2(cb_size_y_);
+                    TransformTree transform_tree(point_, point_, log2_cb_size_y, 
+                                                 0, 0);
                     TransformTreeContextInCU transform_tree_context(
                         context, this, max_transform_depth, is_intra_split);
 
@@ -569,19 +680,19 @@ bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
 
 bool CodingUnit::ParseIntraDetailInfo(CABACReader* cabac_reader, 
                                       ICodingUnitContext* context, 
-                                      PartModeType part_mode, bool* is_pcm)
+                                      PartModeType part_mode)
 {
-    if (!is_pcm || !cabac_reader || !context)
+    if (!cabac_reader || !context)
         return false;
 
-    *is_pcm = false;
+    is_pcm_ = false;
     if ((PART_2NxN == part_mode) && context->IsPCMEnabled() &&
         (cb_size_y_ >= context->GetMinPCMCodingBlockSizeY()) &&
         (cb_size_y_ <= context->GetMaxPCMCodingBlockSizeY()))
     {
-        *is_pcm = PCMFlagReader(cabac_reader).Read();
+        is_pcm_ = PCMFlagReader(cabac_reader).Read();
     }
-    if (*is_pcm)
+    if (is_pcm_)
     {
         BitStream* bit_stream = cabac_reader->GetSourceBitStream();
         bit_stream->ByteAlign();
@@ -592,55 +703,36 @@ bool CodingUnit::ParseIntraDetailInfo(CABACReader* cabac_reader,
         cabac_reader->Reset();
         return true;
     }
-    // 此处用一维数组表示，这里无非是要么一个，要么把一个分为4个，因此用一维数据意义是一样的
-    // 并且把pbOffset去掉，改为block_count
+    // 把pbOffset去掉，改为block_count,其实就是按照part_mode把cu分成多少个而已
     uint32_t block_count = (PART_NxN == part_mode) ? 4 : 1;
-    unique_ptr<bool> is_prev_intra_luma_pred(new bool[block_count]);
-    for (uint32_t i = 0; i < block_count; ++i)
-    {
-        PrevIntraLumaPredFlagReader reader(cabac_reader, 
-                                           context->GetCABACInitType());
-        is_prev_intra_luma_pred.get()[i] = reader.Read();
-    }
-    
-    vector<uint32_t> mpm_idx;
-    mpm_idx.resize(block_count);
-    vector<uint32_t> rem_intra_luma_pred_mode;
-    rem_intra_luma_pred_mode.resize(block_count);
-    for (uint32_t i = 0; i < block_count; ++i)
-    {
-        if (is_prev_intra_luma_pred.get()[i])
-        {
-            uint32_t idx = MPMIdxReader(cabac_reader).Read();
-            mpm_idx[i] = idx;
-        }
-        else
-        {
-            uint32_t luma_pred_mode = 
-                RemIntraLumaPredModeReader(cabac_reader).Read();
-            rem_intra_luma_pred_mode[i] = luma_pred_mode;
-        }
-    }
-    intra_chroma_pred_mode_.resize(block_count);
+    if (!ParseIntraLumaPredictedMode(cabac_reader, context, block_count))
+        return false;
+
+    intra_chroma_pred_mode_identification_.resize(block_count);
     // 如果是444模式，则每个块都有相对应的帧内预测模式
-    if (context->GetChromaFormatType() == YUV_444)
+    if ((context->GetChromaFormatType() == YUV_444) || 
+        (context->GetChromaFormatType() == YUV_MONO_CHROME))
     {
         for (uint32_t i = 0; i < block_count; ++i)
         {
             IntraChromaPredModeReader reader(cabac_reader, 
                                              context->GetCABACInitType());
-            uint32_t chroma_pred_mode = reader.Read();
-            intra_chroma_pred_mode_[i] = chroma_pred_mode;
+            intra_chroma_pred_mode_identification_[i] = reader.Read();
         }
     }
     else if (context->GetChromaFormatType() != MONO_CHROME)
     {
         IntraChromaPredModeReader reader(cabac_reader,
                                          context->GetCABACInitType());
-        uint32_t chroma_pred_mode = reader.Read();
-        intra_chroma_pred_mode_[0] = chroma_pred_mode;
+        intra_chroma_pred_mode_identification_[0] = reader.Read();
     }
-    return true;
+    if (context->GetChromaFormatType() != MONO_CHROME)
+    {
+        intra_chroma_pred_modes_ = DeriveIntraChromaPredictedModes(
+            context, intra_luma_pred_modes_, 
+            intra_chroma_pred_mode_identification_);
+    }
+    return !intra_chroma_pred_modes_.empty();
 }
 
 bool CodingUnit::ParseInterDetailInfo(CABACReader* cabac_reader, 
@@ -660,7 +752,7 @@ bool CodingUnit::ParseInterDetailInfo(CABACReader* cabac_reader,
             new PredictionUnit(point_, cb_size_y_, unit_height));
         prediction_units_.push_back(prediction_up_unit);
 
-        Coordinate down_unit_point = {point_.x, point_.y + unit_height};
+        Coordinate down_unit_point(point_.GetX(), point_.GetY() + unit_height);
         shared_ptr<PredictionUnit> prediction_down_unit(
             new PredictionUnit(down_unit_point, cb_size_y_, unit_height));
         prediction_units_.push_back(prediction_down_unit);
@@ -672,7 +764,7 @@ bool CodingUnit::ParseInterDetailInfo(CABACReader* cabac_reader,
             new PredictionUnit(point_, unit_width, cb_size_y_));
         prediction_units_.push_back(prediction_left_unit);
 
-        Coordinate right_unit_point = {point_.x + unit_width, point_.y};
+        Coordinate right_unit_point(point_.GetX() + unit_width, point_.GetY());
         shared_ptr<PredictionUnit> prediction_right_unit(
             new PredictionUnit(right_unit_point, unit_width, cb_size_y_));
         prediction_units_.push_back(prediction_right_unit);
@@ -684,7 +776,8 @@ bool CodingUnit::ParseInterDetailInfo(CABACReader* cabac_reader,
             new PredictionUnit(point_, cb_size_y_, up_unit_height));
         prediction_units_.push_back(prediction_up_unit);
 
-        Coordinate down_unit_point = {point_.x, point_.y + up_unit_height};
+        Coordinate down_unit_point(point_.GetX(), 
+                                   point_.GetY() + up_unit_height);
         shared_ptr<PredictionUnit> prediction_down_unit(
             new PredictionUnit(down_unit_point, cb_size_y_, 
                                cb_size_y_  - up_unit_height));
@@ -697,7 +790,7 @@ bool CodingUnit::ParseInterDetailInfo(CABACReader* cabac_reader,
             new PredictionUnit(point_, cb_size_y_, up_unit_height));
         prediction_units_.push_back(prediction_up_unit);
 
-        Coordinate down_unit_point = {point_.x, point_.y + up_unit_height};
+        Coordinate down_unit_point(point_.GetX(), point_.GetY() + up_unit_height);
         shared_ptr<PredictionUnit> prediction_down_unit(
             new PredictionUnit(down_unit_point, cb_size_y_,
                                cb_size_y_ - up_unit_height));
@@ -710,7 +803,8 @@ bool CodingUnit::ParseInterDetailInfo(CABACReader* cabac_reader,
             new PredictionUnit(point_, left_unit_width, cb_size_y_));
         prediction_units_.push_back(prediction_left_unit);
 
-        Coordinate right_unit_point = {point_.x + left_unit_width, point_.y};
+        Coordinate right_unit_point(point_.GetX() + left_unit_width, 
+                                    point_.GetY());
         shared_ptr<PredictionUnit> prediction_right_unit(
             new PredictionUnit(right_unit_point, cb_size_y_ - left_unit_width, 
                                cb_size_y_));
@@ -723,7 +817,8 @@ bool CodingUnit::ParseInterDetailInfo(CABACReader* cabac_reader,
             new PredictionUnit(point_, left_unit_width, cb_size_y_));
         prediction_units_.push_back(prediction_left_unit);
 
-        Coordinate right_unit_point = {point_.x + left_unit_width, point_.y};
+        Coordinate right_unit_point(point_.GetX() + left_unit_width, 
+                                    point_.GetY());
         shared_ptr<PredictionUnit> prediction_right_unit(
             new PredictionUnit(right_unit_point, cb_size_y_ - left_unit_width,
                                cb_size_y_));
@@ -737,22 +832,22 @@ bool CodingUnit::ParseInterDetailInfo(CABACReader* cabac_reader,
                                prediction_unit_size_y));
         prediction_units_.push_back(prediction_left_up_unit);
         
-        Coordinate right_up_unit_point = 
-            {point_.x + prediction_unit_size_y, point_.y};
+        Coordinate right_up_unit_point(point_.GetX() + prediction_unit_size_y, 
+                                       point_.GetY());
         shared_ptr<PredictionUnit> prediction_right_up_unit(
             new PredictionUnit(right_up_unit_point, prediction_unit_size_y,
                                prediction_unit_size_y));
         prediction_units_.push_back(prediction_right_up_unit);
 
-        Coordinate left_down_unit_point =
-            {point_.x, point_.y + prediction_unit_size_y};
+        Coordinate left_down_unit_point(point_.GetX(), 
+                                        point_.GetY() + prediction_unit_size_y);
         shared_ptr<PredictionUnit> prediction_left_down_unit(
             new PredictionUnit(left_down_unit_point, prediction_unit_size_y,
                                prediction_unit_size_y));
         prediction_units_.push_back(prediction_left_down_unit);
 
-        Coordinate right_down_unit_point ={point_.x + prediction_unit_size_y, 
-                                           point_.y + prediction_unit_size_y};
+        Coordinate right_down_unit_point(point_.GetX() + prediction_unit_size_y, 
+                                         point_.GetY() + prediction_unit_size_y);
         shared_ptr<PredictionUnit> prediction_right_down_unit(
             new PredictionUnit(left_down_unit_point, prediction_unit_size_y,
                                prediction_unit_size_y));
@@ -766,4 +861,236 @@ bool CodingUnit::ParseInterDetailInfo(CABACReader* cabac_reader,
     }
 
     return !prediction_units_.empty();
+}
+
+bool CodingUnit::ParseIntraLumaPredictedMode(CABACReader* cabac_reader, 
+                                             ICodingUnitContext* context, 
+                                             uint32_t block_count)
+{
+    unique_ptr<bool> is_prev_intra_luma_pred(new bool[block_count]);
+    for (uint32_t i = 0; i < block_count; ++i)
+    {
+        PrevIntraLumaPredFlagReader reader(cabac_reader,
+                                           context->GetCABACInitType());
+        is_prev_intra_luma_pred.get()[i] = reader.Read();
+    }
+
+    vector<uint32_t> mpm_idx;
+    mpm_idx.resize(block_count);
+    vector<uint32_t> rem_intra_luma_pred_mode;
+    rem_intra_luma_pred_mode.resize(block_count);
+    for (uint32_t i = 0; i < block_count; ++i)
+    {
+        if (is_prev_intra_luma_pred.get()[i])
+        {
+            uint32_t idx = MPMIdxReader(cabac_reader).Read();
+            mpm_idx[i] = idx;
+        }
+        else
+        {
+            uint32_t luma_pred_mode =
+                RemIntraLumaPredModeReader(cabac_reader).Read();
+            rem_intra_luma_pred_mode[i] = luma_pred_mode;
+        }
+    }
+    intra_luma_pred_modes_ = DeriveIntraLumaPredictedModes(
+        context, is_prev_intra_luma_pred.get(), mpm_idx, 
+        rem_intra_luma_pred_mode);
+    return !intra_luma_pred_modes_.empty();
+}
+   
+// 8.4.2
+vector<IntraPredModeType> CodingUnit::DeriveIntraLumaPredictedModes(
+    ICodingUnitContext* context, const bool* is_prev_intra_luma_pred, 
+    const vector<uint32_t>& mpm_idx, 
+    const vector<uint32_t>& rem_intra_luma_pred_mode)
+{
+    assert(mpm_idx.size() == rem_intra_luma_pred_mode.size());
+    if (mpm_idx.size() != rem_intra_luma_pred_mode.size())
+        return vector<IntraPredModeType>();
+    
+    vector<IntraPredModeType> pred_mode_result;
+    pred_mode_result.resize(mpm_idx.size());
+    uint32_t pb_size_y = cb_size_y_ >> 1;
+    for (uint32_t i = 0; i < mpm_idx.size(); ++i)
+    {
+        Coordinate left_pb_point = 
+        {
+            point_.GetX() + (pb_size_y * (i & 1)) - 1,
+            point_.GetY() + (pb_size_y * ((i >> 1) & 1))
+        };
+
+        Coordinate up_pb_point = 
+        {
+            point_.GetX() + (pb_size_y * (i & 1)),
+            point_.GetY() + (pb_size_y * ((i >> 1) & 1))  - 1
+        };
+
+        pred_mode_result[i] = DeriveSingleIntraLumaPredictedMode(
+            context, is_prev_intra_luma_pred[i], mpm_idx[i], 
+            rem_intra_luma_pred_mode[i], left_pb_point, up_pb_point);
+    }
+    return pred_mode_result;
+}
+
+IntraPredModeType CodingUnit::DeriveSingleIntraLumaPredictedMode(
+    ICodingUnitContext* context, bool is_prev_intra_luma_pred, uint32_t mpm_idx, 
+    uint32_t rem_intra_luma_pred_mode, const Coordinate& left_pb_point, 
+    const Coordinate& up_pb_point)
+{
+    auto left_pb_intra_luma_pred_mode = 
+        GetNeighbourBlockIntraPredModeType(context, left_pb_point);
+    auto up_pb_intra_luma_pb_point = 
+        GetNeighbourBlockIntraPredModeType(context, up_pb_point);
+
+    auto candidate_intra_pred_modes = GetCandidateIntraPredModes(
+        left_pb_intra_luma_pred_mode, up_pb_intra_luma_pb_point);
+
+    if (is_prev_intra_luma_pred)
+        return candidate_intra_pred_modes[mpm_idx];
+
+    sort(candidate_intra_pred_modes.begin(), candidate_intra_pred_modes.end());
+    for (const auto& i : candidate_intra_pred_modes)
+        if (rem_intra_luma_pred_mode > static_cast<uint32_t>(i))
+            ++rem_intra_luma_pred_mode;
+
+    return static_cast<IntraPredModeType>(rem_intra_luma_pred_mode);
+
+}
+
+IntraPredModeType CodingUnit::GetNeighbourBlockIntraPredModeType(
+    ICodingUnitContext* context, const Coordinate& neighbour_point)
+{
+    bool is_available = 
+        context->IsNeighbourBlockAvailable(neighbour_point, point_);
+    if (!is_available)
+        return INTRA_DC;
+
+    auto neighbour_cu = context->GetCodingUnit(neighbour_point);
+    if (!neighbour_cu)
+        return INTRA_DC;
+
+    if ((neighbour_cu->GetPredMode() != MODE_INTRA) || neighbour_cu->IsPCM())
+        return INTRA_DC;
+
+    return neighbour_cu->GetIntraLumaPredMode(neighbour_point);
+}
+
+array<IntraPredModeType, 3> CodingUnit::GetCandidateIntraPredModes(
+    IntraPredModeType left_pb_intra_luma_pred_mode, 
+    IntraPredModeType up_pb_intra_luma_pred_mode)
+{
+    array<IntraPredModeType, 3> candidate_intra_pred_modes;
+    if (left_pb_intra_luma_pred_mode == up_pb_intra_luma_pred_mode)
+    {
+        if ((INTRA_PLANAR == left_pb_intra_luma_pred_mode) ||
+            (INTRA_DC == left_pb_intra_luma_pred_mode))
+        {
+            candidate_intra_pred_modes[0] = INTRA_PLANAR;
+            candidate_intra_pred_modes[1] = INTRA_DC;
+            candidate_intra_pred_modes[2] = INTRA_ANGULAR26;
+        }
+        else
+        {
+            candidate_intra_pred_modes[0] = left_pb_intra_luma_pred_mode;
+            candidate_intra_pred_modes[1] = static_cast<IntraPredModeType>(2 +
+                ((static_cast<uint32_t>(left_pb_intra_luma_pred_mode) + 29) %
+                 32));
+            candidate_intra_pred_modes[2] = static_cast<IntraPredModeType>(2 +
+                ((static_cast<uint32_t>(left_pb_intra_luma_pred_mode) - 2 + 1) %
+                 32));
+        }
+    }
+    else
+    {
+        candidate_intra_pred_modes[0] = left_pb_intra_luma_pred_mode;
+        candidate_intra_pred_modes[1] = up_pb_intra_luma_pred_mode;
+        if ((candidate_intra_pred_modes[0] != INTRA_PLANAR) &&
+            (candidate_intra_pred_modes[1] != INTRA_PLANAR))
+            candidate_intra_pred_modes[2] = INTRA_PLANAR;
+        else if ((candidate_intra_pred_modes[0] != INTRA_DC) &&
+            (candidate_intra_pred_modes[1] != INTRA_DC))
+            candidate_intra_pred_modes[2] = INTRA_DC;
+        else
+            candidate_intra_pred_modes[2] = INTRA_ANGULAR26;
+    }
+    return candidate_intra_pred_modes;
+}
+
+// 8.4.3
+vector<IntraPredModeType> CodingUnit::DeriveIntraChromaPredictedModes(
+    ICodingUnitContext* context, 
+    const vector<IntraPredModeType>& intra_luma_pred_modes, 
+    const vector<uint32_t>& intra_chroma_pred_mode_identification)
+{
+    int mode_indices[5][5] = {34,  0,  0,  0,  0,  
+                              26, 34, 26, 26, 26,
+                              10, 10, 34, 10, 10,
+                               1,  1,  1, 34,  1,
+                               0, 26, 10,  1, -1};
+
+    uint32_t intra_luma_pred_modes_indices[35] = 
+    {
+        0, 3, 4, 4, 4, 4, 4, 4, 4, 4, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+        4, 4, 1, 4, 4, 4, 4, 4, 4, 4, 4
+    };
+
+    IntraPredModeType candidate_intra_chroma_predicted_modes[35] = 
+    {
+        INTRA_PLANAR, INTRA_DC, INTRA_ANGULAR2, INTRA_ANGULAR2, INTRA_ANGULAR2, 
+        INTRA_ANGULAR2, INTRA_ANGULAR3, INTRA_ANGULAR5, INTRA_ANGULAR7, 
+        INTRA_ANGULAR8, INTRA_ANGULAR10, INTRA_ANGULAR12, INTRA_ANGULAR13, 
+        INTRA_ANGULAR15, INTRA_ANGULAR17, INTRA_ANGULAR18, INTRA_ANGULAR19, 
+        INTRA_ANGULAR20, INTRA_ANGULAR21, INTRA_ANGULAR22, INTRA_ANGULAR23, 
+        INTRA_ANGULAR23, INTRA_ANGULAR24, INTRA_ANGULAR24, INTRA_ANGULAR25, 
+        INTRA_ANGULAR25, INTRA_ANGULAR26, INTRA_ANGULAR27, INTRA_ANGULAR27, 
+        INTRA_ANGULAR28, INTRA_ANGULAR28, INTRA_ANGULAR29, INTRA_ANGULAR29, 
+        INTRA_ANGULAR30, INTRA_ANGULAR31
+    };
+
+    assert(intra_chroma_pred_mode_identification.size() == 
+           intra_luma_pred_modes.size());
+
+    if (intra_chroma_pred_mode_identification.size() != 
+        intra_luma_pred_modes.size())
+        return vector<IntraPredModeType>();
+    
+    vector<IntraPredModeType> intra_chroma_predicted_modes;
+    intra_chroma_predicted_modes.resize(intra_luma_pred_modes.size());
+
+    // 内部函数，不进行任何判断
+    auto mode_index_fetchor = [&](uint32_t i) -> int
+    {
+        uint32_t luma_pred_mode_index =
+            intra_luma_pred_modes_indices[intra_luma_pred_modes[i]];
+
+        uint32_t chroma_pred_mode_index = 
+            intra_chroma_pred_mode_identification[i];
+
+        int mode_index =
+            mode_indices[chroma_pred_mode_index][luma_pred_mode_index];
+
+        if (-1 == mode_index)
+            mode_index = static_cast<int>(intra_luma_pred_modes[i]);
+
+        return mode_index;
+    };
+
+    if (context->GetChromaFormatType() == YUV_422)
+    {
+        for (uint32_t i = 0; i < intra_luma_pred_modes.size(); ++i)
+        {
+            intra_chroma_predicted_modes[i] = 
+                candidate_intra_chroma_predicted_modes[mode_index_fetchor(i)];
+        }
+    }
+    else
+    {
+        for (uint32_t i = 0; i < intra_luma_pred_modes.size(); ++i)
+        {
+            intra_chroma_predicted_modes[i] = 
+                static_cast<IntraPredModeType>(mode_index_fetchor(i));
+        }
+    }
+    return intra_chroma_predicted_modes;
 }

@@ -8,114 +8,120 @@ using std::make_pair;
 
 const static vector<int> init_type_to_ctxidx[SYNTAX_ELEMENT_NAME_COUNT - 1][3] = 
 {
-    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
-    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
-    {vector<int>{0,1,2}, vector<int>{3,4,5}, vector<int>{6,7,8}},
-    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
-    {vector<int>{}, vector<int>{0,1,2}, vector<int>{3,4,5}},
-    {vector<int>{}, vector<int>{0}, vector<int>{1}},
-    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
-    {vector<int>{0}, vector<int>{1,2,3,4}, vector<int>{5,6,7,8}},
-    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
-    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
-    {vector<int>{}, vector<int>{0}, vector<int>{1}},
-    {vector<int>{}, vector<int>{0}, vector<int>{1}},
-    {vector<int>{}, vector<int>{0}, vector<int>{1}},
-    {vector<int>{}, vector<int>{0,1,2,3,4}, vector<int>{5,6,7,8,9}},
-    {vector<int>{}, vector<int>{0,1}, vector<int>{2,3}},
-    {vector<int>{}, vector<int>{0}, vector<int>{1}},
-    {vector<int>{0,1,2}, vector<int>{3,4,5}, vector<int>{6,7,8}},
-    {vector<int>{0,1}, vector<int>{2,3}, vector<int>{4,5}},
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}},    // SAO_MERGE_FLAG
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}},    // SAO_TYPE_IDX
+    {vector<int>{0,1,2}, vector<int>{3,4,5}, vector<int>{6,7,8}},  // SPLIT_CU_FLAG
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}},   // CU_TRANSQUANT_BYPASS_FLAG
+    {vector<int>{}, vector<int>{0,1,2}, vector<int>{3,4,5}}, // CU_SKIP_FLAG
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}},        // PALETTE_MODE_FLAG
+    {vector<int>{}, vector<int>{0}, vector<int>{1}},         // PRED_MODE_FLAG
+    {vector<int>{0}, vector<int>{1,2,3,4}, vector<int>{5,6,7,8}},  // PART_MODE
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}},  // PREV_INTRA_LUMA_PRED_FLAG
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}},  // INTRA_CHROMA_PRED_MODE
+    {vector<int>{}, vector<int>{0}, vector<int>{1}},   // RQT_ROOT_CBF
+    {vector<int>{}, vector<int>{0}, vector<int>{1}},   // MERGE_FLAG
+    {vector<int>{}, vector<int>{0}, vector<int>{1}},   // MERGE_IDX
+    {vector<int>{}, vector<int>{0,1,2,3,4}, vector<int>{5,6,7,8,9}}, // INTER_PRED_IDC
+    {vector<int>{}, vector<int>{0,1}, vector<int>{2,3}},  // REF_IDX
+    {vector<int>{}, vector<int>{0}, vector<int>{1}},      // MVP_FLAG
+    {vector<int>{0,1,2}, vector<int>{3,4,5}, vector<int>{6,7,8}},  // SPLIT_TRANSFORM_FLAG
+    {vector<int>{0,1}, vector<int>{2,3}, vector<int>{4,5}},        // CBF_LUMA
     {vector<int>{0,1,2,3,12}, vector<int>{4,5,6,7,13}, 
-     vector<int>{8,9,10,11,14}},
+     vector<int>{8,9,10,11,14}},                       // CBF_CHROMA             
 
-    {vector<int>{}, vector<int>{0}, vector<int>{2}},
-    {vector<int>{}, vector<int>{1}, vector<int>{3}},
-    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
-    {vector<int>{0,1}, vector<int>{2,3}, vector<int>{4,5}},
-    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
-    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
-    {vector<int>{0,1,2,3,4,5,6,7}, vector<int>{8,9,10,11,12,13,14,15}, 
-     vector<int>{16,17,18,19,20,21,22,23}},
+    {vector<int>{}, vector<int>{0}, vector<int>{2}},   // ABS_MVD_GREATER0_FLAG
+    {vector<int>{}, vector<int>{1}, vector<int>{3}},   // ABS_MVD_GREATER1_FLAG
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}},  // TU_RESIDUAL_ACT_FLAG
+    {vector<int>{0,1,2,3,4,5,6,7}, vector<int>{8,9,10,11,12,13,14,15},
+    vector<int>{16,17,18,19,20,21,22,23}},    // LOG2_RES_SCALE_ABS
+    {vector<int>{0,1}, vector<int>{2,3}, vector<int>{4,5}}, // RES_SCALE_SIGN_FLAG
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}},  // TRANSFORM_SKIP_FLAG_FOR_LUMA
+    {vector<int>{3}, vector<int>{4}, vector<int>{5}},  // TRANSFORM_SKIP_FLAG_FOR_CHROMA
+    {vector<int>{}, vector<int>{0}, vector<int>{1}},   // EXPLICIT_RDPCM_FLAG_FOR_LUMA
+    {vector<int>{}, vector<int>{2}, vector<int>{3}},   // EXPLICIT_RDPCM_FLAG_FOR_CHROMA
+    {vector<int>{}, vector<int>{0}, vector<int>{1}},   // EXPLICIT_RDPCM_DIR_FLAG_FOR_LUMA
+    {vector<int>{}, vector<int>{2}, vector<int>{3}},   // EXPLICIT_RDPCM_DIR_FLAG_FOR_CHROMA
+    {vector<int>{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17},
+     vector<int>{18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35},
+     vector<int>{36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53}}, // LAST_SIG_COEFF_X_PREFIX
 
-    {vector<int>{0,1}, vector<int>{2,3}, vector<int>{4,5}},
-    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
-    {vector<int>{3}, vector<int>{4}, vector<int>{5}},
-    {vector<int>{}, vector<int>{0}, vector<int>{1}},
-    {vector<int>{}, vector<int>{2}, vector<int>{3}},
-    {vector<int>{}, vector<int>{0}, vector<int>{1}},
-    {vector<int>{}, vector<int>{2}, vector<int>{3}},
-    {vector<int>{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17}, 
-     vector<int>{18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35}, 
-     vector<int>{36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53}},
+    {vector<int>{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17},
+     vector<int>{18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35},
+     vector<int>{36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53}}, // LAST_SIG_COEFF_Y_PREFIX,
 
-    {vector<int>{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17}, 
-     vector<int>{18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35}, 
-     vector<int>{36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53}},
-
-    {vector<int>{0,1,2,3}, vector<int>{4,5,6,7}, vector<int>{8,9,10,11}},
+    {vector<int>{0,1,2,3}, vector<int>{4,5,6,7}, vector<int>{8,9,10,11}}, // CODED_SUB_BLOCK_FLAG
     {vector<int>{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,
-                 24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,126,127}, 
+                 24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,126,127},
      vector<int>{42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,
                  63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,
-                 128,129}, 
+                 128,129},
      vector<int>{84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,
                  103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,
-                 118,119,120,121,122,123,124,125,130,131}},
-    
-    {vector<int>{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23}, 
-     vector<int>{24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,
-                 45,46,47}, 
-     vector<int>{48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,
-                 69,70,71}},
+                 118,119,120,121,122,123,124,125,130,131}}, // SIG_COEFF_FLAG
 
-    {vector<int>{0,1,2,3,4,5}, vector<int>{6,7,8,9,10,11}, 
-     vector<int>{12,13,14,15,16,17}},
+    {vector<int>{48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,
+                 69,70,71}},   // COEFF_ABS_LEVEL_GREATER1_FLAG
+
+    {vector<int>{0,1,2,3,4,5}, vector<int>{6,7,8,9,10,11},
+     vector<int>{12,13,14,15,16,17}},  // COEFF_ABS_LEVEL_GREATER2_FLAG
 
     {vector<int>{0,1,2,3,4,5,6,7}, vector<int>{8,9,10,11,12,13,14,15},
-     vector<int>{16,17,18,19,20,21,22,23}},
+     vector<int>{16,17,18,19,20,21,22,23}},  // PALETTE_RUN_PREFIX
 
-    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
-    {vector<int>{0}, vector<int>{1}, vector<int>{2}},
-    {vector<int>{0}, vector<int>{1}, vector<int>{2}}
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}}, // COPY_ABOVE_PALETTE_INDICES_FLAG
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}}, // COPY_ABOVE_INDICES_FOR_FINAL_RUN_FLAG
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}}, // PALETTE_TRANSPOSE_FLAG
+    {vector<int>{0,1}, vector<int>{2,3}, vector<int>{4,5}}, // CU_QP_DELTA_ABS
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}},       // CU_CHROMA_QP_OFFSET_FLAG
+    {vector<int>{0}, vector<int>{1}, vector<int>{2}}        // CU_CHROMA_QP_OFFSET_IDX
 };
 
 // 第一个索引是SyntaxElementName 第二个索引是ctx_idx
 const static vector<vector<int>> init_values = 
 { 
-    vector<int>{153,153,153}, 
-    vector<int>{200,185,160},
-    vector<int>{139,141,157,107,139,126,107,139,126},
-    vector<int>{154,154,154},
-    vector<int>{197,185,201,197,185,201},
-    vector<int>{149,134},
-    vector<int>{154,154,154},
-    vector<int>{184,154,139,154,154,154,139,154,154},
-    vector<int>{184,154,153},
-    vector<int>{63,152,152},
-    vector<int>{79,79},
-    vector<int>{110,154},
-    vector<int>{122,137},
-    vector<int>{95,79,63,31,31,95,79,63,31,31},
-    vector<int>{153,153,153,153},
-    vector<int>{168,168},
-    vector<int>{153,138,138,124,138,94,224,167,122},
-    vector<int>{111,141,153,111,153,111},
-    vector<int>{94,138,182,154,149,107,167,154,149,92,167,154,154,154,154},
-    vector<int>{140,198,169,198},
-    vector<int>{154,154,154,154,154,154},
-    vector<int>{139,139,139,139,139,139},
+    vector<int>{153,153,153},     // SAO_MERGE_FLAG
+    vector<int>{200,185,160},     // SAO_TYPE_IDX
+    vector<int>{139,141,157,107,139,126,107,139,126},   // SPLIT_CU_FLAG
+    vector<int>{154,154,154},     // CU_TRANSQUANT_BYPASS_FLAG
+    vector<int>{197,185,201,197,185,201},   // CU_SKIP_FLAG
+    vector<int>{154,154,154},               // PALETTE_MODE_FLAG
+    vector<int>{149,134},                   // PRED_MODE_FLAG
+    vector<int>{184,154,139,154,154,154,139,154,154},   // PART_MODE  
+    vector<int>{184,154,183},   // PREV_INTRA_LUMA_PRED_FLAG
+    vector<int>{63,152,152},    // INTRA_CHROMA_PRED_MODE
+    vector<int>{79,79},         // RQT_ROOT_CBF
+    vector<int>{110,154},       // MERGE_FLAG
+    vector<int>{122,137},       // MERGE_IDX
+    vector<int>{95,79,63,31,31,95,79,63,31,31}, // INTER_PRED_IDC
+    vector<int>{153,153,153,153}, // REF_IDX                 
+    vector<int>{168,168},         // MVP_FLAG      
+    vector<int>{153,138,138,124,138,94,224,167,122},   // SPLIT_TRANSFORM_FLAG
+    vector<int>{111,141,153,111,153,111},              // CBF_LUMA            
+    vector<int>{94,138,182,154,149,107,167,154,149,92,167,154,154,154,154},  // CBF_CHROMA
+    vector<int>{140,198,169,198},    // ABS_MVD_GREATER0_FLAG       
+    vector<int>{140,198,169,198},    // ABS_MVD_GREATER1_FLAG  
+    vector<int>{154,154,154},        // TU_RESIDUAL_ACT_FLAG       
+    vector<int>{154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,
+                154,154,154,154,154,154,154,154},   // LOG2_RES_SCALE_ABS 
+
+    vector<int>{154,154,154,154,154,154},  // RES_SCALE_SIGN_FLAG           
+    vector<int>{139,139,139,139,139,139},  // TRANSFORM_SKIP_FLAG_FOR_LUMA          
+    vector<int>{139,139,139,139,139,139},  // TRANSFORM_SKIP_FLAG_FOR_CHROMA
+    vector<int>{139,139,139,139},          // EXPLICIT_RDPCM_FLAG_FOR_LUMA          
+    vector<int>{139,139,139,139},          // EXPLICIT_RDPCM_FLAG_FOR_CHROMA       
+    vector<int>{139,139,139,139},          // EXPLICIT_RDPCM_DIR_FLAG_FOR_LUMA          
+    vector<int>{139,139,139,139},          // EXPLICIT_RDPCM_DIR_FLAG_FOR_CHROMA 
     vector<int>{110,110,124,125,140,153,125,127,140,109,111,143,127,111,79,108,
                 123,63,125,110,94,110,95,79,125,111,110,78,110,111,111,95,94,
                 108,123,108,125,110,124,110,95,94,125,111,111,79,125,126,111,
-                111,79,108,123,93},
+                111,79,108,123,93},  // LAST_SIG_COEFF_X_PREFIX
 
     vector<int>{110,110,124,125,140,153,125,127,140,109,111,143,127,111,79,108,
                 123,63,125,110,94,110,95,79,125,111,110,78,110,111,111,95,94,
                 108,123,108,125,110,124,110,95,94,125,111,111,79,125,126,111,
-                111,79,108,123,93},
+                111,79,108,123,93},  // LAST_SIG_COEFF_Y_PREFIX
 
-    vector<int>{91,171,134,141,121,140,61,154,121,140,61,154},
+    vector<int>{91,171,134,141,121,140,61,154,121,140,61,154},  // CODED_SUB_BLOCK_FLAG
     vector<int>{111,111,125,110,110,94,124,108,124,107,125,141,179,153,125,107,
                 125,141,179,153,125,107,125,141,179,153,125,140,139,182,182,152,
                 136,152,136,153,136,139,111,136,139,111,155,154,139,154,139,123,
@@ -124,31 +130,26 @@ const static vector<vector<int>> init_values =
                 140,151,183,140,170,154,139,153,139,123,123,63,124,166,183,140,
                 136,153,154,166,183,140,136,153,154,166,183,140,136,153,154,170,
                 153,138,138,122,121,122,121,167,151,183,140,151,183,140,141,111,
-                140,140,140,140},
+                140,140,140,140}, // SIG_COEFF_FLAG
 
     vector<int>{140,92,137,138,140,152,138,139,153,74,149,92,139,107,122,152,
                 140,179,166,182,140,227,122,197,154,196,196,167,154,152,167,182,
                 182,134,149,136,153,121,136,137,169,194,166,167,154,167,137,182,
                 154,196,167,167,154,152,167,182,182,134,149,136,153,121,136,122,
-                169,208,166,167,154,152,167,182},
+                169,208,166,167,154,152,167,182},  // COEFF_ABS_LEVEL_GREATER1_FLAG
 
     vector<int>{138,153,136,167,152,152,107,167,91,122,107,167,107,167,91,107,
-                107,167},
+                107,167},  // COEFF_ABS_LEVEL_GREATER2_FLAG
 
-    vector<int>{139,139,139,139},
-    vector<int>{139,139,139,139},
-    vector<int>{154,154,154},
-    vector<int>{154,154,154},
     vector<int>{154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,
-                154,154,154,154,154,154,154,154},
+                154,154,154,154,154,154,154,154},  // PALETTE_RUN_PREFIX
 
-    vector<int>{154,154,154,154,154,154},
-    vector<int>{154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,154,
-                154,154,154,154,154,154,154,154},
-
-    vector<int>{154,154,154},
-    vector<int>{154,154,154},
-
+    vector<int>{154,154,154},  // COPY_ABOVE_PALETTE_INDICES_FLAG
+    vector<int>{154,154,154},  // COPY_ABOVE_INDICES_FOR_FINAL_RUN_FLAG
+    vector<int>{154,154,154},  // PALETTE_TRANSPOSE_FLAG
+    vector<int>{154,154,154,154,154,154}, // CU_QP_DELTA_ABS
+    vector<int>{154,154,154},             // CU_CHROMA_QP_OFFSET_FLAG
+    vector<int>{154,154,154},             // CU_CHROMA_QP_OFFSET_IDX  
 };
 
 CABACContextStorage::CABACContextStorage()

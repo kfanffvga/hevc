@@ -6,5 +6,6 @@
 enum ChromaFormatType;
 
 uint32_t GetColorCompomentCount(ChromaFormatType chroma_format_type);
+bool IsSingleChromaPerPixel(ChromaFormatType chroma_format_type);
 
 #endif

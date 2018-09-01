@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-struct Coordinate;
+class Coordinate;
 
 class ISliceSegmentAddressProvider
 {
