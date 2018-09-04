@@ -412,6 +412,14 @@ bool ResidualCoding::ParseSingleBlockTransformCoeffLevel(
         sub_block_index == last_sub_block_pos ? last_scan_pos - 1 : 15;
 
     bool has_sig_coeff[16] = {};
+    // 块有值并且第一个是不需要读取的话，那它必须是有值
+    if ((*has_coded_sub_blocks)[sub_block_index] && !need_read_the_first_value)
+        has_sig_coeff[0] = true;
+
+    // 如果是指定的最后一个系数的位置，那这个位置应该是有值的，不然就会产生矛盾
+    if (last_sub_block_pos == sub_block_index)
+        has_sig_coeff[last_scan_pos] = true;
+
     for (; scan_pos >= 0; --scan_pos)
     {
         if ((*has_coded_sub_blocks)[sub_block_index] &&
@@ -456,6 +464,7 @@ bool ResidualCoding::ParseAndDerivedTransformCoeffLevel(
     uint32_t count_of_greater_1 = 0;  // numGreater1Flag
     int32_t last_greater_1_scan_pos = -1;
     array<bool, 16> is_coeff_abs_level_greater_1;
+    is_coeff_abs_level_greater_1.fill(false);
     bool has_escape_data_present = false;
     for (int32_t i = 15; i >= 0; --i)
     {
@@ -497,6 +506,7 @@ bool ResidualCoding::ParseAndDerivedTransformCoeffLevel(
         is_sign_hidden = false;
 
     array<bool, 16> is_coeff_abs_level_greater_2;
+    is_coeff_abs_level_greater_2.fill(false);
     if (last_greater_1_scan_pos != -1)
     {
         CoeffAbsLevelGreater2FlagReader reader(cabac_reader, 
@@ -511,6 +521,7 @@ bool ResidualCoding::ParseAndDerivedTransformCoeffLevel(
         cabac_reader->Align();
 
     array<bool, 16> is_negative_coeff; // coeff_sign_flag
+    is_negative_coeff.fill(false);
     is_sign_hidden &= context->IsSignDataHidingEnabled();
     for (int32_t i = 15; i >= 0; --i)
     {
@@ -624,7 +635,7 @@ bool ResidualCoding::LocateLastSubBlockAndLastScanPos(
     BlockScanOrderProvider::ScanType scan_type, int32_t* last_sub_block_pos, 
     int32_t* last_scan_pos)
 {
-    if (!last_scan_pos || !last_scan_pos)
+    if (!last_scan_pos || !last_sub_block_pos)
         return false;
 
     uint32_t transform_width_in_sub_block = 1 << (log2_transform_size_y_ - 2);

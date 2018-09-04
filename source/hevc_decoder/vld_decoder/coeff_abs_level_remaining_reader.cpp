@@ -53,7 +53,7 @@ uint32_t CoeffAbsLevelRemainingReader::Read(uint32_t base_level)
 
     uint32_t result = prefix;
     if (prefix >= max_value)
-    {
+    { 
         uint32_t suffix = 0;
         if (context_->HasExtendedPrecisionProcessing())
         {
@@ -84,7 +84,7 @@ uint32_t CoeffAbsLevelRemainingReader::Read(uint32_t base_level)
     }
     abs_level = base_level + result;
     context_->UpdateRiceParamAndAbsLevel(rice_param, abs_level);
-    return 0;
+    return result;
 }
 
 uint32_t CoeffAbsLevelRemainingReader::GetInitialzationRiceParamAndAbsLevel(
@@ -103,6 +103,7 @@ uint32_t CoeffAbsLevelRemainingReader::GetInitialzationRiceParamAndAbsLevel(
         state_coeff_index = context_->GetColorIndex() == 0 ? 2 : 0;
 
     *rice_param = GetCABACReader()->GetStateCoefficient(state_coeff_index);
+    return state_coeff_index;
 }
 
 uint32_t CoeffAbsLevelRemainingReader::GetArithmeticContextIndex(

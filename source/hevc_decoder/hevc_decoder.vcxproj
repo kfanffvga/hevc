@@ -202,6 +202,7 @@
     <ClInclude Include="vld_decoder\common_cabac_syntax_reader.h" />
     <ClInclude Include="vld_decoder\end_of_slice_segment_flag_reader.h" />
     <ClInclude Include="vld_decoder\intra_chroma_pred_mode_reader.h" />
+    <ClInclude Include="vld_decoder\log2_res_scale_abs_reader.h" />
     <ClInclude Include="vld_decoder\mpm_idx_reader.h" />
     <ClInclude Include="vld_decoder\new_palette_entries_reader.h" />
     <ClInclude Include="vld_decoder\num_palette_indices_reader.h" />
@@ -219,6 +220,7 @@
     <ClInclude Include="vld_decoder\pred_mode_flag_reader.h" />
     <ClInclude Include="vld_decoder\prev_intra_luma_pred_flag_reader.h" />
     <ClInclude Include="vld_decoder\rem_intra_luma_pred_mode_reader.h" />
+    <ClInclude Include="vld_decoder\res_scale_sign_flag_reader.h" />
     <ClInclude Include="vld_decoder\rqt_root_cbf_reader.h" />
     <ClInclude Include="vld_decoder\sao_band_position_reader.h" />
     <ClInclude Include="vld_decoder\sao_eo_class_reader.h" />
@@ -325,6 +327,7 @@
     <ClCompile Include="vld_decoder\limited_exponential_golomb_reader.cpp" />
     <ClCompile Include="vld_decoder\fixed_length_value_reader.cpp" />
     <ClCompile Include="vld_decoder\intra_chroma_pred_mode_reader.cpp" />
+    <ClCompile Include="vld_decoder\log2_res_scale_abs_reader.cpp" />
     <ClCompile Include="vld_decoder\mpm_idx_reader.cpp" />
     <ClCompile Include="vld_decoder\new_palette_entries_reader.cpp" />
     <ClCompile Include="vld_decoder\num_palette_indices_reader.cpp" />
@@ -341,6 +344,7 @@
     <ClCompile Include="vld_decoder\pred_mode_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\prev_intra_luma_pred_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\rem_intra_luma_pred_mode_reader.cpp" />
+    <ClCompile Include="vld_decoder\res_scale_sign_flag_reader.cpp" />
     <ClCompile Include="vld_decoder\rqt_root_cbf_reader.cpp" />
     <ClCompile Include="vld_decoder\sao_band_position_reader.cpp" />
     <ClCompile Include="vld_decoder\sao_eo_class_reader.cpp" />

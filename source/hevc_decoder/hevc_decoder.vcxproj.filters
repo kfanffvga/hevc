@@ -478,6 +478,12 @@
     <ClInclude Include="vld_decoder\coeff_abs_level_remaining_reader.h">
       <Filter>vld_decoder</Filter>
     </ClInclude>
+    <ClInclude Include="vld_decoder\log2_res_scale_abs_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="vld_decoder\res_scale_sign_flag_reader.h">
+      <Filter>vld_decoder</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hevc_decoder.cpp" />
@@ -834,6 +840,12 @@
       <Filter>vld_decoder</Filter>
     </ClCompile>
     <ClCompile Include="vld_decoder\coeff_abs_level_remaining_reader.cpp">
+      <Filter>vld_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\log2_res_scale_abs_reader.cpp">
+      <Filter>vld_decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="vld_decoder\res_scale_sign_flag_reader.cpp">
       <Filter>vld_decoder</Filter>
     </ClCompile>
   </ItemGroup>

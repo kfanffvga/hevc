@@ -17,8 +17,11 @@ uint32_t ExponentialGolombReader::Read(uint32_t exp_value)
     while (bit_reader_() != 0)
         ++prefix_count;
 
+    if (0 == prefix_count)
+        return 0;
+
     uint32_t r = 0;
-    for (uint32_t i = 0; i < prefix_count; ++i)
+    for (uint32_t i = 0; i <= prefix_count; ++i)
         r = (r << 1) | bit_reader_();
 
     return (((1 << prefix_count) - 1) << exp_value) + r;
