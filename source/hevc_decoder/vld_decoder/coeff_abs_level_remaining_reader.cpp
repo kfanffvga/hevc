@@ -70,6 +70,8 @@ uint32_t CoeffAbsLevelRemainingReader::Read(uint32_t base_level)
         }
         result += suffix;
     }
+    // function named IsUpdatedRiceParamAndAbsLevel equals
+    // invoked for the first time for the current sub block
     if (!context_->IsUpdatedRiceParamAndAbsLevel() && 
         context_->IsPersistentRiceAdaptationEnabled())
     {

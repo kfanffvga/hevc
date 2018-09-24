@@ -43,6 +43,7 @@ private:
     uint32_t cabac_context_storage_index_;
     std::vector<std::shared_ptr<CodingTreeUnit>> ctus_;
     std::unique_ptr<PaletteTable> predictor_palette_table_;
+    bool is_ctu_parsing_;
 };
 
 #endif

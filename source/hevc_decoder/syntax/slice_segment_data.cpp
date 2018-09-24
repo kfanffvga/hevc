@@ -513,6 +513,7 @@ SliceSegmentData::SliceSegmentData()
     , cabac_context_storage_index_(0)
     , ctus_()
     , predictor_palette_table_(new PaletteTable())
+    , is_ctu_parsing_(false)
 {
 
 }
@@ -558,6 +559,7 @@ bool SliceSegmentData::Parse(CABACReader* reader,
                                          header->IsUsedCABACInit());
     bool is_the_first_ctu_in_slice_segment = false;
     do {
+        is_ctu_parsing_ = false;
         uint32_t tile_scan_index = start_ctu_index_of_tile_scan_ + ctus_.size();
         Coordinate c = {};
         bool success = 
@@ -565,6 +567,7 @@ bool SliceSegmentData::Parse(CABACReader* reader,
         if (!success)
             return false;
 
+        is_ctu_parsing_ = true;
         uint32_t ctb_log2_size_y = 
             context->GetSliceSegmentHeader()->GetCTBLog2SizeY();
         shared_ptr<CodingTreeUnit> ctu(
@@ -578,6 +581,7 @@ bool SliceSegmentData::Parse(CABACReader* reader,
         if (!ctu->Parse(reader, &codeing_tree_unit_context))
             return false;
 
+        is_ctu_parsing_ = false;
         ctus_.push_back(ctu);
         is_end_of_slice_segment = EndOfSliceSegmentFlagReader(reader).Read();
 
@@ -661,7 +665,8 @@ uint32_t SliceSegmentData::GetCABACContextStorageIndex() const
 bool SliceSegmentData::IsInnerCTUByTileScanIndex(uint32_t index) const
 {
     return (index >= start_ctu_index_of_tile_scan_) &&
-        (index < start_ctu_index_of_tile_scan_ + ctus_.size());
+        (index < start_ctu_index_of_tile_scan_ + ctus_.size() + 
+            (is_ctu_parsing_ ? 1 : 0));
 }
 
 const shared_ptr<CodingTreeUnit>

@@ -452,7 +452,7 @@ TransformTree::TransformTree(const Coordinate& current, const Coordinate& base,
     : current_coordinate_(current)
     , base_coordinate_(base)
     , transform_unit_size_y_(1 << log2_transform_unit_size_y)
-    , log2_transform_unit_size_y_(log2_transform_unit_size_y)
+    , log2_transform_tree_size_y_(log2_transform_unit_size_y)
     , depth_(depth)
     , block_index_(block_index)
     , cbf_cb_()
@@ -479,7 +479,7 @@ bool TransformTree::Parse(CABACReader* cabac_reader,
     {
         SplitTransformFlagReader reader(cabac_reader, 
                                         context->GetCABACInitType(), 
-                                        log2_transform_unit_size_y_);
+                                        log2_transform_tree_size_y_);
         is_split_transform = reader.Read();
     }
     else
@@ -559,7 +559,7 @@ bool TransformTree::ParseCBFCBValues(CABACReader* cabac_reader,
 {
     ChromaFormatType chroma_format_type = context->GetChromaFormatType();
     if (((YUV_MONO_CHROME == chroma_format_type) || (YUV_444 == chroma_format_type)) ||
-        ((log2_transform_unit_size_y_ > 2) && (chroma_format_type != MONO_CHROME)))
+        ((log2_transform_tree_size_y_ > 2) && (chroma_format_type != MONO_CHROME)))
     {
         if ((0 == depth_) ||
             context->IsPreviousCBContainedTransformCoefficientOfColorBlue()[0])
@@ -570,7 +570,7 @@ bool TransformTree::ParseCBFCBValues(CABACReader* cabac_reader,
                 cbf_cb_[0] = reader.Read();
             }
             if ((YUV_422 == chroma_format_type) &&
-                (!is_split_transform || (3 == log2_transform_unit_size_y_)))
+                (!is_split_transform || (3 == log2_transform_tree_size_y_)))
             {
                 CBFCBReader reader(cabac_reader, context->GetCABACInitType(),
                                    depth_);
@@ -586,7 +586,7 @@ bool TransformTree::ParseCBFCBValues(CABACReader* cabac_reader,
                 cbf_cr_[0] = reader.Read();
             }
             if ((YUV_422 == chroma_format_type) &&
-                (!is_split_transform || (3 == log2_transform_unit_size_y_)))
+                (!is_split_transform || (3 == log2_transform_tree_size_y_)))
             {
                 CBFCRReader reader(cabac_reader, context->GetCABACInitType(),
                                    depth_);
@@ -614,7 +614,7 @@ bool TransformTree::ParseSubTransformTree(CABACReader* cabac_reader,
         sub_transform_trees_[i].reset(
             new TransformTree(sub_transform_trees_coordinate[i], 
                               current_coordinate_, 
-                              log2_transform_unit_size_y_ - 1, sub_layer, i));
+                              log2_transform_tree_size_y_ - 1, sub_layer, i));
 
         TransformTreeContextInMySelf sub_transform_tree_context(context, this);
         bool success = 
@@ -636,7 +636,7 @@ bool TransformTree::ParseTransformUnit(CABACReader* cabac_reader,
         CBFLumaReader reader(cabac_reader, context->GetCABACInitType(), depth_);
         cbf_luma_ = reader.Read();
     }
-    TransformUnit transform_unit(block_index_, log2_transform_unit_size_y_);
+    TransformUnit transform_unit(block_index_, log2_transform_tree_size_y_);
     TransformUnitContext transform_unit_context(this, context);
     return transform_unit.Parse(cabac_reader, &transform_unit_context);
 }

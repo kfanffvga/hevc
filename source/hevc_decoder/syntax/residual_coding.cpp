@@ -242,6 +242,7 @@ bool ResidualCoding::Parse(CABACReader* cabac_reader,
             bool is_explicit_rdpcm_dir = explicit_rdpcm_dir_flag_reader.Read();
         }
     }
+    scan_type_ = DeriveScanType(context);
 
     uint32_t last_sig_coeff_x = 0;
     uint32_t last_sig_coeff_y = 0;
@@ -251,7 +252,6 @@ bool ResidualCoding::Parse(CABACReader* cabac_reader,
     if (!success)
         return false;
 
-    scan_type_ = DeriveScanType(context);
 	int32_t last_sub_block_pos = 0;
 	int32_t last_scan_pos = 0;
 	success = LocateLastSubBlockAndLastScanPos(last_sig_coeff_x, 
@@ -408,9 +408,6 @@ bool ResidualCoding::ParseSingleBlockTransformCoeffLevel(
         (*has_coded_sub_blocks)[sub_block_index] = true;
     }
 
-    int32_t scan_pos = 
-        sub_block_index == last_sub_block_pos ? last_scan_pos - 1 : 15;
-
     bool has_sig_coeff[16] = {};
     // 块有值并且第一个是不需要读取的话，那它必须是有值
     if ((*has_coded_sub_blocks)[sub_block_index] && !need_read_the_first_value)
@@ -420,6 +417,8 @@ bool ResidualCoding::ParseSingleBlockTransformCoeffLevel(
     if (last_sub_block_pos == sub_block_index)
         has_sig_coeff[last_scan_pos] = true;
 
+    int32_t scan_pos =
+        sub_block_index == last_sub_block_pos ? last_scan_pos - 1 : 15;
     for (; scan_pos >= 0; --scan_pos)
     {
         if ((*has_coded_sub_blocks)[sub_block_index] &&
@@ -555,6 +554,7 @@ bool ResidualCoding::CombineTransformCoeffLevel(
     uint32_t count_of_sig_coeff = 0; // numSigCoeff
     uint32_t sum_abs_level = 0;
 
+    CoeffAbsLevelRemainingReaderContext reader_context(context, this);
     for (int32_t i = 15; i >= 0; --i)
     {
         if (!has_sig_coeff[i])
@@ -575,7 +575,6 @@ bool ResidualCoding::CombineTransformCoeffLevel(
         // 如果等于最大值的话，也就是说有可能会有剩余的值
         if (max_base_level_value == base_level)
         {
-            CoeffAbsLevelRemainingReaderContext reader_context(context, this);
             CoeffAbsLevelRemainingReader reader(cabac_reader, &reader_context);
             coeff_abs_level_remaining = reader.Read(base_level);
         }
@@ -659,8 +658,7 @@ bool ResidualCoding::LocateLastSubBlockAndLastScanPos(
 
         sub_block_begin_point.SetX(sub_block_begin_point.GetX() << 2);
         sub_block_begin_point.SetY(sub_block_begin_point.GetY() << 2);
-        if (IsPointInSquare(last_sig_coordinate, sub_block_begin_point, 
-                            transform_width_in_sub_block))
+        if (IsPointInSquare(last_sig_coordinate, sub_block_begin_point, 4))
             break;
     }
     if (*last_sub_block_pos < 0)

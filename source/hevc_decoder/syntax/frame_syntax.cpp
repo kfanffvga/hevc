@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "hevc_decoder/base/plane_util.h"
+#include "hevc_decoder/base/math.h"
 #include "hevc_decoder/syntax/slice_segment_syntax.h"
 #include "hevc_decoder/syntax/slice_segment_header.h"
 #include "hevc_decoder/syntax/slice_syntax.h"
@@ -349,8 +350,8 @@ bool FrameSyntax::IsZScanOrderNeighbouringBlockAvailable(
         return false;
 
     uint32_t min_tb_log2_size_y = frame_partition_->GetMinTBLog2SizeY();
-    Coordinate c = {current_block.GetX() >> min_tb_log2_size_y,
-                    current_block.GetY() >> min_tb_log2_size_y};
+    Coordinate c = {Align(current_block.GetX(), min_tb_log2_size_y),
+                    Align(current_block.GetY(), min_tb_log2_size_y)};
 
     TransformBlockIndexInfo index_of_current = {};
     bool success = frame_partition_->GetIndexInfoByTransformBlockCoordinate(
@@ -358,8 +359,8 @@ bool FrameSyntax::IsZScanOrderNeighbouringBlockAvailable(
     if (!success)
         return false;
 
-    c.SetX(neighbouring_block.GetX() >> min_tb_log2_size_y);
-    c.SetY(neighbouring_block.GetY() >> min_tb_log2_size_y);
+    c.SetX(Align(neighbouring_block.GetX(), min_tb_log2_size_y));
+    c.SetY(Align(neighbouring_block.GetY(), min_tb_log2_size_y));
     TransformBlockIndexInfo index_of_neighbouring = {};
     success = frame_partition_->GetIndexInfoByTransformBlockCoordinate(
         c, &index_of_neighbouring);
@@ -372,8 +373,6 @@ bool FrameSyntax::IsZScanOrderNeighbouringBlockAvailable(
     // 两个块必须在同一个tile里
     if (index_of_current.tile_index != index_of_neighbouring.tile_index)
         return false;
-
-    return false;
 
     uint32_t slice_address_of_current_block = 0;
     success = GetSliceSegmentAddress(index_of_current.raster_scan_index, 

@@ -48,7 +48,7 @@ private:
     Coordinate current_coordinate_;
     Coordinate base_coordinate_;
     uint32_t transform_unit_size_y_;
-    uint32_t log2_transform_unit_size_y_;
+    uint32_t log2_transform_tree_size_y_;
     uint32_t depth_;
     uint32_t block_index_;
 

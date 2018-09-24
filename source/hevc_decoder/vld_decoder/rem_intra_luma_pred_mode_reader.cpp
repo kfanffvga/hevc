@@ -19,7 +19,7 @@ RemIntraLumaPredModeReader::~RemIntraLumaPredModeReader()
 uint32_t RemIntraLumaPredModeReader::Read()
 {
     auto bit_reader = bind(&RemIntraLumaPredModeReader::ReadBit, this);
-    return !!FixedLengthValueReader(bit_reader).Read(5);
+    return FixedLengthValueReader(bit_reader).Read(5);
 }
 
 uint32_t RemIntraLumaPredModeReader::GetArithmeticContextIndex(uint16_t bin_idx)

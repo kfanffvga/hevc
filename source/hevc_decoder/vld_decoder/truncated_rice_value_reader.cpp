@@ -28,12 +28,10 @@ uint32_t TruncatedRiceValueReader::Read(uint32_t max_value, uint32_t rice_param)
             break;
     }
     uint32_t result = prefix_value << rice_param;
-    if ((0 == rice_param) || (prefix_value < max_prefix_value) || 
-        (result >= max_value))
+    if ((0 == rice_param) || (result >= max_value))
         return result;
 
     FixedLengthValueReader fixed_length_value_reader(bit_reader_);
     uint32_t suffix_value = fixed_length_value_reader.Read(rice_param);
     return result + suffix_value;
-
 }

@@ -32,6 +32,7 @@ using std::unique_ptr;
 using std::vector;
 using std::shared_ptr;
 using std::sort;
+using boost::multi_array;
 
 class CUSkipFlagReaderContext : public ICUSkipFlagReaderContext
 {
@@ -562,7 +563,7 @@ IntraPredModeType CodingUnit::GetIntraLumaPredMode(const Coordinate& c) const
         return intra_luma_pred_modes_[0];
 
     Coordinate relative_c = {c.GetX() - point_.GetX(), c.GetY() - point_.GetY()};
-    return intra_chroma_pred_modes_[GetQuadrant(relative_c, cb_size_y_)];
+    return intra_luma_pred_modes_[GetQuadrant(relative_c, cb_size_y_)];
 }
 
 IntraPredModeType CodingUnit::GetIntraChromaPredMode(const Coordinate& c) const
@@ -728,11 +729,11 @@ bool CodingUnit::ParseIntraDetailInfo(CABACReader* cabac_reader,
     }
     if (context->GetChromaFormatType() != MONO_CHROME)
     {
-        intra_chroma_pred_modes_ = DeriveIntraChromaPredictedModes(
+        return DeriveIntraChromaPredictedModes(
             context, intra_luma_pred_modes_, 
             intra_chroma_pred_mode_identification_);
     }
-    return !intra_chroma_pred_modes_.empty();
+    return true;
 }
 
 bool CodingUnit::ParseInterDetailInfo(CABACReader* cabac_reader, 
@@ -867,12 +868,12 @@ bool CodingUnit::ParseIntraLumaPredictedMode(CABACReader* cabac_reader,
                                              ICodingUnitContext* context, 
                                              uint32_t block_count)
 {
-    unique_ptr<bool> is_prev_intra_luma_pred(new bool[block_count]);
+    multi_array<bool, 1> is_prev_intra_luma_pred(boost::extents[block_count]);
     for (uint32_t i = 0; i < block_count; ++i)
     {
         PrevIntraLumaPredFlagReader reader(cabac_reader,
                                            context->GetCABACInitType());
-        is_prev_intra_luma_pred.get()[i] = reader.Read();
+        is_prev_intra_luma_pred[i] = reader.Read();
     }
 
     vector<uint32_t> mpm_idx;
@@ -881,7 +882,7 @@ bool CodingUnit::ParseIntraLumaPredictedMode(CABACReader* cabac_reader,
     rem_intra_luma_pred_mode.resize(block_count);
     for (uint32_t i = 0; i < block_count; ++i)
     {
-        if (is_prev_intra_luma_pred.get()[i])
+        if (is_prev_intra_luma_pred[i])
         {
             uint32_t idx = MPMIdxReader(cabac_reader).Read();
             mpm_idx[i] = idx;
@@ -893,24 +894,22 @@ bool CodingUnit::ParseIntraLumaPredictedMode(CABACReader* cabac_reader,
             rem_intra_luma_pred_mode[i] = luma_pred_mode;
         }
     }
-    intra_luma_pred_modes_ = DeriveIntraLumaPredictedModes(
-        context, is_prev_intra_luma_pred.get(), mpm_idx, 
-        rem_intra_luma_pred_mode);
-    return !intra_luma_pred_modes_.empty();
+    return DeriveIntraLumaPredictedModes(context, is_prev_intra_luma_pred, 
+                                         mpm_idx, rem_intra_luma_pred_mode);
 }
    
 // 8.4.2
-vector<IntraPredModeType> CodingUnit::DeriveIntraLumaPredictedModes(
-    ICodingUnitContext* context, const bool* is_prev_intra_luma_pred, 
+bool CodingUnit::DeriveIntraLumaPredictedModes(
+    ICodingUnitContext* context, 
+    const multi_array<bool, 1>& is_prev_intra_luma_pred, 
     const vector<uint32_t>& mpm_idx, 
     const vector<uint32_t>& rem_intra_luma_pred_mode)
 {
     assert(mpm_idx.size() == rem_intra_luma_pred_mode.size());
     if (mpm_idx.size() != rem_intra_luma_pred_mode.size())
-        return vector<IntraPredModeType>();
+        return false;
     
-    vector<IntraPredModeType> pred_mode_result;
-    pred_mode_result.resize(mpm_idx.size());
+    intra_luma_pred_modes_.resize(mpm_idx.size());
     uint32_t pb_size_y = cb_size_y_ >> 1;
     for (uint32_t i = 0; i < mpm_idx.size(); ++i)
     {
@@ -926,11 +925,11 @@ vector<IntraPredModeType> CodingUnit::DeriveIntraLumaPredictedModes(
             point_.GetY() + (pb_size_y * ((i >> 1) & 1))  - 1
         };
 
-        pred_mode_result[i] = DeriveSingleIntraLumaPredictedMode(
+        intra_luma_pred_modes_[i] = DeriveSingleIntraLumaPredictedMode(
             context, is_prev_intra_luma_pred[i], mpm_idx[i], 
             rem_intra_luma_pred_mode[i], left_pb_point, up_pb_point);
     }
-    return pred_mode_result;
+    return true;
 }
 
 IntraPredModeType CodingUnit::DeriveSingleIntraLumaPredictedMode(
@@ -955,14 +954,13 @@ IntraPredModeType CodingUnit::DeriveSingleIntraLumaPredictedMode(
             ++rem_intra_luma_pred_mode;
 
     return static_cast<IntraPredModeType>(rem_intra_luma_pred_mode);
-
 }
 
 IntraPredModeType CodingUnit::GetNeighbourBlockIntraPredModeType(
     ICodingUnitContext* context, const Coordinate& neighbour_point)
 {
     bool is_available = 
-        context->IsNeighbourBlockAvailable(neighbour_point, point_);
+        context->IsNeighbourBlockAvailable(point_, neighbour_point);
     if (!is_available)
         return INTRA_DC;
 
@@ -1018,7 +1016,7 @@ array<IntraPredModeType, 3> CodingUnit::GetCandidateIntraPredModes(
 }
 
 // 8.4.3
-vector<IntraPredModeType> CodingUnit::DeriveIntraChromaPredictedModes(
+bool CodingUnit::DeriveIntraChromaPredictedModes(
     ICodingUnitContext* context, 
     const vector<IntraPredModeType>& intra_luma_pred_modes, 
     const vector<uint32_t>& intra_chroma_pred_mode_identification)
@@ -1053,10 +1051,9 @@ vector<IntraPredModeType> CodingUnit::DeriveIntraChromaPredictedModes(
 
     if (intra_chroma_pred_mode_identification.size() != 
         intra_luma_pred_modes.size())
-        return vector<IntraPredModeType>();
-    
-    vector<IntraPredModeType> intra_chroma_predicted_modes;
-    intra_chroma_predicted_modes.resize(intra_luma_pred_modes.size());
+        return false;
+   
+    intra_chroma_pred_modes_.resize(intra_luma_pred_modes.size());
 
     // 内部函数，不进行任何判断
     auto mode_index_fetchor = [&](uint32_t i) -> int
@@ -1080,7 +1077,7 @@ vector<IntraPredModeType> CodingUnit::DeriveIntraChromaPredictedModes(
     {
         for (uint32_t i = 0; i < intra_luma_pred_modes.size(); ++i)
         {
-            intra_chroma_predicted_modes[i] = 
+            intra_chroma_pred_modes_[i] = 
                 candidate_intra_chroma_predicted_modes[mode_index_fetchor(i)];
         }
     }
@@ -1088,9 +1085,9 @@ vector<IntraPredModeType> CodingUnit::DeriveIntraChromaPredictedModes(
     {
         for (uint32_t i = 0; i < intra_luma_pred_modes.size(); ++i)
         {
-            intra_chroma_predicted_modes[i] = 
+            intra_chroma_pred_modes_[i] = 
                 static_cast<IntraPredModeType>(mode_index_fetchor(i));
         }
     }
-    return intra_chroma_predicted_modes;
+    return true;
 }

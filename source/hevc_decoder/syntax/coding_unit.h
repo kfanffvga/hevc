@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include <boost/multi_array.hpp>
 
 #include "hevc_decoder/base/basic_types.h"
 #include "hevc_decoder/base/coordinate.h"
@@ -46,8 +47,9 @@ private:
                                      ICodingUnitContext* context, 
                                      uint32_t block_count);
 
-    std::vector<IntraPredModeType> DeriveIntraLumaPredictedModes(
-        ICodingUnitContext* context, const bool* is_prev_intra_luma_pred, 
+    bool DeriveIntraLumaPredictedModes(
+        ICodingUnitContext* context, 
+        const boost::multi_array<bool, 1>& is_prev_intra_luma_pred, 
         const std::vector<uint32_t>& mpm_idx,
         const std::vector<uint32_t>& rem_intra_luma_pred_mode);
 
@@ -63,7 +65,7 @@ private:
         IntraPredModeType left_pb_intra_luma_pred_mode, 
         IntraPredModeType up_pb_intra_luma_pred_mode);
 
-    std::vector<IntraPredModeType> DeriveIntraChromaPredictedModes(
+    bool DeriveIntraChromaPredictedModes(
         ICodingUnitContext* context, 
         const std::vector<IntraPredModeType>& intra_luma_pred_modes,
         const std::vector<uint32_t>& intra_chroma_pred_mode_identification);

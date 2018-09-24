@@ -32,8 +32,8 @@ inline uint32_t GetQuadrant(const Coordinate& point, uint32_t size)
         return static_cast<uint32_t>(-1);
 
     uint32_t half_size = size >> 1;
-    return (static_cast<uint32_t>(point.GetY() > half_size) << 1) | 
-        static_cast<uint32_t>(point.GetX() > half_size);
+    return ((point.GetY() >= half_size ? 1 : 0) << 1) | 
+        (point.GetX() >= half_size ? 1 : 0);
 }
 
 #endif
