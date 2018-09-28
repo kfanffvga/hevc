@@ -909,38 +909,46 @@ bool CodingUnit::DeriveIntraLumaPredictedModes(
     if (mpm_idx.size() != rem_intra_luma_pred_mode.size())
         return false;
     
+
     intra_luma_pred_modes_.resize(mpm_idx.size());
     uint32_t pb_size_y = cb_size_y_ >> 1;
     for (uint32_t i = 0; i < mpm_idx.size(); ++i)
     {
-        Coordinate left_pb_point = 
+        Coordinate current_pb_point = 
         {
-            point_.GetX() + (pb_size_y * (i & 1)) - 1,
+            point_.GetX() + (pb_size_y * (i & 1)),
             point_.GetY() + (pb_size_y * ((i >> 1) & 1))
         };
 
-        Coordinate up_pb_point = 
+        Coordinate left_neighbour_point = 
         {
-            point_.GetX() + (pb_size_y * (i & 1)),
-            point_.GetY() + (pb_size_y * ((i >> 1) & 1))  - 1
+            current_pb_point.GetX() - 1, current_pb_point.GetY(),
+        };
+
+        Coordinate up_neighbour_point = 
+        {
+            current_pb_point.GetX(), current_pb_point.GetY() - 1,
         };
 
         intra_luma_pred_modes_[i] = DeriveSingleIntraLumaPredictedMode(
             context, is_prev_intra_luma_pred[i], mpm_idx[i], 
-            rem_intra_luma_pred_mode[i], left_pb_point, up_pb_point);
+            rem_intra_luma_pred_mode[i], current_pb_point, up_neighbour_point, 
+            left_neighbour_point);
     }
     return true;
 }
 
 IntraPredModeType CodingUnit::DeriveSingleIntraLumaPredictedMode(
     ICodingUnitContext* context, bool is_prev_intra_luma_pred, uint32_t mpm_idx, 
-    uint32_t rem_intra_luma_pred_mode, const Coordinate& left_pb_point, 
-    const Coordinate& up_pb_point)
+    uint32_t rem_intra_luma_pred_mode, const Coordinate& current_pb_point,
+    const Coordinate& up_neighbour_point, const Coordinate& left_neighbour_point)
 {
     auto left_pb_intra_luma_pred_mode = 
-        GetNeighbourBlockIntraPredModeType(context, left_pb_point);
+        GetNeighbourBlockIntraPredModeType(context, current_pb_point, 
+                                           left_neighbour_point);
     auto up_pb_intra_luma_pb_point = 
-        GetNeighbourBlockIntraPredModeType(context, up_pb_point);
+        GetNeighbourBlockIntraPredModeType(context, current_pb_point, 
+                                           up_neighbour_point);
 
     auto candidate_intra_pred_modes = GetCandidateIntraPredModes(
         left_pb_intra_luma_pred_mode, up_pb_intra_luma_pb_point);
@@ -957,10 +965,11 @@ IntraPredModeType CodingUnit::DeriveSingleIntraLumaPredictedMode(
 }
 
 IntraPredModeType CodingUnit::GetNeighbourBlockIntraPredModeType(
-    ICodingUnitContext* context, const Coordinate& neighbour_point)
+    ICodingUnitContext* context, const Coordinate& current_point,
+    const Coordinate& neighbour_point)
 {
     bool is_available = 
-        context->IsNeighbourBlockAvailable(point_, neighbour_point);
+        context->IsNeighbourBlockAvailable(current_point, neighbour_point);
     if (!is_available)
         return INTRA_DC;
 

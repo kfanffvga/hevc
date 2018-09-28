@@ -403,18 +403,17 @@ bool TransformUnit::ParseResidualDetailInfo(CABACReader* cabac_reader,
         vector<unique_ptr<ResidualCoding>> chroma_blue_residual_codings;
         chroma_blue_residual_codings.resize(residual_coding_count);
         const Coordinate& base_coordinate = context->GetBaseCoordinate();
-        uint32_t chroma_transform_size_y = 1 << log2_chroma_transform_size;
 
         for (uint32_t i = 0; i < residual_coding_count; ++i)
         {
-            if (!context->GetCBFColorBlueValue(i, depth - 1))
+            if (context->GetCBFColorBlueValue(i, depth - 1))
             {
                 Coordinate c = {
                     base_coordinate.GetX(), 
-                    base_coordinate.GetY() + chroma_transform_size_y};
+                    base_coordinate.GetY() + (i << log2_chroma_transform_size)};
 
                 chroma_blue_residual_codings[i].reset(
-                    new ResidualCoding(c, log2_transform_size_y_, 1));
+                    new ResidualCoding(c, log2_chroma_transform_size, 1));
 
                 ResidualCodingContext residual_coding_context(context);
                 bool success = chroma_blue_residual_codings[i]->Parse(
@@ -428,14 +427,14 @@ bool TransformUnit::ParseResidualDetailInfo(CABACReader* cabac_reader,
         chroma_red_residual_codings.resize(residual_coding_count);
         for (uint32_t i = 0; i < residual_coding_count; ++i)
         {
-            if (!context->GetCBFColorRedValue(i, depth - 1))
+            if (context->GetCBFColorRedValue(i, depth - 1))
             {
                 Coordinate c = {
                     base_coordinate.GetX(),
-                    base_coordinate.GetY() + chroma_transform_size_y};
+                    base_coordinate.GetY() + (i << log2_chroma_transform_size)};
 
                 chroma_red_residual_codings[i].reset(
-                    new ResidualCoding(c, log2_transform_size_y_, 2));
+                    new ResidualCoding(c, log2_chroma_transform_size, 2));
 
                 ResidualCodingContext residual_coding_context(context);
                 bool success = chroma_red_residual_codings[i]->Parse(

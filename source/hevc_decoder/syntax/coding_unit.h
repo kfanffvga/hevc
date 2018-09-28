@@ -56,10 +56,12 @@ private:
     IntraPredModeType DeriveSingleIntraLumaPredictedMode(
         ICodingUnitContext* context, bool is_prev_intra_luma_pred, 
         uint32_t mpm_idx, uint32_t rem_intra_luma_pred_mode, 
-        const Coordinate& left_pb_point, const Coordinate& up_pb_point);
+        const Coordinate& current_pb_point, const Coordinate& up_neighbour_point,
+        const Coordinate& left_neighbour_point);
 
     IntraPredModeType GetNeighbourBlockIntraPredModeType(
-        ICodingUnitContext* context, const Coordinate& neighbour_point);
+        ICodingUnitContext* context, const Coordinate& current_point,
+        const Coordinate& neighbour_point);
 
     std::array<IntraPredModeType, 3> GetCandidateIntraPredModes(
         IntraPredModeType left_pb_intra_luma_pred_mode, 

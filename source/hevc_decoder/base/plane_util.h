@@ -12,8 +12,8 @@ inline bool IsPointInRect(const Coordinate& point,
         (point.GetY() < left_top_point.GetY()))
         return false;
 
-    if ((point.GetX() > left_top_point.GetX() + width) || 
-        (point.GetY() > left_top_point.GetY() + height))
+    if ((point.GetX() >= left_top_point.GetX() + width) || 
+        (point.GetY() >= left_top_point.GetY() + height))
         return false;
 
     return true;

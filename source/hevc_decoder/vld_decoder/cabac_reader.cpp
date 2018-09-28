@@ -169,7 +169,7 @@ void CABACReader::InitContext(const Coordinate& current_ctb)
 uint8_t CABACReader::ReadBypassBit()
 {
    offset_ = (offset_ << 1) | stream_->Read<uint16_t>(1);
-   if (offset_ > current_range_)
+   if (offset_ >= current_range_)
    {
        offset_ -= current_range_;
        return 1;
