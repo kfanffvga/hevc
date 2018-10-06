@@ -4,6 +4,7 @@
 
 #include "hevc_decoder/vld_decoder/cabac_context_storage.h"
 #include "hevc_decoder/vld_decoder/fixed_length_value_reader.h"
+#include "hevc_decoder/partitions/block_scan_order_provider.h"
 
 using std::bind;
 
@@ -88,9 +89,16 @@ uint32_t SigCoeffFlagReader::GetArithmeticContextIndex(uint16_t bin_idx)
                 sig_context += 3;
 
             if (context_->GetLog2TransformSizeY() == 3)
-                sig_context += ((context_->GetScanIndex() == 0) ? 9 : 15);
+            {
+                if (context_->GetScanType() == BlockScanOrderProvider::UP_RIGHT_SCAN)
+                    sig_context += 9;
+                else 
+                    sig_context += 15;
+            }   
             else
+            {
                 sig_context += 21;
+            }
         }
         else
         {

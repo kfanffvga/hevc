@@ -15,7 +15,7 @@ public:
     virtual const Coordinate& GetCurrentRelativeCoordinate() const = 0;
     virtual bool HasCodedSubBlockOnRight() const = 0;
     virtual bool HasCodedSubBlockOnBottom() const = 0;
-    virtual uint32_t GetScanIndex() const = 0;
+    virtual uint32_t GetScanType() const = 0;
 
 };
 

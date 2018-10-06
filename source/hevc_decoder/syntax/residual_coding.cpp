@@ -33,13 +33,13 @@ public:
                               const Coordinate& current, 
                               bool has_coded_sub_block_on_right,
                               bool has_coded_sub_block_on_bottom,
-                              uint32_t scan_index)
+                              BlockScanOrderProvider::ScanType scan_type)
         : residual_coding_(residual_coding)
         , rc_context_(rc_context)
         , current_(current)
         , has_coded_sub_block_on_right_(has_coded_sub_block_on_right)
         , has_coded_sub_block_on_bottom_(has_coded_sub_block_on_bottom)
-        , scan_index_(scan_index)
+        , scan_type_(scan_type)
     {
 
     }
@@ -90,9 +90,9 @@ private:
         return has_coded_sub_block_on_bottom_;
     }
 
-    virtual uint32_t GetScanIndex() const override
+    virtual uint32_t GetScanType() const override
     {
-        return scan_index_;
+        return scan_type_;
     }
 
     const IResidualCodingContext* rc_context_;
@@ -100,7 +100,7 @@ private:
     Coordinate current_;
     bool has_coded_sub_block_on_right_;
     bool has_coded_sub_block_on_bottom_;
-    uint32_t scan_index_;
+    BlockScanOrderProvider::ScanType scan_type_;
 };
 
 class CoeffAbsLevelRemainingReaderContext :
@@ -438,7 +438,7 @@ bool ResidualCoding::ParseSingleBlockTransformCoeffLevel(
             c.OffsetY(y_length);
             SigCoeffFlagReaderContext sig_coeff_flag_reader_context(
                 this, context, c, has_coded_sub_block_on_right, 
-                has_coded_sub_block_on_bottom, scan_pos);
+                has_coded_sub_block_on_bottom, scan_type_);
 
             SigCoeffFlagReader sig_coeff_flag_reader(
                 cabac_reader, context->GetCABACInitType(), 
@@ -561,6 +561,8 @@ bool ResidualCoding::CombineTransformCoeffLevel(
     uint32_t sum_abs_level = 0;
 
     CoeffAbsLevelRemainingReaderContext reader_context(context, this);
+    uint32_t x_length = sub_block_begin_c.GetX() << 2;
+    uint32_t y_length = sub_block_begin_c.GetY() << 2;
     for (int32_t i = 15; i >= 0; --i)
     {
         if (!has_sig_coeff[i])
@@ -599,8 +601,8 @@ bool ResidualCoding::CombineTransformCoeffLevel(
         auto c = BlockScanOrderProvider::GetInstance()->GetScanPosition(
             BlockScanOrderProvider::BLOCK_SIZE_4X4, scan_type_, i);
 
-        uint32_t x = sub_block_begin_c.GetX() + c.GetX();
-        uint32_t y = sub_block_begin_c.GetY() + c.GetY();
+        uint32_t x = x_length + c.GetX();
+        uint32_t y = y_length + c.GetY();
         transform_coeff_level_[y][x] = coeff_abs_level_value;
         ++count_of_sig_coeff;
     }
