@@ -58,19 +58,20 @@ uint32_t SigCoeffFlagReader::GetArithmeticContextIndex(uint16_t bin_idx)
         if (context_->HasCodedSubBlockOnBottom())
             preview_coded_sub_block += 2;
 
+        Coordinate p(c.GetX() & 3, c.GetY() & 3);
         switch (preview_coded_sub_block)
         {
             case 0:
-                sig_context = (c.GetX() + c.GetY() == 0) ? 2 : 
-                    ((c.GetX() + c.GetY() < 3) ? 1 : 0);
+                sig_context = (p.GetX() + p.GetY() == 0) ? 2 : 
+                    ((p.GetX() + p.GetY() < 3) ? 1 : 0);
                 break;
 
             case 1:
-                sig_context = (c.GetY() == 0) ? 2 : ((c.GetY() == 1) ? 1 : 0);
+                sig_context = (p.GetY() == 0) ? 2 : ((p.GetY() == 1) ? 1 : 0);
                 break;
 
             case 2:
-                sig_context = (c.GetX() == 0) ? 2 : ((c.GetX() == 1) ? 1 : 0);
+                sig_context = (p.GetX() == 0) ? 2 : ((p.GetX() == 1) ? 1 : 0);
                 break;
 
             case 3:

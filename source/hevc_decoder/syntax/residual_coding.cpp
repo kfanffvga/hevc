@@ -419,6 +419,13 @@ bool ResidualCoding::ParseSingleBlockTransformCoeffLevel(
 
     int32_t scan_pos =
         sub_block_index == last_sub_block_pos ? last_scan_pos - 1 : 15;
+
+    Coordinate sub_block_begin_c = 
+        BlockScanOrderProvider::GetInstance()->GetScanPosition(
+            transform_block_size, scan_type_, sub_block_index);
+
+    uint32_t x_length = sub_block_begin_c.GetX() << 2;
+    uint32_t y_length = sub_block_begin_c.GetY() << 2;
     for (; scan_pos >= 0; --scan_pos)
     {
         if ((*has_coded_sub_blocks)[sub_block_index] &&
@@ -427,6 +434,8 @@ bool ResidualCoding::ParseSingleBlockTransformCoeffLevel(
             auto c = BlockScanOrderProvider::GetInstance()->GetScanPosition(
                 BlockScanOrderProvider::BLOCK_SIZE_4X4, scan_type_, scan_pos);
 
+            c.OffsetX(x_length);
+            c.OffsetY(y_length);
             SigCoeffFlagReaderContext sig_coeff_flag_reader_context(
                 this, context, c, has_coded_sub_block_on_right, 
                 has_coded_sub_block_on_bottom, scan_pos);
@@ -440,9 +449,6 @@ bool ResidualCoding::ParseSingleBlockTransformCoeffLevel(
                 need_read_the_first_value = true;
         }
     }
-    Coordinate sub_block_begin_c = 
-        BlockScanOrderProvider::GetInstance()->GetScanPosition(
-            transform_block_size, scan_type_, sub_block_index);
 
     return ParseAndDerivedTransformCoeffLevel(cabac_reader, context, 
                                               sub_block_begin_c,
