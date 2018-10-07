@@ -18,6 +18,8 @@ void CoeffAbsLevelGreaterNumberFlagReaderContext::Init(int32_t sub_block_index,
     context_set_ = ((0 == sub_block_index) || (color_index > 0)) ? 0 : 2;
     if (0 == greater_number_context_)
         ++context_set_;
+
+    greater_number_context_ = 1;
 }
 
 int32_t CoeffAbsLevelGreaterNumberFlagReaderContext::GetContextSet()
