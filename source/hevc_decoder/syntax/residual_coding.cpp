@@ -271,16 +271,13 @@ bool ResidualCoding::Parse(CABACReader* cabac_reader,
         transform_width_in_sub_block);
 
     CoeffAbsLevelGreaterNumberFlagReaderContext greater_1_flag_reader_context;
-    CoeffAbsLevelGreaterNumberFlagReaderContext greater_2_flag_reader_context;
     for (int32_t i = last_sub_block_pos; i >= 0; --i)
     {
         greater_1_flag_reader_context.Init(i, color_index_);
-        greater_2_flag_reader_context.Init(i, color_index_);
         success = ParseSingleBlockTransformCoeffLevel(
-            cabac_reader, context, &greater_1_flag_reader_context, 
-            &greater_2_flag_reader_context, i, last_sig_coeff_coordinate, 
-            last_sub_block_pos, last_scan_pos, block_size, 
-            &has_coded_sub_blocks);
+            cabac_reader, context, &greater_1_flag_reader_context, i, 
+            last_sig_coeff_coordinate, last_sub_block_pos, last_scan_pos, 
+            block_size, &has_coded_sub_blocks);
 
         if (!success)
             return false;
@@ -366,7 +363,6 @@ bool ResidualCoding::ParseLastSigCoeffPositionValue(
 bool ResidualCoding::ParseSingleBlockTransformCoeffLevel(
 	CABACReader* cabac_reader, IResidualCodingContext* context, 
     CoeffAbsLevelGreaterNumberFlagReaderContext* greater_1_reader_context,
-    CoeffAbsLevelGreaterNumberFlagReaderContext* greater_2_reader_context,
     int32_t sub_block_index, const Coordinate& last_sig_coeff_c, 
     int32_t last_sub_block_pos, int32_t last_scan_pos, 
     BlockScanOrderProvider::BlockSize transform_block_size,
@@ -453,7 +449,6 @@ bool ResidualCoding::ParseSingleBlockTransformCoeffLevel(
     return ParseAndDerivedTransformCoeffLevel(cabac_reader, context, 
                                               sub_block_begin_c,
                                               greater_1_reader_context, 
-                                              greater_2_reader_context,
                                               has_sig_coeff);
 }
 
@@ -461,7 +456,6 @@ bool ResidualCoding::ParseAndDerivedTransformCoeffLevel(
     CABACReader* cabac_reader, IResidualCodingContext* context, 
     const Coordinate& sub_block_begin_c,
     CoeffAbsLevelGreaterNumberFlagReaderContext* greater_1_reader_context,
-    CoeffAbsLevelGreaterNumberFlagReaderContext* greater_2_reader_context,
     bool has_sig_coeff[16])
 {
     int32_t first_sig_scan_pos = 16;
@@ -516,7 +510,7 @@ bool ResidualCoding::ParseAndDerivedTransformCoeffLevel(
     {
         CoeffAbsLevelGreater2FlagReader reader(cabac_reader, 
                                                context->GetCABACInitType(), 
-                                               greater_2_reader_context, 
+                                               greater_1_reader_context, 
                                                color_index_);
         is_coeff_abs_level_greater_2[last_greater_1_scan_pos] = reader.Read();
         if (is_coeff_abs_level_greater_2[last_greater_1_scan_pos])

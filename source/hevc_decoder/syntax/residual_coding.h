@@ -35,7 +35,6 @@ private:
 	bool ParseSingleBlockTransformCoeffLevel(
         CABACReader* cabac_reader, IResidualCodingContext* context,
         CoeffAbsLevelGreaterNumberFlagReaderContext* greater_1_reader_context,
-        CoeffAbsLevelGreaterNumberFlagReaderContext* greater_2_reader_context,
         int32_t sub_block_index, const Coordinate& last_sig_coeff_c,
         int32_t last_sub_block_pos, int32_t last_scan_pos,
         BlockScanOrderProvider::BlockSize transform_block_size,
@@ -45,7 +44,6 @@ private:
         CABACReader* cabac_reader, IResidualCodingContext* context,
         const Coordinate& sub_block_begin_c,
         CoeffAbsLevelGreaterNumberFlagReaderContext* greater_1_reader_context,
-        CoeffAbsLevelGreaterNumberFlagReaderContext* greater_2_reader_context,
         bool has_sig_coeff[16]);
 
     bool CombineTransformCoeffLevel(

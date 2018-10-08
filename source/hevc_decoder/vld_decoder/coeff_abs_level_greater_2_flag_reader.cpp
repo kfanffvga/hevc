@@ -34,7 +34,6 @@ bool CoeffAbsLevelGreater2FlagReader::Read()
         bind(&CoeffAbsLevelGreater2FlagReader::ReadBit, this);
 
     bool val = !!FixedLengthValueReader(bit_reader).Read(1);
-    context_->UpdateContext(val);
     return val;
 }
 
