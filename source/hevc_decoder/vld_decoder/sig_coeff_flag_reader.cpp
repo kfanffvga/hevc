@@ -85,7 +85,8 @@ uint32_t SigCoeffFlagReader::GetArithmeticContextIndex(uint16_t bin_idx)
         }
         if (context_->GetColorIndex() == 0)
         {
-            if (c.GetX() + c.GetY() > 0)
+            Coordinate sub_block_pos(c.GetX() >> 2, c.GetY() >> 2);
+            if (sub_block_pos.GetX() + sub_block_pos.GetY() > 0)
                 sig_context += 3;
 
             if (context_->GetLog2TransformSizeY() == 3)
