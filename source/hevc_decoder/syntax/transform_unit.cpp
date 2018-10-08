@@ -259,8 +259,8 @@ bool TransformUnit::Parse(CABACReader* cabac_reader,
 
     uint32_t log2_chroma_transform_size = log2_transform_size_y_;
     ChromaFormatType chroma_format_type = context->GetChromaFormatType();
-    if ((YUV_444 == chroma_format_type) || 
-        (YUV_MONO_CHROME == chroma_format_type))
+    if ((chroma_format_type != YUV_444) || 
+        (chroma_format_type != YUV_MONO_CHROME))
         --log2_chroma_transform_size;
 
     log2_chroma_transform_size = max(2ui32, log2_chroma_transform_size);
