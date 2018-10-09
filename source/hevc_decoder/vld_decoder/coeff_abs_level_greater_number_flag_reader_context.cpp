@@ -3,6 +3,7 @@
 CoeffAbsLevelGreaterNumberFlagReaderContext::CoeffAbsLevelGreaterNumberFlagReaderContext()
     : context_set_(-1)
     , greater_number_context_(1)
+    , initialzed_(false)
 {
 
 }
@@ -12,14 +13,23 @@ CoeffAbsLevelGreaterNumberFlagReaderContext::~CoeffAbsLevelGreaterNumberFlagRead
 
 }
 
-void CoeffAbsLevelGreaterNumberFlagReaderContext::Init(int32_t sub_block_index, 
+void CoeffAbsLevelGreaterNumberFlagReaderContext::Reset()
+{
+    initialzed_ = false;
+}
+
+void CoeffAbsLevelGreaterNumberFlagReaderContext::Init(int32_t sub_block_index,
                                                        uint32_t color_index)
 {
+    if (initialzed_)
+        return;
+
     context_set_ = ((0 == sub_block_index) || (color_index > 0)) ? 0 : 2;
     if (0 == greater_number_context_)
         ++context_set_;
 
     greater_number_context_ = 1;
+    initialzed_ = true;
 }
 
 int32_t CoeffAbsLevelGreaterNumberFlagReaderContext::GetContextSet()

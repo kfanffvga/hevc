@@ -42,7 +42,7 @@ private:
 
     bool ParseAndDerivedTransformCoeffLevel(
         CABACReader* cabac_reader, IResidualCodingContext* context,
-        const Coordinate& sub_block_begin_c,
+        const Coordinate& sub_block_begin_c, int32_t sub_block_index, 
         CoeffAbsLevelGreaterNumberFlagReaderContext* greater_1_reader_context,
         bool has_sig_coeff[16]);
 

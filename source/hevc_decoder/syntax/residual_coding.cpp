@@ -252,12 +252,12 @@ bool ResidualCoding::Parse(CABACReader* cabac_reader,
     if (!success)
         return false;
 
-	int32_t last_sub_block_pos = 0;
-	int32_t last_scan_pos = 0;
+	int32_t last_sub_block_index = 0;
+	int32_t last_scan_index = 0;
 	success = LocateLastSubBlockAndLastScanPos(last_sig_coeff_x, 
 											   last_sig_coeff_y, scan_type_, 
-											   &last_sub_block_pos, 
-											   &last_scan_pos);
+											   &last_sub_block_index, 
+											   &last_scan_index);
 	if (!success)
 		return false;
 
@@ -271,12 +271,12 @@ bool ResidualCoding::Parse(CABACReader* cabac_reader,
         transform_width_in_sub_block);
 
     CoeffAbsLevelGreaterNumberFlagReaderContext greater_1_flag_reader_context;
-    for (int32_t i = last_sub_block_pos; i >= 0; --i)
+    for (int32_t i = last_sub_block_index; i >= 0; --i)
     {
-        greater_1_flag_reader_context.Init(i, color_index_);
+        greater_1_flag_reader_context.Reset();
         success = ParseSingleBlockTransformCoeffLevel(
             cabac_reader, context, &greater_1_flag_reader_context, i, 
-            last_sig_coeff_coordinate, last_sub_block_pos, last_scan_pos, 
+            last_sig_coeff_coordinate, last_sub_block_index, last_scan_index, 
             block_size, &has_coded_sub_blocks);
 
         if (!success)
@@ -364,7 +364,7 @@ bool ResidualCoding::ParseSingleBlockTransformCoeffLevel(
 	CABACReader* cabac_reader, IResidualCodingContext* context, 
     CoeffAbsLevelGreaterNumberFlagReaderContext* greater_1_reader_context,
     int32_t sub_block_index, const Coordinate& last_sig_coeff_c, 
-    int32_t last_sub_block_pos, int32_t last_scan_pos, 
+    int32_t last_sub_block_index, int32_t last_scan_index, 
     BlockScanOrderProvider::BlockSize transform_block_size,
     multi_array<bool, 1>* has_coded_sub_blocks)
 {
@@ -390,7 +390,7 @@ bool ResidualCoding::ParseSingleBlockTransformCoeffLevel(
 
 	bool need_read_the_first_value = true;  // inferSbDcSigCoeffFlag = 0;
     bool is_coded_sub_block = false;
-    if ((sub_block_index < last_sub_block_pos) && (sub_block_index > 0))
+    if ((sub_block_index < last_sub_block_index) && (sub_block_index > 0))
     {
         CodedSubBlockFlagReader reader(cabac_reader, context->GetCABACInitType(),
                                        has_coded_sub_block_on_right, 
@@ -410,11 +410,11 @@ bool ResidualCoding::ParseSingleBlockTransformCoeffLevel(
         has_sig_coeff[0] = true;
 
     // 如果是指定的最后一个系数的位置，那这个位置应该是有值的，不然就会产生矛盾
-    if (last_sub_block_pos == sub_block_index)
-        has_sig_coeff[last_scan_pos] = true;
+    if (last_sub_block_index == sub_block_index)
+        has_sig_coeff[last_scan_index] = true;
 
     int32_t scan_pos =
-        sub_block_index == last_sub_block_pos ? last_scan_pos - 1 : 15;
+        sub_block_index == last_sub_block_index ? last_scan_index - 1 : 15;
 
     Coordinate sub_block_begin_c = 
         BlockScanOrderProvider::GetInstance()->GetScanPosition(
@@ -447,14 +447,14 @@ bool ResidualCoding::ParseSingleBlockTransformCoeffLevel(
     }
 
     return ParseAndDerivedTransformCoeffLevel(cabac_reader, context, 
-                                              sub_block_begin_c,
+                                              sub_block_begin_c, sub_block_index,
                                               greater_1_reader_context, 
                                               has_sig_coeff);
 }
 
 bool ResidualCoding::ParseAndDerivedTransformCoeffLevel(
     CABACReader* cabac_reader, IResidualCodingContext* context, 
-    const Coordinate& sub_block_begin_c,
+    const Coordinate& sub_block_begin_c, int32_t sub_block_index, 
     CoeffAbsLevelGreaterNumberFlagReaderContext* greater_1_reader_context,
     bool has_sig_coeff[16])
 {
@@ -480,7 +480,7 @@ bool ResidualCoding::ParseAndDerivedTransformCoeffLevel(
             has_escape_data_present = true;
             continue;
         }
-        
+        greater_1_reader_context->Init(sub_block_index, color_index_);
         CoeffAbsLevelGreater1FlagReader reader(cabac_reader, 
                                                context->GetCABACInitType(), 
                                                greater_1_reader_context, 
@@ -633,10 +633,10 @@ BlockScanOrderProvider::ScanType ResidualCoding::DeriveScanType(
 
 bool ResidualCoding::LocateLastSubBlockAndLastScanPos(
     uint32_t last_sig_coeff_x, uint32_t last_sig_coeff_y, 
-    BlockScanOrderProvider::ScanType scan_type, int32_t* last_sub_block_pos, 
-    int32_t* last_scan_pos)
+    BlockScanOrderProvider::ScanType scan_type, int32_t* last_sub_block_index, 
+    int32_t* last_scan_index)
 {
-    if (!last_scan_pos || !last_sub_block_pos)
+    if (!last_scan_index || !last_sub_block_index)
         return false;
 
     uint32_t transform_width_in_sub_block = 1 << (log2_transform_size_y_ - 2);
@@ -651,32 +651,32 @@ bool ResidualCoding::LocateLastSubBlockAndLastScanPos(
 
     const Coordinate last_sig_coordinate(last_sig_coeff_x, last_sig_coeff_y);
     Coordinate sub_block_begin_point;
-    for (*last_sub_block_pos = sub_block_count - 1; *last_sub_block_pos >= 0;
-         --*last_sub_block_pos)
+    for (*last_sub_block_index = sub_block_count - 1; *last_sub_block_index >= 0;
+         --*last_sub_block_index)
     {
         sub_block_begin_point = 
             BlockScanOrderProvider::GetInstance()->GetScanPosition(
-                block_size, scan_type, *last_sub_block_pos);
+                block_size, scan_type, *last_sub_block_index);
 
         sub_block_begin_point.SetX(sub_block_begin_point.GetX() << 2);
         sub_block_begin_point.SetY(sub_block_begin_point.GetY() << 2);
         if (IsPointInSquare(last_sig_coordinate, sub_block_begin_point, 4))
             break;
     }
-    if (*last_sub_block_pos < 0)
+    if (*last_sub_block_index < 0)
         return false;
 
 	block_size = BlockScanOrderProvider::GetInstance()->GetBlockSizeType(4);
-	for (*last_scan_pos = 15; *last_scan_pos >= 0; --*last_scan_pos)
+	for (*last_scan_index = 15; *last_scan_index >= 0; --*last_scan_index)
 	{
 		Coordinate scan_point = 
 			BlockScanOrderProvider::GetInstance()->GetScanPosition(
-				block_size, scan_type, *last_scan_pos);
+				block_size, scan_type, *last_scan_index);
 
 		scan_point.OffsetX(sub_block_begin_point.GetX());
 		scan_point.OffsetY(sub_block_begin_point.GetY());
 		if (last_sig_coordinate == scan_point)
 			break;
 	}
-	return *last_scan_pos >= 0;
+	return *last_scan_index >= 0;
 }
