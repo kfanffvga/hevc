@@ -557,6 +557,8 @@ bool TransformTree::ParseCBFCBValues(CABACReader* cabac_reader,
                                      ITransformTreeContext* context, 
                                      bool is_split_transform)
 {
+    cbf_cb_ = context->IsPreviousCBContainedTransformCoefficientOfColorBlue();
+    cbf_cr_ = context->IsPreviousCBContainedTransformCoefficientOfColorRed();
     ChromaFormatType chroma_format_type = context->GetChromaFormatType();
     if (((YUV_MONO_CHROME == chroma_format_type) || (YUV_444 == chroma_format_type)) ||
         ((log2_transform_tree_size_y_ > 2) && (chroma_format_type != MONO_CHROME)))
