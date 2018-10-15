@@ -499,8 +499,8 @@ bool ResidualCoding::ParseAndDerivedTransformCoeffLevel(
     if (context->IsCUTransquantBypass() || 
         ((context->GetCUPredMode() == MODE_INTRA) && 
          context->IsImplicitRDPCMEnabled() && is_transform_skip_ &&
-         (context->GetIntraLumaPredMode(current_) == INTRA_ANGULAR10) ||
-         (context->GetIntraLumaPredMode(current_) == INTRA_ANGULAR26)) ||
+         ((context->GetIntraLumaPredMode(current_) == INTRA_ANGULAR10) ||
+         (context->GetIntraLumaPredMode(current_) == INTRA_ANGULAR26))) ||
         is_explicit_rdpcm_)
         is_sign_hidden = false;
 
