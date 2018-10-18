@@ -18,9 +18,10 @@ public:
     void UpdateContext(bool is_greater_number);
 
 private:
-    // 有多少个block是有大于1级别的残差值的
+    // 有两个级别，当上一个block有值为真的时候，为一个档次，当上一个block无值为真的时候，为
+    // 另外一个档次（值为真代表block里有某个像素变换后的残差值大于1）
     int32_t context_set_;
-    // 在开始的情况下，从一开始读取到第一个有大于1级别的残差值的像素，一共有多少个
+    // 有四个级别，0为本block有值为真，1，2，3 表示累积有多少值为假，真假的含义如上所述
     int32_t greater_number_context_;
     bool initialzed_;
 };

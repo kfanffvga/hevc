@@ -60,6 +60,9 @@ uint32_t SigCoeffFlagReader::GetArithmeticContextIndex(uint16_t bin_idx)
             preview_coded_sub_block += 2;
 
         Coordinate p(c.GetX() & 3, c.GetY() & 3);
+        // 如果哪边有，则离哪边越远，值越大，
+        // 如果两边都有，则全部为最大值
+        // 如果两边都没有，则从左上到右下依次递减
         switch (preview_coded_sub_block)
         {
             case 0:
