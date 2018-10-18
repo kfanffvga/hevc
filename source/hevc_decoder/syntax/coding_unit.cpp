@@ -622,57 +622,57 @@ bool CodingUnit::ParseDetailInfo(CABACReader* cabac_reader,
                                             context->GetCABACInitType(),
                                             &part_mode_reader_context);
             part_mode_ = part_mode_reader.Read();
-            bool success = false;
-            if (MODE_INTRA == pred_mode_)
-            {
-                success = 
-                    ParseIntraDetailInfo(cabac_reader, context, part_mode_);
-            }
-            else
-            {
-                success = ParseInterDetailInfo(cabac_reader, context, is_cu_skip, 
-                                               part_mode_);
-            }
+        }
+        bool success = false;
+        if (MODE_INTRA == pred_mode_)
+        {
+            success = 
+                ParseIntraDetailInfo(cabac_reader, context, part_mode_);
+        }
+        else
+        {
+            success = ParseInterDetailInfo(cabac_reader, context, is_cu_skip, 
+                                            part_mode_);
+        }
 
-            if (!success)
-                return false;
+        if (!success)
+            return false;
 
-            if (!is_pcm_)
+        if (!is_pcm_)
+        {
+            // rqt_root_cbf
+            bool has_transform_tree = true;
+            if ((pred_mode_ != MODE_INTRA) &&
+                !((PART_2Nx2N == part_mode_) && !prediction_units_.empty() &&
+                    prediction_units_[0]->IsMergeMode()))
             {
-                // rqt_root_cbf
-                bool has_transform_tree = true;
-                if ((pred_mode_ != MODE_INTRA) &&
-                    !((PART_2Nx2N == part_mode_) && !prediction_units_.empty() &&
-                      prediction_units_[0]->IsMergeMode()))
+                RQTRootCBFReader reader(cabac_reader, 
+                                        context->GetCABACInitType());
+                has_transform_tree = reader.Read();
+            }
+            if (has_transform_tree)
+            {
+                uint32_t max_transform_depth = 
+                    context->GetMaxTransformHierarchyDepthInter();
+                bool is_intra_split = false;
+                if (MODE_INTRA == pred_mode_)
                 {
-                    RQTRootCBFReader reader(cabac_reader, 
-                                            context->GetCABACInitType());
-                    has_transform_tree = reader.Read();
-                }
-                if (has_transform_tree)
-                {
-                    uint32_t max_transform_depth = 
-                        context->GetMaxTransformHierarchyDepthInter();
-                    bool is_intra_split = false;
-                    if (MODE_INTRA == pred_mode_)
+                    max_transform_depth = 
+                        context->GetMaxTransformHierarchyDepthIntra();
+                    if (PART_NxN == part_mode_)
                     {
-                        max_transform_depth = 
-                            context->GetMaxTransformHierarchyDepthIntra();
-                        if (PART_NxN == part_mode_)
-                        {
-                            max_transform_depth += 1;
-                            is_intra_split = true;
-                        }
+                        max_transform_depth += 1;
+                        is_intra_split = true;
                     }
-                    uint32_t log2_cb_size_y = Log2(cb_size_y_);
-                    TransformTree transform_tree(point_, point_, log2_cb_size_y, 
-                                                 0, 0);
-                    TransformTreeContextInCU transform_tree_context(
-                        context, this, max_transform_depth, is_intra_split);
-
-                    return transform_tree.Parse(cabac_reader, 
-                                                &transform_tree_context);
                 }
+                uint32_t log2_cb_size_y = Log2(cb_size_y_);
+                TransformTree transform_tree(point_, point_, log2_cb_size_y, 
+                                                0, 0);
+                TransformTreeContextInCU transform_tree_context(
+                    context, this, max_transform_depth, is_intra_split);
+
+                return transform_tree.Parse(cabac_reader, 
+                                            &transform_tree_context);
             }
         }
     }

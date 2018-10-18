@@ -599,7 +599,7 @@ bool SliceSegmentData::Parse(CABACReader* reader,
             if (!byte_alignment.Parse(reader->GetSourceBitStream()))
                 return false;
         }
-    } while (is_end_of_slice_segment);
+    } while (!is_end_of_slice_segment);
 
     return true;
 }
