@@ -51,15 +51,21 @@ private:
     virtual uint32_t GetLeftBlockLayer() const override
     {
         Coordinate left_neighbour = {point_.GetX() - 1, point_.GetY()};
-        return coding_quadtree_context_->GetNearestCULayerByCoordinate(
-            left_neighbour);
+        uint32_t layer = 0;
+        bool success = coding_quadtree_context_->GetNearestCULayerByCoordinate(
+            left_neighbour, &layer);
+
+        return success ? layer : 0;
     }
 
     virtual uint32_t GetUpBlockLayer() const override
     {
         Coordinate up_neighbour = {point_.GetX(), point_.GetY() - 1};
-        return coding_quadtree_context_->GetNearestCULayerByCoordinate(
-            up_neighbour);
+        uint32_t layer = 0;
+        bool success = coding_quadtree_context_->GetNearestCULayerByCoordinate(
+            up_neighbour, &layer);
+
+        return success ? layer : 0;
     }
 
     Coordinate point_;
@@ -202,10 +208,10 @@ public:
                                                                neighbour);
     }
 
-    virtual uint32_t GetNearestCULayerByCoordinate(const Coordinate& point)
-        const override
+    virtual bool GetNearestCULayerByCoordinate(const Coordinate& point, 
+                                               uint32_t* layer) const override
     {
-        return parent_node_context_->GetNearestCULayerByCoordinate(point);
+        return parent_node_context_->GetNearestCULayerByCoordinate(point, layer);
     }
 
     virtual std::shared_ptr<PaletteTable> GetPredictorPaletteTable()
@@ -483,10 +489,10 @@ public:
         return quadtree_context_->IsNeighbourBlockAvailable(current, neighbour);
     }
 
-    virtual uint32_t GetNearestCULayerByCoordinate(const Coordinate& point)
-        const
+    virtual bool GetNearestCULayerByCoordinate(const Coordinate& point, 
+                                               uint32_t* layer) const
     {
-        return quadtree_context_->GetNearestCULayerByCoordinate(point);
+        return quadtree_context_->GetNearestCULayerByCoordinate(point, layer);
     }
 
     virtual shared_ptr<PaletteTable> GetPredictorPaletteTable() const override
@@ -718,11 +724,14 @@ bool CodingQuadtree::Parse(CABACReader* cabac_reader,
     return true;
 }
 
-uint32_t CodingQuadtree::GetNearestCULayerByCoordinate(const Coordinate& point)
-    const
+bool CodingQuadtree::GetNearestCULayerByCoordinate(const Coordinate& point, 
+                                                   uint32_t* layer) const
 {
+    if (!layer)
+        return false;
+
     if (!IsPointInSquare(point, point_, cb_size_y_))
-        return 0;
+        return false;
 
     Coordinate reference_point = {point.GetX() - point_.GetX(), 
                                   point.GetY() - point_.GetY()};
@@ -731,9 +740,12 @@ uint32_t CodingQuadtree::GetNearestCULayerByCoordinate(const Coordinate& point)
         (((reference_point.GetY() & sub_cb_size_y) > 0 ? 1 : 0) << 1);
 
     if (!sub_coding_quadtrees_[index])
-        return layer_;
-
-    return sub_coding_quadtrees_[index]->GetNearestCULayerByCoordinate(point);
+    {
+        *layer = layer_;
+        return true;
+    }
+    return sub_coding_quadtrees_[index]->GetNearestCULayerByCoordinate(point, 
+                                                                       layer);
 }
 
 uint32_t CodingQuadtree::GetCurrentLayer() const

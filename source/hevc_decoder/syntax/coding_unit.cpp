@@ -73,13 +73,21 @@ private:
     virtual uint32_t GetLeftBlockLayer() const override
     {
         Coordinate left_neighbour = {point_.GetX() - 1, point_.GetY()};
-        return cu_context_->GetNearestCULayerByCoordinate(left_neighbour);
+        uint32_t layer = 0;
+        bool success = cu_context_->GetNearestCULayerByCoordinate(left_neighbour, 
+                                                                  &layer);
+
+        return success ? layer : 0;
     }
 
     virtual uint32_t GetUpBlockLayer() const override
     {
         Coordinate up_neighbour = {point_.GetX(), point_.GetY() - 1};
-        return cu_context_->GetNearestCULayerByCoordinate(up_neighbour);
+        uint32_t layer = 0;
+        bool success = cu_context_->GetNearestCULayerByCoordinate(up_neighbour,
+                                                                  &layer);
+
+        return success ? layer : 0;
     }
 
     Coordinate point_;

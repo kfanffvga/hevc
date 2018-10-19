@@ -28,7 +28,9 @@ public:
 
     uint32_t GetCABACContextStorageIndex() const;
     const SampleAdaptiveOffset* GetSampleAdaptiveOffset() const;
-    uint32_t GetNearestCULayerByCoordinate(const Coordinate& point) const;
+    bool GetNearestCULayerByCoordinate(const Coordinate& point, uint32_t* layer) 
+        const;
+
     const std::shared_ptr<CodingUnit> GetCodingUnit(const Coordinate& point) 
         const;
 

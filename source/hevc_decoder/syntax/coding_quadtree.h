@@ -21,7 +21,9 @@ public:
 
     bool Parse(CABACReader* cabac_reader, ICodingQuadtreeContext* context);
 
-    uint32_t GetNearestCULayerByCoordinate(const Coordinate& point) const;
+    bool GetNearestCULayerByCoordinate(const Coordinate& point, 
+                                       uint32_t* layer) const;
+
     uint32_t GetCurrentLayer() const;
     uint32_t GetCUQPDeltaVal() const;
     uint32_t GetLog2SizeY() const;

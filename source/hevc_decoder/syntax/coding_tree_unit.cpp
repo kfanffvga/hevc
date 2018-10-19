@@ -294,10 +294,18 @@ public:
         return ctu_context_->IsNeighbourBlockAvailable(current, neighbour);
     }
 
-    virtual uint32_t GetNearestCULayerByCoordinate(const Coordinate& point)
-        const override
+    virtual bool GetNearestCULayerByCoordinate(const Coordinate& point, 
+                                               uint32_t* layer) const override
     {
-        return ctu_->GetNearestCULayerByCoordinate(point);
+        bool success = ctu_->GetNearestCULayerByCoordinate(point, layer);
+        if (success)
+            return success;
+
+        auto ctu = ctu_context_->GetCodingTreeUnit(point);
+        if (!ctu)
+            return false;
+
+        return ctu->GetNearestCULayerByCoordinate(point, layer);
     }
 
     virtual shared_ptr<PaletteTable> GetPredictorPaletteTable() const override
@@ -513,10 +521,10 @@ const SampleAdaptiveOffset* CodingTreeUnit::GetSampleAdaptiveOffset() const
     return sample_adaptive_offset_.get();
 }
 
-uint32_t CodingTreeUnit::GetNearestCULayerByCoordinate(const Coordinate& point)
-    const
+bool CodingTreeUnit::GetNearestCULayerByCoordinate(const Coordinate& point, 
+                                                   uint32_t* layer) const
 {
-    return coding_quadtree_->GetNearestCULayerByCoordinate(point);
+    return coding_quadtree_->GetNearestCULayerByCoordinate(point, layer);
 }
 
 const shared_ptr<CodingUnit> CodingTreeUnit::GetCodingUnit(

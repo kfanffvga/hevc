@@ -29,8 +29,8 @@ public:
     virtual bool IsNeighbourBlockAvailable(
         const Coordinate& current, const Coordinate& neighbour) const = 0;
 
-    virtual uint32_t GetNearestCULayerByCoordinate(const Coordinate& point)
-        const = 0;
+    virtual bool GetNearestCULayerByCoordinate(const Coordinate& point, 
+                                               uint32_t* layer) const = 0;
 
     virtual std::shared_ptr<PaletteTable> GetPredictorPaletteTable() const = 0;
     virtual uint32_t GetPaletteMaxSize() const = 0;
