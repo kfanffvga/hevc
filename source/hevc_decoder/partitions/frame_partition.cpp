@@ -148,6 +148,7 @@ bool FramePartition::Init(
      uint32_t tbs_per_ctb = 1 << (log2_min_tbs_per_ctb << 1);
      for (const auto& ctb : raster_scan_values)
      {
+         Coordinate ctb_base_c = ctb.block_coordinate;
          uint32_t base_tb_index = ctb.block_raster_scan_index * tbs_per_ctb; 
          for (uint32_t x = 0; x < ctb_width_in_min_tbs; ++x)
          {
@@ -165,11 +166,13 @@ bool FramePartition::Init(
                          ((((y & v) << 1) | (x & v)) << j);
                  }
                  tb_index_of_current_ctb += base_tb_index;
+                 Coordinate c = ctb_base_c;
+                 c.OffsetX(x << min_tb_log2_size_y);
+                 c.OffsetY(y << min_tb_log2_size_y);
 
                  TransformBlockPositionInfo info = 
                  {
-                     {x << min_tb_log2_size_y, y << min_tb_log2_size_y},
-                     tb_index_of_current_ctb, ctb.block_raster_scan_index, 
+                     c, tb_index_of_current_ctb, ctb.block_raster_scan_index, 
                      ctb.block_tile_scan_index, ctb.tile_index
                  };
                  transform_block_partition_info_.insert(info);
