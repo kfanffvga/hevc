@@ -966,7 +966,7 @@ IntraPredModeType CodingUnit::DeriveSingleIntraLumaPredictedMode(
 
     sort(candidate_intra_pred_modes.begin(), candidate_intra_pred_modes.end());
     for (const auto& i : candidate_intra_pred_modes)
-        if (rem_intra_luma_pred_mode > static_cast<uint32_t>(i))
+        if (rem_intra_luma_pred_mode >= static_cast<uint32_t>(i))
             ++rem_intra_luma_pred_mode;
 
     return static_cast<IntraPredModeType>(rem_intra_luma_pred_mode);
