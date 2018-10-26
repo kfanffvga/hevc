@@ -77,7 +77,7 @@ public:
             return false;
 
         return
-            neighbour_raster_scan_index > ctu_context_->GetSliceSegmentAddress();
+            neighbour_raster_scan_index >= ctu_context_->GetSliceSegmentAddress();
     }
 
     virtual bool HasUpCTBInTile() const override

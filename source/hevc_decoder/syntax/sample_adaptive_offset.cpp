@@ -46,7 +46,7 @@ bool SampleAdaptiveOffset::Parse(CABACReader* cabac_reader,
 
     bool is_allow_sao_merge_up = false;
     if ((context->GetCurrentCoordinate().GetY() > 0) && 
-        is_allow_sao_merge_left && context->HasUpCTBInSliceSegment() && 
+        !is_allow_sao_merge_left && context->HasUpCTBInSliceSegment() && 
         context->HasUpCTBInTile())
     {
         SAOMergeFlagReader reader(cabac_reader, context->GetCABACInitType());
