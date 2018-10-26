@@ -621,7 +621,7 @@ BlockScanOrderProvider::ScanType ResidualCoding::DeriveScanType(
             intra_predicted_mode = context->GetIntraChromaPredMode(current_);
 
         if ((intra_predicted_mode >= INTRA_ANGULAR6) && 
-            (intra_predicted_mode <= INTRA_ANGULAR12))
+            (intra_predicted_mode <= INTRA_ANGULAR14))
             return BlockScanOrderProvider::VERTICAL_SCAN;
         
         if ((intra_predicted_mode >= INTRA_ANGULAR22) &&

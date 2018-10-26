@@ -595,9 +595,12 @@ bool SliceSegmentData::Parse(CABACReader* reader,
             if (!end_of_sub_set_one_bit)
                 return false;
 
-            ByteAlignment byte_alignment;
-            if (!byte_alignment.Parse(reader->GetSourceBitStream()))
-                return false;
+            // When decoding end_of_subset_one_bit, this last bit inserted 
+            // in register ivlOffset is interpreted as alignment_bit_equal_to_one
+
+            // end_of_sub_set_one_bit 的校验位就是byte alignment的第一位的校验位
+            // 所以这里直接对齐就行了
+            reader->GetSourceBitStream()->ByteAlign();
         }
     } while (!is_end_of_slice_segment);
 
