@@ -73,6 +73,7 @@ public:
     virtual bool IsSignDataHidingEnabled() const = 0;
     virtual bool IsPersistentRiceAdaptationEnabled() const = 0;
     virtual bool HasExtendedPrecisionProcessing() const = 0;
+    virtual const Coordinate& GetCTUBaseCoordinate() const = 0;
 };
 
 #endif

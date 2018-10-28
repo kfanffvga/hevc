@@ -384,6 +384,11 @@ public:
         return parent_node_context_->HasExtendedPrecisionProcessing();
     }
 
+    virtual const Coordinate& GetCTUBaseCoordinate() const override
+    {
+        return parent_node_context_->GetCTUBaseCoordinate();
+    }
+
 private:
     ICodingQuadtreeContext* parent_node_context_;
     CodingQuadtree* coding_quadtree_node_;
@@ -630,6 +635,11 @@ public:
     virtual bool HasExtendedPrecisionProcessing() const override
     {
         return quadtree_context_->HasExtendedPrecisionProcessing();
+    }
+
+    virtual const Coordinate& GetCTUBaseCoordinate() const override
+    {
+        return quadtree_context_->GetCTUBaseCoordinate();
     }
 
 private:

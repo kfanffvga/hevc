@@ -31,6 +31,7 @@ public:
     bool GetNearestCULayerByCoordinate(const Coordinate& point, uint32_t* layer) 
         const;
 
+    const Coordinate& GetBasePoint() const;
     const std::shared_ptr<CodingUnit> GetCodingUnit(const Coordinate& point) 
         const;
 

@@ -448,6 +448,11 @@ public:
         return ctu_context_->HasExtendedPrecisionProcessing();
     }
 
+    virtual const Coordinate& GetCTUBaseCoordinate() const override
+    {
+        return ctu_->GetBasePoint();
+    }
+
 private:
     ICodingTreeUnitContext* ctu_context_;
     CodingTreeUnit* ctu_;
@@ -525,6 +530,11 @@ bool CodingTreeUnit::GetNearestCULayerByCoordinate(const Coordinate& point,
                                                    uint32_t* layer) const
 {
     return coding_quadtree_->GetNearestCULayerByCoordinate(point, layer);
+}
+
+const Coordinate& CodingTreeUnit::GetBasePoint() const
+{
+    return point_;
 }
 
 const shared_ptr<CodingUnit> CodingTreeUnit::GetCodingUnit(

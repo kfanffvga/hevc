@@ -981,6 +981,9 @@ IntraPredModeType CodingUnit::GetNeighbourBlockIntraPredModeType(
     if (!is_available)
         return INTRA_DC;
 
+    if (neighbour_point.GetY() < context->GetCTUBaseCoordinate().GetY())
+        return INTRA_DC;
+
     auto neighbour_cu = context->GetCodingUnit(neighbour_point);
     if (!neighbour_cu)
         return INTRA_DC;
