@@ -180,7 +180,7 @@ uint8_t CABACReader::ReadBypassBit()
 uint8_t CABACReader::ReadTerminateBit()
 {
     current_range_ -= 2;
-    if (offset_ > current_range_)
+    if (offset_ >= current_range_)
         return 1;
 
     Renormalize();

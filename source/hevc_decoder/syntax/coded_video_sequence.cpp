@@ -9,6 +9,7 @@
 #include "hevc_decoder/base/tile_info.h"
 #include "hevc_decoder/syntax/nal_unit.h"
 #include "hevc_decoder/syntax/slice_segment_header.h"
+#include "hevc_decoder/vld_decoder/cabac_context_storage.h"
 
 using std::pair;
 using std::make_pair;
@@ -87,13 +88,18 @@ bool CodedVideoSequence::PushNALOfSliceSegment(NalUnit* nal, bool is_idr_frame)
     bool is_new_frame = bit_stream->ReadBool();
     if (is_new_frame)
     {
-        bool success = decode_processor_manager_->Decode(frame_syntax_.get());
-        if (!success)
-            return false;
+        if (frame_syntax_)
+        {
+            bool success = 
+                decode_processor_manager_->Decode(frame_syntax_.get());
 
-        if (is_idr_frame)
-            Flush();
+            if (!success)
+                return false;
 
+            if (is_idr_frame)
+                Flush();
+        }
+        cabac_context_storage_->ClearStorageContext();
         frame_syntax_.reset(new FrameSyntax(this));
     }
     bit_stream->Seek(bit_stream->GetBytePosition(),
